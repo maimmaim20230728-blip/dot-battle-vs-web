@@ -112,7 +112,7 @@
   #qrhub-hint,#qrshow-inst,#qrscan-inst{font-size:13px;color:#c3d4ec;line-height:1.75;margin:10px 6px;text-align:left;}
   #qrhub-hint b,#qrshow-inst b,#qrscan-inst b{color:#ffd24a;}
   #qrcanvas{width:340px;max-width:94%;height:auto;background:#fff;border:7px solid #fff;border-radius:6px;margin:6px auto;display:block;}
-  #qrstatus{font-size:13px;color:#ffd24a;min-height:38px;margin-top:10px;line-height:1.5;}
+  #qrstatus,#qrshow-status{font-size:13px;color:#ffd24a;min-height:38px;margin-top:10px;line-height:1.5;}
   .qrbtn{margin-bottom:9px;}
   #qrshowbtn{background:#3a2a6e;border-color:#7a5cff;} #qrscanbtn{background:#5a2a4a;border-color:#ff5aa0;}
 
@@ -243,11 +243,14 @@
     <button id="qr-back" class="backbtn"></button>
   </section>
 
-  <!-- QR 表示 -->
+  <!-- QR こうかん／たいせん じゅんび（自分のQRを常時表示＋相手を読取＋たたかう） -->
   <section id="screen-qrshow" class="screen">
     <h2 id="qrshow-title"></h2>
     <canvas id="qrcanvas" width="340" height="340"></canvas>
     <p id="qrshow-inst"></p>
+    <button id="qrshow-scan" class="primary qrbtn"></button>
+    <p id="qrshow-status"></p>
+    <button id="qrshow-fight" class="accent qrbtn" disabled></button>
     <button id="qrshow-back" class="backbtn"></button>
   </section>
 
@@ -756,7 +759,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     else if (mode === "hotseat") {
       if (setupTarget === "p1") { pending.p1 = data; startSetupFor("p2"); }
       else { pending.p2 = data; startBattleHotseat(); }
-    } else if (mode === "qr") { pending.you = data; openQRHub(); }
+    } else if (mode === "qr") { pending.you = data; pending.rival = null; openQRShow(); }
   }
 
   /* ---------------- QR ハブ / 表示 / 読取 ---------------- */
@@ -771,13 +774,23 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("qr-back").textContent = "‹ " + L("もどる", "Back");
     showScreen("qrhub");
   }
+  // QRこうかん／たいせんじゅんび：自分のQRを常時表示しつつ、相手のQRを読み取る。
+  // 読み取っても自動では始めず「たたかう」を有効化（2人とも読み取れたら各自で開始）→ 取り残し防止。
   function openQRShow() {
     var text = encodeFighter(pending.you);
     var ok = renderQR($("qrcanvas"), text);
-    $("qrshow-title").textContent = "📤 " + L("じぶんの QR", "Your QR");
+    $("qrshow-title").textContent = "📱 " + L("たいせん じゅんび", "Battle Setup");
     $("qrshow-inst").innerHTML = ok
-      ? L("この QRを あいてに みせよう！<br>あいては <b>「あいてのQRを よみこむ」→「カメラを ひらく」</b> で<br>この がめんを うつしてね", "Show this QR to your friend!<br>They tap <b>Scan QR → Open Camera</b><br>and point at this screen")
+      ? L("① この QRを あいてに みせる（あいてが よみとる）<br>② 下で <b>あいての QRを よみとる</b><br>③ 2人とも よみとれたら <b>「たたかう」</b>！", "① Show this QR to your friend (they scan it)<br>② <b>Scan your friend's QR</b> below<br>③ When you've both scanned, tap <b>Battle!</b>")
       : L("QRの せいせいに しっぱいしました", "Failed to generate QR");
+    $("qrshow-scan").textContent = "📷 " + L("あいての QRを よみとる", "Scan friend's QR");
+    var got = !!pending.rival;
+    $("qrshow-status").textContent = got
+      ? L("✓ あいてを よみこんだ！ あいても よみとれたら「たたかう」を おそう", "✓ Got your friend! When you've both scanned, tap Battle")
+      : L("まだ あいてを よみとっていないよ", "You haven't scanned your friend yet");
+    $("qrshow-status").style.color = got ? "#7cff9c" : "#ffd24a";
+    $("qrshow-fight").textContent = "▶ " + L("たたかう スタート", "Start Battle");
+    $("qrshow-fight").disabled = !got;
     $("qrshow-back").textContent = "‹ " + L("もどる", "Back");
     showScreen("qrshow");
   }
@@ -793,7 +806,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function handleQRPhoto(file) {
     if (!file) return;
-    $("qrstatus").textContent = L("よみとり中…", "Reading…");
+    $("qrshow-status").style.color = "#ffd24a"; $("qrshow-status").textContent = L("よみとり中…", "Reading…");
     var url = URL.createObjectURL(file), img = new Image();
     img.onload = function () {
       var max = 720, sc = Math.min(1, max / Math.max(img.width, img.height));
@@ -803,13 +816,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       URL.revokeObjectURL(url);
       decodeQR(c).then(function (text) {
         var data = text ? decodeFighter(text) : null;
-        if (!data) { $("qrstatus").textContent = L("よみとれません。もう一度／明るく大きく写してね", "Couldn't read it. Try again, brighter/larger"); return; }
+        if (!data) { $("qrshow-status").style.color = "#ff5a6a"; $("qrshow-status").textContent = L("よみとれません。もう一度／明るく大きく写してね", "Couldn't read it. Try again, brighter/larger"); return; }
         pending.rival = data;
-        $("qrstatus").textContent = L("よみとり せいこう！ あいての キャラと たたかおう！", "Got it! Battle your rival's fighter!");
-        setTimeout(startBattleQR, 700);
+        openQRShow();   // 自動開始しない：QRは出したまま「たたかう」を有効化（取り残し防止）
       });
     };
-    img.onerror = function () { URL.revokeObjectURL(url); $("qrstatus").textContent = L("画像を よみこめません", "Could not load image"); };
+    img.onerror = function () { URL.revokeObjectURL(url); $("qrshow-status").style.color = "#ff5a6a"; $("qrshow-status").textContent = L("画像を よみこめません", "Could not load image"); };
     img.src = url;
   }
 
@@ -1547,7 +1559,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("qrshowbtn").onclick = function () { sfx.select(); openQRShow(); };
     $("qrscanbtn").onclick = function () { sfx.select(); openQRScan(); };
     $("qr-back").onclick = function () { showScreen("title"); };
-    $("qrshow-back").onclick = function () { openQRHub(); };
+    $("qrshow-scan").onclick = function () { sfx.select(); $("qrfile").click(); };
+    $("qrshow-fight").onclick = function () { if (pending.rival) { sfx.select(); startBattleQR(); } };
+    $("qrshow-back").onclick = function () { showScreen("title"); };
     $("qrscan-open").onclick = function () { $("qrfile").click(); };
     $("qrfile").onchange = function (e) { handleQRPhoto(e.target.files[0]); e.target.value = ""; };
     $("qrscan-back").onclick = function () { openQRHub(); };
