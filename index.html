@@ -764,8 +764,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     drawPixels($("qrhub-preview"), pending.you.pixels);
     $("qrhub-title").textContent = L("2だいで たいせん！", "2-Device Battle!");
     $("qrhub-hint").innerHTML = L(
-      "ともだちと 2だいで あそぼう！<br>① どちらか ひとりが <b>「QRをみせる」</b><br>② もう ひとりが <b>「QRをよみこむ」</b><br>→ よみこんだ たんまつで <b>2人 こうたい</b>で たたかうよ",
-      "Play with a friend on 2 devices!<br>① One of you taps <b>Show My QR</b><br>② The other taps <b>Scan QR</b><br>→ Then battle together on that device, taking turns");
+      "ともだちと 2だいで あそぼう！<br>① 2人とも キャラを つくる<br>② <b>おたがいの QRを よみこむ</b>（じぶんの たんまつで あいてを よみとる）<br>③ じぶんの たんまつで <b>あいての キャラ</b>と たたかう！<br>④ けっかを みせあおう。2人とも かったら <b>ひきわけ→もう1かい！</b>",
+      "Play with a friend on 2 devices!<br>① Both make a fighter<br>② <b>Scan each other's QR</b> (read your rival on your own device)<br>③ Battle <b>your rival's fighter</b> on your own device<br>④ Compare results — if you both win it's a <b>draw → play again!</b>");
     $("qrshowbtn").textContent = "📤 " + L("じぶんのQRを みせる", "Show My QR");
     $("qrscanbtn").textContent = "📷 " + L("あいてのQRを よみこむ", "Scan Rival's QR");
     $("qr-back").textContent = "‹ " + L("もどる", "Back");
@@ -784,8 +784,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function openQRScan() {
     $("qrscan-title").textContent = "📷 " + L("あいての QRを よみとる", "Scan Rival's QR");
     $("qrscan-inst").innerHTML = L(
-      "① あいてに <b>QRを ひょうじ</b> してもらう<br>② 下の ボタンで <b>カメラを ひらく</b><br>③ あいての がめんの QRを うつす<br>→ よみとれたら じどうで たたかい かいし！",
-      "① Ask your friend to <b>show their QR</b><br>② Tap below to <b>open the camera</b><br>③ Point at the QR on their screen<br>→ Battle starts automatically!");
+      "① あいてに <b>QRを ひょうじ</b> してもらう<br>② 下の ボタンで <b>カメラを ひらく</b><br>③ あいての がめんの QRを うつす<br>→ よみとれたら <b>あいての キャラ</b>と たたかい かいし！",
+      "① Ask your friend to <b>show their QR</b><br>② Tap below to <b>open the camera</b><br>③ Point at the QR on their screen<br>→ Battle their fighter automatically!");
     $("qrscan-open").textContent = "📷 " + L("カメラを ひらく", "Open Camera");
     $("qrstatus").textContent = "";
     $("qrscan-back").textContent = "‹ " + L("もどる", "Back");
@@ -805,7 +805,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         var data = text ? decodeFighter(text) : null;
         if (!data) { $("qrstatus").textContent = L("よみとれません。もう一度／明るく大きく写してね", "Couldn't read it. Try again, brighter/larger"); return; }
         pending.rival = data;
-        $("qrstatus").textContent = L("よみとり せいこう！ 2人 こうたいで たたかおう", "Got it! Take turns and battle");
+        $("qrstatus").textContent = L("よみとり せいこう！ あいての キャラと たたかおう！", "Got it! Battle your rival's fighter!");
         setTimeout(startBattleQR, 700);
       });
     };
@@ -840,9 +840,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     beginBattle(f0, f1, { kind: "vs" });
   }
   function startBattleQR() {
+    // 2台で対戦(オフライン版): 各端末で「自分(操作) vs 相手のキャラ(NPC=AI)」。端末間通信は不要。
     var f0 = buildFighter(pending.you, { label: L("あなた", "YOU"), index: 0 });
-    var f1 = buildFighter(pending.rival, { label: L("あいて", "RIVAL"), index: 1 });
-    beginBattle(f0, f1, { kind: "vs" });
+    var f1 = buildFighter(pending.rival, { label: L("あいて", "RIVAL"), index: 1, isAI: true });
+    beginBattle(f0, f1, { kind: "qr" });
   }
   function startSoloRun() { soloStage = 0; nextSolo(); }
   // ソロ難易度（解放式）: 解放済み＋次の1つだけ表示。クリア済みには★。
@@ -1152,7 +1153,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
             showResult("soloclear");
           } else showSoloNext();
         } else showResult("sololose");
-      } else showResult("vs", winner);
+      } else if (battle.kind === "qr") showResult("qr", winner);
+      else showResult("vs", winner);
     });
   }
 
@@ -1187,6 +1189,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         : L("バッジGET ★（" + soloProgress + "/5） つぎの むずかしさ かいほう！", "Badge ★ (" + soloProgress + "/5) New difficulty unlocked!");
       $("restartbtn").textContent = L("もういちど", "Play Again");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
+    } else if (kind === "qr") {
+      var youWon = winner && winner.index === 0;
+      if (youWon) { sfx.win(); rw.textContent = L("あいての せんしに かった！", "You beat their fighter!"); rw.style.color = "#7cff9c"; }
+      else { sfx.lose(); rw.textContent = L("あいての せんしに まけた…", "Their fighter won…"); rw.style.color = "#ff5a6a"; }
+      rs.innerHTML = L("ともだちと けっかを みせあおう！<br>2人とも かったら ひきわけ → もう1かい！", "Compare results with your friend!<br>If you both win, it's a draw → play again!");
+      $("restartbtn").textContent = L("もういちど（おなじ あいて）", "Rematch (same rival)");
+      $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startBattleQR(); };
     } else {
       sfx.lose();
       rw.textContent = L("まけて しまった…", "You lost…");
@@ -1470,7 +1479,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("b3").textContent = L("オフライン動作", "Works Offline");
     setModeBtn("mode-solo", "🗡 ", L("ひとりで（5れんせん）", "Solo (5 in a row)"), L("ランダムな敵と連続バトル", "Fight 5 random foes"));
     setModeBtn("mode-hotseat", "🤝 ", L("ふたりで（1だい）", "2 Players (1 device)"), L("こうたいで あそぶ", "Take turns on one device"));
-    setModeBtn("mode-qr", "📱 ", L("2だいで（QRたいせん）", "2 Devices (QR)"), L("あいてのデータをQRで読み取り", "Import rival via QR code"));
+    setModeBtn("mode-qr", "📱 ", L("2だいで（QRたいせん）", "2 Devices (QR)"), L("QRで相手を読取→各端末で対戦", "Scan rival's QR → battle on each device"));
     $("soyogilink").textContent = "🌿 " + L("アプリ開発：介護と支援の相談どころ「そよぎ」", "App dev by 'Soyogi' — care & support");
     updateSoloBadges();
     $("set-title").textContent = L("せってい", "Settings");
