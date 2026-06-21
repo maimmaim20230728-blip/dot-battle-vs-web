@@ -1,0 +1,17 @@
+{
+  "name": "ドットバトルVS",
+  "short_name": "ドットバトルVS",
+  "description": "写真をドット絵の戦士に変えて戦う、レトロ8ビット風の対戦ゲーム。完全無料・広告なし・端末内処理。",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#04060a",
+  "theme_color": "#070a12",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
