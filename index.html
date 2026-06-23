@@ -103,6 +103,20 @@
   #passivelist{display:grid;gap:7px;}
   .passcard{display:flex;align-items:center;gap:8px;background:#1a1530;border-left:5px solid #ffd24a;border-radius:6px;padding:8px 10px;}
   .passcard b{color:#ffd24a;font-size:15px;} .passcard span{font-size:13px;color:#ecdca6;}
+  /* 名前入力＋保存／ほぞんキャラ一覧 */
+  #namerow{display:flex;align-items:center;gap:8px;margin:10px 0 8px;}
+  #name-label{font-size:13px;color:#9ab;white-space:nowrap;}
+  #nameinput{flex:1;min-width:0;font-size:16px;padding:8px 10px;border-radius:8px;border:2px solid #2c416e;background:#0b1322;color:#e2ecfb;}
+  #savedlist{display:grid;gap:8px;}
+  .savedcard{display:flex;align-items:center;gap:10px;background:#0d1424;border:2px solid #243a63;border-radius:10px;padding:8px;}
+  .savedthumb{width:48px;height:48px;border-radius:6px;background:#05070d;flex:none;}
+  .savedinfo{flex:1;min-width:0;text-align:left;}
+  .savedname{font-size:15px;font-weight:bold;color:#e2ecfb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .savedstat{font-size:12px;color:#9ab;margin-top:2px;}
+  .savedbtns{display:flex;gap:6px;flex:none;}
+  .saveduse{width:auto;background:#1f6feb;font-size:13px;padding:9px 12px;}
+  .saveddel{width:auto;background:#5a2230;border-color:#6e2c3e;font-size:16px;padding:9px 11px;}
+  #saved-empty{color:#9ab;font-size:13px;line-height:1.7;margin:24px 10px;}
   #setup-hint{font-size:11px;color:#7e93b5;text-align:center;margin:4px 0;}
 
   /* QR */
@@ -206,9 +220,10 @@
   <!-- セットアップ（共通） -->
   <section id="screen-setup" class="screen">
     <h2 id="setuptitle"></h2>
-    <div class="row" style="margin-bottom:10px;">
+    <div class="row" style="margin-bottom:8px;">
       <button id="btncamera"></button><button id="btnupload"></button>
     </div>
+    <button id="btnsaved" class="qrbtn" style="margin-bottom:10px;"></button>
     <div class="panel">
       <div id="previewwrap" class="empty" data-empty="?">
         <canvas id="previewcanvas" class="pixel" width="160" height="160"></canvas>
@@ -223,6 +238,8 @@
         <div id="skilllist"></div>
         <h3 id="passives-head"></h3>
         <div id="passivelist"></div>
+        <div id="namerow"><span id="name-label"></span><input id="nameinput" type="text" maxlength="8" autocomplete="off"></div>
+        <button id="savebtn" class="qrbtn"></button>
       </div>
     </div>
     <p id="setup-hint"></p>
@@ -231,6 +248,14 @@
       <button id="confirmbtn" class="accent" disabled></button>
     </div>
     <button id="setup-back" class="backbtn"></button>
+  </section>
+
+  <!-- ほぞんした キャラ（最大9体・呼出/削除） -->
+  <section id="screen-saved" class="screen">
+    <h2 id="saved-title"></h2>
+    <p id="saved-empty" style="display:none;"></p>
+    <div id="savedlist"></div>
+    <button id="saved-back" class="backbtn"></button>
   </section>
 
   <!-- QR ハブ -->
@@ -428,7 +453,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (s.type === "phys") return L("物理", "PHYS") + " ×" + s.power + hc;
     if (!s.special) return L("魔法", "MAG") + " ×" + s.power + "+" + (s.flat || 0) + " " + L("必中", "SURE");
     switch (s.special) {
-      case "bind": return L("魔法 バインド2〜7T(毎ターン10%で行動不能)", "MAG bind 2-7T (10%/turn stun)");
+      case "bind": return L("魔法 バインド2〜7T(毎ターン20%で行動不能)", "MAG bind 2-7T (20%/turn stun)");
       case "poison": return L("魔法 毒 攻×0.25/T(2〜7T)", "MAG poison atk×0.25/T");
       case "barrier": return L("魔法 反射バリア(4〜7T/1回)", "MAG reflect (4-7T/1x)");
       case "down": return L("魔法 9%で戦闘不能", "MAG 9% KO foe");
@@ -516,7 +541,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var currentScreen = "title";
   function showScreen(name) {
     currentScreen = name;
-    var ids = ["title", "difficulty", "setup", "qrhub", "qrshow", "qrscan", "battle"];
+    var ids = ["title", "difficulty", "setup", "saved", "qrhub", "qrshow", "qrscan", "battle"];
     for (var i = 0; i < ids.length; i++) {
       var el = $("screen-" + ids[i]);
       if (!el) continue;
@@ -614,29 +639,44 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
     return { palette: palette, indices: indices };
   }
+  // 名前のUTF-8変換（最大8文字・最大24バイトに丸め）
+  function strToBytes(s) {
+    s = (s || "").slice(0, 8); var bytes;
+    if (window.TextEncoder) bytes = Array.prototype.slice.call(new TextEncoder().encode(s));
+    else { var u = unescape(encodeURIComponent(s)); bytes = []; for (var i = 0; i < u.length; i++) bytes.push(u.charCodeAt(i)); }
+    return bytes.slice(0, 24);
+  }
+  function bytesToStr(bytes) {
+    if (window.TextDecoder) { try { return new TextDecoder().decode(new Uint8Array(bytes)); } catch (e) {} }
+    var s = ""; for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    try { return decodeURIComponent(escape(s)); } catch (e) { return s; }
+  }
   function encodeFighter(data) {
-    var q = quantize16(data.pixels), bytes = [2, data.base.atk, data.base.def, data.base.spd];
+    var q = quantize16(data.pixels), bytes = [3, data.base.atk, data.base.def, data.base.spd];   // DBV3
     for (var i = 0; i < 4; i++) bytes.push(data.skills[i].id);
-    for (var pi = 0; pi < 2; pi++) bytes.push(data.passives[pi].id);   // DBV2: パッシブ2つ
+    for (var pi = 0; pi < 2; pi++) bytes.push(data.passives[pi].id);
+    var nm = strToBytes(data.name); bytes.push(nm.length); for (var ni = 0; ni < nm.length; ni++) bytes.push(nm[ni]);   // 名前(長さ+UTF-8)
     bytes.push(q.palette.length);
     for (var p = 0; p < q.palette.length; p++) bytes.push(q.palette[p][0], q.palette[p][1], q.palette[p][2]);
     for (var k = 0; k < 256; k += 2) bytes.push(((q.indices[k] & 15) << 4) | (q.indices[k + 1] & 15));
-    return "DBV2" + bytesToB64(bytes);
+    return "DBV3" + bytesToB64(bytes);
   }
   function decodeFighter(text) {
     try {
-      if (text.indexOf("DBV2") !== 0) return null;   // 旧版(DBV1)QRとの互換は無し＝両者新版前提
+      var ver = text.slice(0, 4); if (ver !== "DBV2" && ver !== "DBV3") return null;   // 旧DBV2(名前なし)も読める
       var a = b64ToBytes(text.slice(4)), o = 0;
-      if (a[o++] !== 2) return null;
+      var v = a[o++]; if (v !== 2 && v !== 3) return null;
       var atk = a[o++], def = a[o++], spd = a[o++], skills = [];
       for (var i = 0; i < 4; i++) { var id = a[o++]; if (id == null || id >= ALL_SKILLS.length) return null; skills.push(ALL_SKILLS[id]); }
       var passives = [];
       for (var pp = 0; pp < 2; pp++) { var pid = a[o++]; if (pid == null || pid >= PASSIVES.length) return null; passives.push(PASSIVES[pid]); }
+      var name = "";
+      if (v >= 3) { var nlen = a[o++]; if (nlen == null) return null; var nb = []; for (var n = 0; n < nlen; n++) nb.push(a[o++]); name = bytesToStr(nb); }
       var pc = a[o++]; if (pc < 1 || pc > 16) return null;
       var palette = []; for (var p = 0; p < pc; p++) palette.push([a[o++], a[o++], a[o++]]);
       var pixels = new Array(256);
       for (var k = 0; k < 128; k++) { var byte = a[o++]; pixels[k * 2] = palette[Math.min((byte >> 4) & 15, pc - 1)]; pixels[k * 2 + 1] = palette[Math.min(byte & 15, pc - 1)]; }
-      return { pixels: pixels, base: { atk: atk, def: def, spd: spd }, skills: skills, passives: passives };
+      return { pixels: pixels, base: { atk: atk, def: def, spd: spd }, skills: skills, passives: passives, name: name };
     } catch (e) { return null; }
   }
   function makeQR(text) {
@@ -679,7 +719,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var soloDiff = null;      // 'easy'|'normal'|'hard'|'vhard'
   var soloStage = 0;
   var setupTarget = null;   // 'player'|'p1'|'p2'|'you'
-  var setupBuf = { pixels: null, base: null, skills: null, passives: null };
+  var setupBuf = { pixels: null, base: null, skills: null, passives: null, name: "" };
   var pending = {};         // built fighter data by key
 
   function setupLabel() {
@@ -690,7 +730,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function startSetupFor(target) {
     setupTarget = target;
-    setupBuf = { pixels: null, base: null, skills: null, passives: null };
+    setupBuf = { pixels: null, base: null, skills: null, passives: null, name: "" };
     setSetupTexts();
     $("setupresult").style.display = "none";
     $("previewwrap").classList.add("empty");
@@ -703,12 +743,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("setuptitle").style.color = (setupTarget === "p2") ? "#ff9a5a" : "#5ad6ff";
     $("btncamera").textContent = "📷 " + L("カメラ", "Camera");
     $("btnupload").textContent = "🖼 " + L("がぞう", "Photo");
+    $("btnsaved").textContent = "📁 " + L("ほぞんした キャラから", "Saved characters");
     $("lbl-atk").textContent = L("こうげき", "ATK");
     $("lbl-def").textContent = L("ぼうぎょ", "DEF");
     $("lbl-spd").textContent = L("すばやさ", "SPD");
     $("skills-head").textContent = "▼ " + L("おぼえた とくぎ（4つ）", "Skills (4)");
     $("passives-head").textContent = "▼ " + L("もっている ちから（2つ）", "Passives (2)");
     $("setup-hint").textContent = L("各20以上・合計256・開始時に±3", "Each ≥20 · total 256 · ±3 at start");
+    $("name-label").textContent = L("なまえ", "Name");
+    $("nameinput").placeholder = L("8もじまで（任意）", "≤8 chars (optional)");
+    $("savebtn").textContent = "💾 " + L("このキャラを ほぞん", "Save this character");
     $("retakebtn").textContent = "↺ " + L("とりなおす", "Retake");
     var lbl;
     if (mode === "hotseat") lbl = (setupTarget === "p1") ? L("1P かくてい ▶", "Confirm 1P ▶") : L("たいせん スタート ▶", "Start Battle ▶");
@@ -753,17 +797,61 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       var nm = document.createElement("span"); nm.textContent = pname(pp);
       pdiv.appendChild(ico); pdiv.appendChild(nm); pl.appendChild(pdiv);
     }
+    $("nameinput").value = setupBuf.name || "";
     $("setupresult").style.display = "block";
     $("confirmbtn").disabled = false;
   }
   function confirmSetup() {
     if (!setupBuf.pixels) return;
-    var data = { pixels: setupBuf.pixels, base: setupBuf.base, skills: setupBuf.skills, passives: setupBuf.passives };
+    var data = { pixels: setupBuf.pixels, base: setupBuf.base, skills: setupBuf.skills, passives: setupBuf.passives, name: (setupBuf.name || "") };
     if (mode === "solo") { pending.player = data; startSoloRun(); }
     else if (mode === "hotseat") {
       if (setupTarget === "p1") { pending.p1 = data; startSetupFor("p2"); }
       else { pending.p2 = data; startBattleHotseat(); }
     } else if (mode === "qr") { pending.you = data; pending.rival = null; openQRShow(); }
+  }
+
+  /* ---------------- キャラのローカル保存（最大9体・localStorage dbvs_saved） ---------------- */
+  function loadSaved() { try { var a = JSON.parse(localStorage.getItem("dbvs_saved") || "[]"); return Array.isArray(a) ? a.slice(0, 9) : []; } catch (e) { return []; } }
+  function persistSaved(arr) { try { localStorage.setItem("dbvs_saved", JSON.stringify(arr.slice(0, 9))); } catch (e) {} }
+  function saveCurrentChar() {
+    if (!setupBuf.pixels) return;
+    var arr = loadSaved();
+    if (arr.length >= 9) { alert(L("ほぞんが いっぱいです（9体）。さくじょしてね", "Save slots full (9). Delete one first.")); return; }
+    arr.push(encodeFighter({ pixels: setupBuf.pixels, base: setupBuf.base, skills: setupBuf.skills, passives: setupBuf.passives, name: setupBuf.name || "" }));
+    persistSaved(arr); sfx.select();
+    $("savebtn").textContent = "✓ " + L("ほぞんした！", "Saved!");
+    setTimeout(function () { setSetupTexts(); }, 1200);
+  }
+  function useSaved(data) {
+    setupBuf = { pixels: data.pixels, base: data.base, skills: data.skills, passives: data.passives, name: data.name || "" };
+    renderSetupResult();
+    showScreen("setup");
+  }
+  function openSaved() {
+    var arr = loadSaved();
+    $("saved-title").textContent = "📁 " + L("ほぞんした キャラ", "Saved Characters") + "  (" + arr.length + "/9)";
+    $("saved-empty").style.display = arr.length ? "none" : "block";
+    $("saved-empty").textContent = L("まだ ほぞんが ありません。キャラを つくって「ほぞん」を おそう", "No saved characters yet. Make one and tap Save.");
+    $("saved-back").textContent = "‹ " + L("もどる", "Back");
+    var list = $("savedlist"); list.innerHTML = "";
+    for (var i = 0; i < arr.length; i++) {
+      (function (data, idx) {
+        if (!data) return;
+        var card = document.createElement("div"); card.className = "savedcard";
+        var cv = document.createElement("canvas"); cv.width = 48; cv.height = 48; cv.className = "savedthumb pixel"; drawPixels(cv, data.pixels);
+        var info = document.createElement("div"); info.className = "savedinfo";
+        var nm = document.createElement("div"); nm.className = "savedname"; nm.textContent = data.name || L("ななし", "(no name)");
+        var st = document.createElement("div"); st.className = "savedstat"; st.textContent = L("攻", "A") + data.base.atk + "  " + L("防", "D") + data.base.def + "  " + L("速", "S") + data.base.spd;
+        info.appendChild(nm); info.appendChild(st);
+        var btns = document.createElement("div"); btns.className = "savedbtns";
+        var use = document.createElement("button"); use.className = "saveduse"; use.textContent = "▶ " + L("つかう", "Use"); use.onclick = function () { sfx.select(); useSaved(data); };
+        var del = document.createElement("button"); del.className = "saveddel"; del.textContent = "🗑"; del.onclick = function () { if (confirm(L((data.name || "このキャラ") + " を さくじょしますか？", "Delete " + (data.name || "this character") + "?"))) { var a2 = loadSaved(); a2.splice(idx, 1); persistSaved(a2); openSaved(); } };
+        btns.appendChild(use); btns.appendChild(del);
+        card.appendChild(cv); card.appendChild(info); card.appendChild(btns); list.appendChild(card);
+      })(decodeFighter(arr[i]), i);
+    }
+    showScreen("saved");
   }
 
   /* ---------------- QR ハブ / 表示 / 読取 ---------------- */
@@ -839,7 +927,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function buildFighter(data, opts) {
     var f = {
-      label: opts.label, index: opts.index,
+      label: (data.name || opts.label), index: opts.index,
       pixels: data.pixels, base: data.base, skills: data.skills, passives: data.passives || [],
       final: finalize(data.base),
       maxHp: opts.maxHp || 999, regen: opts.regen || 0, isAI: !!opts.isAI, doubleAct: opts.doubleAct || 0, extraUsed: false, dblUsed: false,
@@ -991,7 +1079,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     expireBuff(f, "barrier", L("反射バリア", "Reflect"), log);
     if (f.bind && f.bind.turns > 0) {
       f.bind.turns--;                              // 状態は2〜7Tで自然消滅
-      var stuck = roll(10);                        // そのターンに動けないかは10%
+      var stuck = roll(20);                        // そのターンに動けないかは20%
       if (f.bind.turns <= 0) f.bind = null;
       if (stuck) {
         log.push(L(f.label + "は バインドで うごけない！", f.label + " is bound and can't move!"));
@@ -1533,6 +1621,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("confirm-no").textContent = L("やめる", "Cancel");
     $("confirm-yes").textContent = L("はい、まけます", "Yes, I give up");
     if (currentScreen === "setup") setSetupTexts();
+    else if (currentScreen === "saved") openSaved();
     else if (currentScreen === "difficulty") openDifficulty();
     else if (currentScreen === "qrhub") openQRHub();
     else if (currentScreen === "qrshow") openQRShow();
@@ -1578,6 +1667,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     };
     $("confirmbtn").onclick = function () { sfx.select(); confirmSetup(); };
     $("setup-back").onclick = function () { showScreen("title"); };
+    $("btnsaved").onclick = function () { sfx.select(); openSaved(); };
+    $("savebtn").onclick = function () { saveCurrentChar(); };
+    $("nameinput").oninput = function () { setupBuf.name = (this.value || "").slice(0, 8); };
+    $("saved-back").onclick = function () { showScreen("setup"); };
 
     // QR
     $("qrshowbtn").onclick = function () { sfx.select(); openQRShow(); };
