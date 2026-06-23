@@ -365,16 +365,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
 
   /* ---------------- 特技データ（日英） ---------------- */
   var PHYS_SKILLS = [
-    { ja: "斬撃", en: "Slash", type: "phys", power: 1.1, hit: 50, crit: 10 },
-    { ja: "居合切り", en: "Iai Slash", type: "phys", power: 1.3, hit: 100, crit: 20 },
-    { ja: "突き", en: "Thrust", type: "phys", power: 1.2, hit: 30, crit: 20 },
-    { ja: "回転突き", en: "Spin Thrust", type: "phys", power: 1.4, hit: 30, crit: 30 },
+    { ja: "斬撃", en: "Slash", type: "phys", power: 1.1, hit: 70, crit: 10 },
+    { ja: "居合切り", en: "Iai Slash", type: "phys", power: 1.3, hit: 100, crit: 30 },
+    { ja: "突き", en: "Thrust", type: "phys", power: 1.2, hit: 30, crit: 30 },
+    { ja: "回転突き", en: "Spin Thrust", type: "phys", power: 1.4, hit: 30, crit: 40 },
     { ja: "背負い投げ", en: "Shoulder Throw", type: "phys", formula: "atkdef", hit: 100, crit: 10 },
-    { ja: "地獄車", en: "Hell Wheel", type: "phys", formula: "atkdef", hit: 100, crit: 20 },
+    { ja: "地獄車", en: "Hell Wheel", type: "phys", formula: "atkdef", hit: 100, crit: 30 },
     { ja: "パンチ", en: "Punch", type: "phys", power: 1.0, hit: 60, crit: 20 },
-    { ja: "アッパーカット", en: "Uppercut", type: "phys", power: 1.1, hit: 40, crit: 40 },
+    { ja: "アッパーカット", en: "Uppercut", type: "phys", power: 1.1, hit: 30, crit: 60 },
     { ja: "キック", en: "Kick", type: "phys", power: 1.2, hit: 40, crit: 20 },
-    { ja: "かかと落とし", en: "Heel Drop", type: "phys", power: 1.4, hit: 30, crit: 50 },
+    { ja: "かかと落とし", en: "Heel Drop", type: "phys", power: 1.4, hit: 30, crit: 70 },
     { ja: "体当たり", en: "Tackle", type: "phys", formula: "atkspd", hit: 60, crit: 10 },
     { ja: "猪突猛進", en: "Headlong Rush", type: "phys", formula: "atkspd", hit: 40, crit: 30 }
   ];
@@ -408,7 +408,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     { id: 8,  type: "regen",   ja: "まいターン HP20 かいふく",  en: "Regen 20/turn" },
     { id: 9,  type: "allplus", ja: "ぜんステータス +20",        en: "All stats +20" },
     { id: 10, type: "endure",  ja: "1かいだけ HP1で たえる",    en: "Endure once (HP1)" },
-    { id: 11, type: "first",   ja: "20%で せんせい こうげき",   en: "20% first strike" }
+    { id: 11, type: "first",     ja: "20%で せんせい こうげき",     en: "20% first strike" },
+    { id: 12, type: "ailimmune", ja: "どく・バインド むこう",         en: "Immune to poison/bind" },
+    { id: 13, type: "antibuff",  ja: "あいての バフを むこうか",       en: "Nullify foe's buffs" },
+    { id: 14, type: "leech",     ja: "あたえたダメージの20% きゅうしゅう", en: "Drain 20% of damage dealt" },
+    { id: 15, type: "lucky",     ja: "まいターン ランダムで1ステ+50", en: "+50 random stat each turn" }
   ];
   function pname(p) { return LANG === "en" ? p.en : p.ja; }
   // 12種から2つ・重複ありで抽選（同じものが2つ付くことがある）
@@ -844,6 +848,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     };
     f.regen += 20 * pcount(f, "regen");   // ⑨ 毎ターンHP回復（難易度regenに加算・重複で40）
     f.endure = pcount(f, "endure");       // ⑪ HP1で耐える 残り回数（重複で2回）
+    f.luckyStat = pcount(f, "lucky") > 0 ? ["atk", "def", "spd"][randInt(0, 2)] : null;  // ⑯ ラッキー：今ターン+50中のステ
     return f;
   }
   function startBattleHotseat() {
@@ -900,11 +905,26 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
 
   /* ---------------- バトルエンジン ---------------- */
   var battle = null, bcv, bctx, BW = 320, BH = 210, POS = [{ x: 78, y: 122 }, { x: 242, y: 122 }], SCALE = 6;
-  // 実効ステータス。パッシブ(全+20→×(1+0.2×個数))＋バフ(スピード/スペシャル×2)を反映し、各256でカンスト。
-  // 重複は加算スタック：①攻×2=×1.4、⑩全+20×2=+40。3つの合計が256を超えるのはOK（単一は256まで）。
-  function effAtk(f) { var v = (f.final.atk + 20 * pcount(f, "allplus")) * (1 + 0.2 * pcount(f, "atkup")); if (f.buffs.allup) v *= 2; return Math.min(256, Math.floor(v)); }
-  function effDef(f) { var v = (f.final.def + 20 * pcount(f, "allplus")) * (1 + 0.2 * pcount(f, "defup")); if (f.buffs.allup) v *= 2; return Math.min(256, Math.floor(v)); }
-  function effSpd(f) { var v = (f.final.spd + 20 * pcount(f, "allplus")) * (1 + 0.2 * pcount(f, "spdup")); if (f.buffs.speedup) v *= 2; if (f.buffs.allup) v *= 2; return Math.min(256, Math.floor(v)); }
+  // 実効ステータス。パッシブ(全+20→×(1+0.2×個数))＋⑯ラッキー(毎ターン1ステ+50)＋バフ(スピード/スペシャル)を反映し、各256でカンスト。
+  // 重複は加算スタック：①攻×2=×1.4、⑩全+20×2=+40。⑬antibuffを持つ相手がいると自分のバフ(スピード/スペシャル)は無効。
+  function buffOn(f) { if (!battle || !battle.fighters) return true; var opp = battle.fighters[1 - f.index]; return !(opp && pcount(opp, "antibuff") > 0); }
+  function effAtk(f) { var v = (f.final.atk + 20 * pcount(f, "allplus") + (f.luckyStat === "atk" ? 50 : 0)) * (1 + 0.2 * pcount(f, "atkup")); if (f.buffs.allup && buffOn(f)) v *= 2; return Math.min(256, Math.floor(v)); }
+  function effDef(f) { var v = (f.final.def + 20 * pcount(f, "allplus") + (f.luckyStat === "def" ? 50 : 0)) * (1 + 0.2 * pcount(f, "defup")); if (f.buffs.allup && buffOn(f)) v *= 2; return Math.min(256, Math.floor(v)); }
+  function effSpd(f) {
+    var v = (f.final.spd + 20 * pcount(f, "allplus") + (f.luckyStat === "spd" ? 50 : 0)) * (1 + 0.2 * pcount(f, "spdup"));
+    if (buffOn(f)) {
+      if (f.buffs.speedup) { var s = Math.min(2, f.buffs.speedup.stacks || 1); v = v * (2 * s) + 30 * s; }  // スピード：×2+30、重ね掛けで最大×4+60(2段)
+      if (f.buffs.allup) v *= 2;
+    }
+    return Math.min(256, Math.floor(v));
+  }
+  // ⑮leech: 相手にダメージを与えたとき、与えたダメージの20%を自分が回復(吸収)。攻撃側のパッシブで判定。
+  function lifesteal(dealer, victim, dmg) {
+    if (!dealer || dealer === victim || dmg <= 0 || dealer.hp <= 0 || pcount(dealer, "leech") <= 0) return;
+    var h = Math.floor(dmg * 0.2); if (h < 1) return;
+    var b = dealer.hp; dealer.hp = Math.min(dealer.maxHp, dealer.hp + h);
+    if (dealer.hp > b) pushLog(L(dealer.label + "は ダメージの20%を きゅうしゅう(+" + (dealer.hp - b) + ")", dealer.label + " drains 20% (+" + (dealer.hp - b) + ")"));
+  }
 
   // ダメージ適用を一元化。⑪「HP1で耐える」をここで処理（残回数があれば0以下にならずHP1で踏みとどまる）。endured を返す。
   function applyDamage(target, dmg) {
@@ -954,6 +974,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function startTurn(f) {
     var log = [];
+    if (pcount(f, "lucky") > 0) f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)];  // ⑯ 毎ターン+50を再抽選（前ターン分は戻る）
     if (f.regen > 0 && f.hp > 0 && f.hp < f.maxHp) {
       var before = f.hp; f.hp = Math.min(f.maxHp, f.hp + f.regen);
       log.push(L(f.label + "は " + (f.hp - before) + " かいふく", f.label + " regenerates " + (f.hp - before)));
@@ -1064,12 +1085,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (pcount(opp, "refphys") > 0 && roll(10 * pcount(opp, "refphys"))) {
       pushLog(L(opp.label + "は こうげきを はねかえした！", opp.label + " reflected the attack!"));
       var enR = applyDamage(f, dmg);
-      pushLog(dmgLog); if (enR) pushLog(endureMsg(f));
+      pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);   // 反射で殴った側(opp)が吸収
       if (crit) sfx.crit(); else sfx.hit();
       playPhysFX(skill, opp.index, f.index, dmg, crit, afterAction); return;   // 反撃の向きで描画
     }
     var en = applyDamage(opp, dmg);
-    pushLog(dmgLog); if (en) pushLog(endureMsg(opp));
+    pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
     if (crit) sfx.crit(); else sfx.hit();
     playPhysFX(skill, f.index, opp.index, dmg, crit, afterAction);
   }
@@ -1084,20 +1105,23 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function applyOffensiveMagic(f, target, skill) {
     var sp = skill.special;
     if (!sp) {
-      var dmg = Math.floor((effAtk(f) * skill.power + (skill.flat || 0)) * randF(0.95, 1.05)); if (dmg < 1) dmg = 1;
+      var dmg = Math.floor((Math.max(0, effAtk(f) * skill.power - effDef(target)) + (skill.flat || 0)) * randF(0.95, 1.05)); if (dmg < 1) dmg = 1;   // 魔法も防御の影響を受ける(必中)。固定値(+30/+50)は防御で消えず最低保障(守備256でも数十は通る)
       var en = applyDamage(target, dmg);
       pushLog(L(dmg + " ダメージ", dmg + " damage"));
       if (en) pushLog(endureMsg(target));
+      lifesteal(f, target, dmg);
       playMagicFX(skill, f.index, target.index, dmg, afterAction); return;
     }
     if (sp === "bind") {
+      if (pcount(target, "ailimmune") > 0) { pushLog(L(target.label + "には きかない！", "No effect on " + target.label + "!")); playMagicFX(skill, f.index, target.index, null, afterAction); return; }   // ⑬どく・バインド無効
       // 魔法は必中で「バインド状態」を付与(2〜7T)。実際に動けなくなるかは毎ターン10%判定。
       target.bind = { turns: randInt(2, 7) };
       pushLog(L(target.label + "は バインド状態に なった！", target.label + " is bound!"));
       playMagicFX(skill, f.index, target.index, null, afterAction); return;
     }
     if (sp === "poison") {
-      var pd = Math.floor(effAtk(f) * 0.25); if (pd < 1) pd = 1;
+      if (pcount(target, "ailimmune") > 0) { pushLog(L(target.label + "には きかない！", "No effect on " + target.label + "!")); playMagicFX(skill, f.index, target.index, null, afterAction); return; }   // ⑬どく・バインド無効
+      var pd = Math.floor(effAtk(f) * 1.0 + 15); if (pd < 1) pd = 1;   // 毒：毎ターン 攻×1.0+15
       target.poison = { turns: randInt(2, 7), dmg: pd };
       pushLog(L(target.label + "は どくに なった！", target.label + " is poisoned!"));
       playMagicFX(skill, f.index, target.index, null, afterAction); return;
@@ -1114,8 +1138,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function applySelfMagic(f, skill) {
     var sp = skill.special, color = skill.color || "#fff";
     if (sp === "barrier") { f.buffs.barrier = { turns: randInt(4, 7) }; pushLog(L(f.label + "は 反射バリアを はった！", f.label + " raised a reflect barrier!")); sfx.buff(); playSelfFX(skill, f.index,L("バリア", "BARRIER"), afterAction); }
-    else if (sp === "heal") { var amt = Math.floor((effAtk(f) + effDef(f)) * 1.5), before = f.hp; f.hp = Math.min(f.maxHp, f.hp + amt); pushLog(L(f.label + "は HPが " + (f.hp - before) + " かいふく！", f.label + " healed " + (f.hp - before) + " HP!")); sfx.heal(); playSelfFX(skill, f.index,L("かいふく", "HEAL"), afterAction); }
-    else if (sp === "speedup") { f.buffs.speedup = { turns: randInt(2, 7) }; pushLog(L(f.label + "の すばやさ アップ！", f.label + "'s speed rose!")); sfx.buff(); playSelfFX(skill, f.index,L("スピード", "SPEED"), afterAction); }
+    else if (sp === "heal") { var amt = Math.floor((effAtk(f) + effDef(f)) * 1.5 + 50), before = f.hp; f.hp = Math.min(f.maxHp, f.hp + amt); pushLog(L(f.label + "は HPが " + (f.hp - before) + " かいふく！", f.label + " healed " + (f.hp - before) + " HP!")); sfx.heal(); playSelfFX(skill, f.index,L("かいふく", "HEAL"), afterAction); }
+    else if (sp === "speedup") { if (f.buffs.speedup) f.buffs.speedup.stacks = Math.min(2, (f.buffs.speedup.stacks || 1) + 1); else f.buffs.speedup = { turns: 0, stacks: 1 }; f.buffs.speedup.turns = randInt(2, 7); pushLog(L(f.label + "の すばやさ アップ！", f.label + "'s speed rose!")); sfx.buff(); playSelfFX(skill, f.index,L("スピード", "SPEED"), afterAction); }
     else if (sp === "allup") { f.buffs.allup = { turns: randInt(2, 7) }; pushLog(L(f.label + "の ぜんのうりょく アップ！", f.label + "'s stats rose!")); sfx.buff(); playSelfFX(skill, f.index,L("パワーUP", "POWER UP"), afterAction); }
     updateHud();   // スピード/スペシャルの上昇をHUDへ即時反映（色付け）
   }
