@@ -524,17 +524,30 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     win: function () { [523, 659, 784, 1046].forEach(function (f, i) { beep(f, 0.16, "square", 0.13, i * 0.13); }); },
     lose: function () { [392, 330, 262].forEach(function (f, i) { beep(f, 0.22, "triangle", 0.13, i * 0.18); }); }
   };
-  var BGM = [0, 3, 7, 10, 7, 3, 5, 7];
-  function startBGM() {
-    stopBGM(); if (!settings.sound) return; bgmStep = 0;
+  // BGMはWebAudio合成（音声ファイル不要＝容量増ほぼゼロ）。バトルは3曲からランダム、タイトルは専用曲。
+  // 各曲: base(根音Hz)/tempo(ms)/wave/vol/mel(半音オフセット配列・nullは休符)/bass(ルート低音)。
+  var BGM_SONGS = [
+    { base: 196, tempo: 230, wave: "triangle", vol: 0.045, bass: true, bassBase: 98,  mel: [0, 3, 7, 10, 7, 3, 5, 7] },
+    { base: 174, tempo: 205, wave: "square",   vol: 0.040, bass: true, bassBase: 87,  mel: [0, 4, 7, 12, 7, 4, 0, 4, 7, 12, 16, 12, 7, 4, 0, null] },
+    { base: 220, tempo: 188, wave: "triangle", vol: 0.045, bass: true, bassBase: 110, mel: [0, 0, 3, 0, 5, 5, 3, 0, 7, 7, 5, 3, 0, null, 0, null] }
+  ];
+  var TITLE_SONG = { base: 261, tempo: 300, wave: "triangle", vol: 0.040, bass: true, bassBase: 98, mel: [0, 4, 7, 4, 9, 7, 4, 2, 0, 4, 7, 12, 7, 4, 0, null] };
+  var bgmSong = null;
+  function playBGMSong(song) {
+    stopBGM(); if (!settings.sound || !song) return; bgmStep = 0; bgmSong = song;
     bgmTimer = setInterval(function () {
       if (!settings.sound) { stopBGM(); return; }
-      var base = 196, n = BGM[bgmStep % BGM.length];
-      beep(base * Math.pow(2, n / 12), 0.16, "triangle", 0.045);
-      if (bgmStep % 2 === 0) beep(98 * Math.pow(2, (n % 12) / 12), 0.18, "square", 0.035);
+      var c = ac(); if (!c || c.state !== "running") return;   // ジェスチャ前(自動再生ブロック中)は鳴らさずスキップ＝バックログ防止
+      var s = bgmSong, n = s.mel[bgmStep % s.mel.length];
+      if (n !== null) {
+        beep(s.base * Math.pow(2, n / 12), 0.16, s.wave, s.vol);
+        if (s.bass && bgmStep % 2 === 0) beep((s.bassBase || 98) * Math.pow(2, (n % 12) / 12), 0.18, "square", 0.03);
+      }
       bgmStep++;
-    }, 230);
+    }, song.tempo);
   }
+  function startBGM() { playBGMSong(BGM_SONGS[Math.floor(Math.random() * BGM_SONGS.length)]); }   // バトル：3曲からランダム
+  function startTitleBGM() { playBGMSong(TITLE_SONG); }
   function stopBGM() { if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; } }
 
   /* ---------------- 画面遷移 ---------------- */
@@ -547,7 +560,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       if (!el) continue;
       if (ids[i] === name) el.classList.add("active"); else el.classList.remove("active");
     }
-    if (name === "title") updateSoloBadges();
+    if (name === "title") { updateSoloBadges(); startTitleBGM(); }
+    else if (name !== "battle") stopBGM();   // バトルのBGMはbeginBattleで管理
     window.scrollTo(0, 0);
   }
 
@@ -1646,7 +1660,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     // 設定
     $("gearbtn").onclick = function () { sfx.select(); renderI18n(); $("settingsoverlay").style.display = "flex"; };
     $("set-close").onclick = function () { $("settingsoverlay").style.display = "none"; };
-    $("toggle-sound").onclick = function () { settings.sound = !settings.sound; saveSettings(); if (!settings.sound) stopBGM(); else if (currentScreen === "battle" && battle && !battle.over) startBGM(); renderI18n(); };
+    $("toggle-sound").onclick = function () { settings.sound = !settings.sound; saveSettings(); if (!settings.sound) stopBGM(); else if (currentScreen === "battle" && battle && !battle.over) startBGM(); else if (currentScreen === "title") startTitleBGM(); renderI18n(); };
     $("toggle-effects").onclick = function () { settings.effects = !settings.effects; saveSettings(); renderI18n(); };
 
     // タイトル → モード
