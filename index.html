@@ -11,9 +11,6 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#070a12">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ドットバトルVS">
 <title>ドットバトルVS / DOT BATTLE VS</title>
 <style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -135,7 +132,7 @@
   .hud{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;}
   .pcard{flex:1;background:#0d1424;border:2px solid #243a63;border-radius:8px;padding:7px 9px;}
   .pcard.p2{text-align:right;}
-  .pname{font-size:14px;font-weight:bold;}
+  .pname{font-size:14px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .hpbarwrap{height:13px;background:#05070d;border:1px solid #243;border-radius:4px;overflow:hidden;margin:4px 0 2px;}
   .hpfill{height:100%;width:100%;background:#46d369;transition:width .35s;}
   .hpnum{font-size:11px;color:#cfe0f5;}
@@ -375,7 +372,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function saveSettings() { try { localStorage.setItem("dbvs_settings", JSON.stringify(settings)); } catch (e) {} }
   // ソロの解放進捗（クリアした難易度の数 0〜5。永続。バッジ数でもある）
   var soloProgress = 0;
-  try { var _sp = parseInt(localStorage.getItem("dbvs_progress"), 10); if (_sp >= 0 && _sp <= 5) soloProgress = _sp; } catch (e) {}
+  try { var _sp = parseInt(localStorage.getItem("dbvs_progress"), 10); if (_sp >= 0 && _sp <= 7) soloProgress = _sp; } catch (e) {}
   function saveProgress() { try { localStorage.setItem("dbvs_progress", String(soloProgress)); } catch (e) {} }
 
   var LANG = settings.lang;
@@ -417,7 +414,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     { ja: "スピード", en: "Speed", type: "magic", special: "speedup", color: "#5affc8" },
     { ja: "スペシャル", en: "Special", type: "magic", special: "allup", once: true, color: "#ffd24a" }
   ];
-  var ALL_SKILLS = PHYS_SKILLS.concat(MAGIC_SKILLS);
+  // レアスキル（ファイル追加分）：末尾に足して既存ID(0〜23)を不変に保つ＝保存キャラ/QR互換を維持。IDは24〜29。rare=抽選で出にくい。
+  var EXTRA_SKILLS = [
+    { ja: "魔剣", en: "Dark Blade", type: "phys", power: 1.6, hit: 60, crit: 60 },
+    { ja: "魔弾", en: "Dark Bullet", type: "phys", power: 1.6, hit: 100, crit: 20 },
+    { ja: "ルミナスアーツ", en: "Luminous Arts", type: "phys", multi: 5, power: 1.0, flat: 30, hit: 30, crit: 10 },   // 5連撃：各 (攻×1.0−防)+30、1発ごとに命中/会心判定
+    { ja: "サンダーテンペスト", en: "Thunder Tempest", type: "magic", power: 1.1, flat: 70, color: "#8cff6a" },
+    { ja: "絶対零度", en: "Absolute Zero", type: "magic", power: 1.2, flat: 100, color: "#bdf2ff" },
+    { ja: "サン・ファイア", en: "Sun Fire", type: "magic", power: 1.5, flat: 100, color: "#ff8a2c" }
+  ];
+  var ALL_SKILLS = PHYS_SKILLS.concat(MAGIC_SKILLS).concat(EXTRA_SKILLS);
   for (var si = 0; si < ALL_SKILLS.length; si++) ALL_SKILLS[si].id = si;
 
   /* ---------------- パッシブスキル（持っているだけで発動・1人2つ・重複あり） ---------------- */
@@ -437,13 +443,22 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     { id: 12, type: "ailimmune", ja: "どく・バインド むこう",         en: "Immune to poison/bind" },
     { id: 13, type: "antibuff",  ja: "あいての バフを むこうか",       en: "Nullify foe's buffs" },
     { id: 14, type: "leech",     ja: "あたえたダメージの20% きゅうしゅう", en: "Drain 20% of damage dealt" },
-    { id: 15, type: "lucky",     ja: "まいターン ランダムで1ステ+50", en: "+50 random stat each turn" }
+    { id: 15, type: "lucky",     ja: "まいターン ランダムで1ステ+50", en: "+50 random stat each turn" },
+    { id: 16, type: "allplus30", ja: "ぜんパラメータ +30",            en: "All stats +30" },
+    { id: 17, type: "hitcritup", ja: "めいちゅう・かいしん +20",       en: "HIT & CRIT +20" },
+    { id: 18, type: "encore",    ja: "1かいかぎりの技を もう1かい",    en: "Reuse a once-only skill" },
+    { id: 19, type: "refboth",   ja: "10%で ぶつり・まほうを はねかえす", en: "10% reflect phys & magic" }
   ];
   function pname(p) { return LANG === "en" ? p.en : p.ja; }
   // 12種から2つ・重複ありで抽選（同じものが2つ付くことがある）
-  function pickPassives() { return [PASSIVES[Math.floor(Math.random() * PASSIVES.length)], PASSIVES[Math.floor(Math.random() * PASSIVES.length)]]; }
+  function pickPassivesN(n) { var out = []; for (var i = 0; i < n; i++) out.push(PASSIVES[Math.floor(Math.random() * PASSIVES.length)]); return out; }   // n個・重複あり
+  function pickPassives() { return pickPassivesN(2); }
   // 指定タイプのパッシブを何個持っているか（0〜2）。重複は「加算スタック」で扱う。
   function pcount(f, type) { var n = 0, ps = f.passives || []; for (var i = 0; i < ps.length; i++) if (ps[i].type === type) n++; return n; }
+  // ⑲encore: 1度きりの技を (1+encore個数) 回まで使える。使い切ったか判定。
+  function onceSpent(f, skill) { return skill.once && (f.used[skill.id] || 0) > pcount(f, "encore"); }
+  // ⑳refboth: 物理/魔法どちらの反射判定にも加算（個別の refmag/refphys に上乗せ）。
+  function refCount(f, kind) { return pcount(f, kind) + pcount(f, "refboth"); }
 
   function sname(s) { return LANG === "en" ? s.en : s.ja; }
   function sdesc(s) {
@@ -463,11 +478,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
     return "";
   }
+  // 30種から完全ランダムに重複なしで抽選（レア度なし＝全スキル均等。低確率はプール30の自然な結果）。
+  function pickDistinct(pool, n) { pool = pool.slice(); var out = []; for (var k = 0; k < n && pool.length; k++) { var j = Math.floor(Math.random() * pool.length); out.push(pool[j]); pool.splice(j, 1); } return out; }
   function pickSkills() {
     var pool = ALL_SKILLS.slice(), out = [];
     // 最初の3つは完全ランダム
     for (var i = 0; i < 3; i++) { var j = Math.floor(Math.random() * pool.length); out.push(pool[j]); pool.splice(j, 1); }
-    // 3つが全て同系統(魔法のみ/物理のみ)なら、4つ目は必ず別系統から選ぶ（全4つが同系統になるのを防ぐ）
+    // 3つが全て同系統(魔法のみ/物理のみ)なら、4つ目は必ず別系統から選ぶ（全4つが同系統になるのを防ぐ＝唯一の縛り）
     var allPhys = out.every(function (s) { return s.type === "phys"; });
     var allMag = out.every(function (s) { return s.type === "magic"; });
     var cand = pool;
@@ -476,6 +493,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     out.push(cand[Math.floor(Math.random() * cand.length)]);
     return out;
   }
+  // 新難易度の敵用：⑥むずすぎ=物理3+魔法3 / ⑦ムリゲー=ランダム6
+  function poolOfType(tp) { return ALL_SKILLS.filter(function (s) { return s.type === tp; }); }
+  function pick3phys3magic() { return pickDistinct(poolOfType("phys"), 3).concat(pickDistinct(poolOfType("magic"), 3)); }
+  function pick6skills() { return pickDistinct(ALL_SKILLS, 6); }
 
   /* ---------------- オーディオ（WebAudio合成・ファイル無し） ---------------- */
   var AC = null, bgmTimer = null, bgmStep = 0;
@@ -524,31 +545,88 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     win: function () { [523, 659, 784, 1046].forEach(function (f, i) { beep(f, 0.16, "square", 0.13, i * 0.13); }); },
     lose: function () { [392, 330, 262].forEach(function (f, i) { beep(f, 0.22, "triangle", 0.13, i * 0.18); }); }
   };
-  // BGMはWebAudio合成（音声ファイル不要＝容量増ほぼゼロ）。バトルは3曲からランダム、タイトルは専用曲。
+  // BGMはWebAudio合成（音声ファイル不要＝容量増ほぼゼロ）。バトル(3曲ランダム)/タイトル/メニュー(選択画面)/勝利/敗北に専用曲＝無音をなくす。
   // 各曲: base(根音Hz)/tempo(ms)/wave/vol/mel(半音オフセット配列・nullは休符)/bass(ルート低音)。
+  // 再生は3声重ね＝①メロディ ②ハモリ ③ベース(毎ステップ刻み)で重厚化。ハモリ/ベースは既定で自動(5度下/根音)、曲がharm・bassmel・dur・bassdur・bassvolを持てば独立指定可（音符データのみで容量増ほぼゼロ）。
+  // バトル3曲：自動ハモリ(5度下)＋根音ベースなので、同じ音階内ならメロディを伸ばすだけで常に協和。各曲をほぼ倍の長さに延長。
   var BGM_SONGS = [
-    { base: 196, tempo: 230, wave: "triangle", vol: 0.045, bass: true, bassBase: 98,  mel: [0, 3, 7, 10, 7, 3, 5, 7] },
-    { base: 174, tempo: 205, wave: "square",   vol: 0.040, bass: true, bassBase: 87,  mel: [0, 4, 7, 12, 7, 4, 0, 4, 7, 12, 16, 12, 7, 4, 0, null] },
-    { base: 220, tempo: 188, wave: "triangle", vol: 0.045, bass: true, bassBase: 110, mel: [0, 0, 3, 0, 5, 5, 3, 0, 7, 7, 5, 3, 0, null, 0, null] }
+    { base: 196, tempo: 230, wave: "triangle", vol: 0.045, bass: true, bassBase: 98,  mel: [0, 3, 7, 10, 7, 3, 5, 7, 10, 7, 12, 10, 7, 5, 3, 0] },
+    { base: 174, tempo: 205, wave: "square",   vol: 0.040, bass: true, bassBase: 87,  mel: [0, 4, 7, 12, 7, 4, 0, 4, 7, 12, 16, 12, 7, 4, 0, null, 9, 12, 9, 7, 4, 2, 4, null] },
+    { base: 220, tempo: 188, wave: "triangle", vol: 0.045, bass: true, bassBase: 110, mel: [0, 0, 3, 0, 5, 5, 3, 0, 7, 7, 5, 3, 0, null, 0, null, 10, 12, 10, 7, 5, 3, 0, null] },
+    { base: 294, tempo: 216, wave: "square",   vol: 0.042, bass: true, bassBase: 73,  mel: [0, 3, 5, 7, 10, 12, 10, 7, 5, 3, 5, 7, 10, 7, 5, 3, 0, null, 0, null] },                          // 二短調・疾走（D minor pent）
+    { base: 196, tempo: 208, wave: "triangle", vol: 0.044, bass: true, bassBase: 98,  mel: [0, 4, 7, 9, 7, 4, 2, 0, 4, 7, 12, 9, 7, 4, 2, 4, 7, 9, 7, 4, 2, 0, null, null] }                    // ト長調・勇ましい（G major pent）
   ];
-  var TITLE_SONG = { base: 261, tempo: 300, wave: "triangle", vol: 0.040, bass: true, bassBase: 98, mel: [0, 4, 7, 4, 9, 7, 4, 2, 0, 4, 7, 12, 7, 4, 0, null] };
+  // タイトル曲：壮大で前向きな「さあ、やるぞ！」ファンファーレ。C調・16小節(64ステップ≈19.2秒)の二部構成。
+  //   Aメロ=I–V–vi–IV を2度（明るい上昇ファンファーレ）／Bメロ=vi–IV–I–V → vi–IV–ii–V でさらに高みへ登り主和音(ループ頭)へ V→I 解決。
+  // mel=メロディ / harm=各音の下の和音構成音 / bassmel=コード根音(低音)。3声すべて和音構成音＝どの瞬間も協和。
+  var TITLE_SONG = {
+    base: 523, tempo: 300, wave: "triangle", vol: 0.042, dur: 0.26, bass: true, bassBase: 98, bassdur: 0.28,
+    //         A: C(I)          G(V)           Am(vi)          F(IV)           C(I)            G(V)           F(IV)          C(I)
+    mel:     [-5, 0, 4, 7,    2, 7, 11, 7,    4, 9, 12, 9,    12, 9, 5, 0,    0, 4, 7, 12,    11, 7, 2, 7,    5, 9, 12, 9,    7, 4, 0, null,
+    //         B: Am(vi)        F(IV)          C(I)            G(V)            Am(vi)          F(IV)          Dm(ii)         G(V)
+              4, 0, 4, 9,     5, 0, 5, 9,     7, 4, 0, 4,     2, 7, 11, 7,    9, 12, 16, 12,  9, 12, 9, 5,    9, 5, 9, 14,    11, 7, 2, null],
+    harm:    [-8, -5, 0, 4,  -1, 2, 7, 2,     0, 4, 9, 4,     9, 5, 0, -3,   -5, 0, 4, 7,     7, 2, -1, 2,    0, 5, 9, 5,     4, 0, -5, null,
+              0, -3, 0, 4,    0, -3, 0, 5,    4, 0, -5, 0,   -1, 2, 7, 2,     4, 9, 12, 9,    5, 9, 5, 0,     5, 2, 5, 9,     7, 2, -1, null],
+    bassmel: [-7, -7, -7, -7, 0, 0, 0, 0,     2, 2, 2, 2,    -2, -2, -2, -2, -7, -7, -7, -7,   0, 0, 0, 0,    -2, -2, -2, -2, -7, -7, -7, -7,
+              2, 2, 2, 2,    -2, -2, -2, -2,  -7, -7, -7, -7, 0, 0, 0, 0,     2, 2, 2, 2,    -2, -2, -2, -2,  -5, -5, -5, -5, 0, 0, 0, 0]
+  };
+  // メニュー/選択画面用：おだやかで明るいループ（I–vi–IV–V を2巡）。音量ひかえめ＝作業のじゃまをしない。
+  var MENU_SONG = {
+    base: 261, tempo: 360, wave: "triangle", vol: 0.034, dur: 0.30, bass: true, bassBase: 98, bassdur: 0.34, bassvol: 0.022,
+    //        C(I)         Am(vi)       F(IV)         G(V)          C(I)          Am(vi)        F(IV)         G(V)
+    mel:     [0, 4, 7, 4,   9, 4, 0, 4,   5, 9, 5, 0,    7, 2, -1, 2,   12, 7, 4, 7,   9, 12, 9, 4,   5, 9, 12, 9,   7, 11, 7, 2],
+    harm:    [-5, 0, 4, 0,  4, 0, -3, 0,  0, 5, 0, -3,   2, -1, -5, -1, 7, 4, 0, 4,    4, 9, 4, 0,    0, 5, 9, 5,    2, 7, 2, -1],
+    bassmel: [5, 5, 5, 5,   2, 2, 2, 2,  -2, -2, -2, -2, 0, 0, 0, 0,    5, 5, 5, 5,    2, 2, 2, 2,   -2, -2, -2, -2, 0, 0, 0, 0]
+  };
+  // 勝利リザルト用：明るく誇らしいファンファーレ（I–IV–V–vi–IV–V）。
+  var WIN_SONG = {
+    base: 523, tempo: 260, wave: "triangle", vol: 0.044, dur: 0.20, bass: true, bassBase: 98, bassdur: 0.24,
+    //        C(I)           F(IV)          G(V)           Am(vi)         F(IV)          G(V)
+    mel:     [0, 4, 7, 12,   9, 12, 9, 5,   14, 11, 7, 11, 9, 12, 16, 12, 9, 12, 9, 5,  7, 11, 14, 11],
+    harm:    [-5, 0, 4, 7,   5, 9, 5, 0,    11, 7, 2, 7,   4, 9, 12, 9,   5, 9, 5, 0,   2, 7, 11, 7],
+    bassmel: [-7, -7, -7, -7, -2, -2, -2, -2, 0, 0, 0, 0,  2, 2, 2, 2,   -2, -2, -2, -2, 0, 0, 0, 0]
+  };
+  // 敗北リザルト用：やさしく前向きな「ドンマイ、またね」ループ（短調だが やわらかく・重くしない）。
+  var LOSE_SONG = {
+    base: 440, tempo: 380, wave: "triangle", vol: 0.036, dur: 0.32, bass: true, bassBase: 110, bassdur: 0.36, bassvol: 0.024,
+    //        Am           F             C             G
+    mel:     [7, 3, 0, 3,  8, 3, 0, 3,   3, 7, 10, 7,  10, 5, 2, 5],
+    harm:    [3, 0, -5, 0, 3, 0, -4, 0, -2, 3, 7, 3,   5, 2, -2, 2],
+    bassmel: [0, 0, 0, 0, -4, -4, -4, -4, 3, 3, 3, 3, -2, -2, -2, -2]
+  };
   var bgmSong = null;
   function playBGMSong(song) {
     stopBGM(); if (!settings.sound || !song) return; bgmStep = 0; bgmSong = song;
     bgmTimer = setInterval(function () {
       if (!settings.sound) { stopBGM(); return; }
       var c = ac(); if (!c || c.state !== "running") return;   // ジェスチャ前(自動再生ブロック中)は鳴らさずスキップ＝バックログ防止
-      var s = bgmSong, n = s.mel[bgmStep % s.mel.length];
+      var s = bgmSong, len = s.mel.length, i = bgmStep % len, n = s.mel[i], v = s.vol, md = s.dur || 0.16;
       if (n !== null) {
-        beep(s.base * Math.pow(2, n / 12), 0.16, s.wave, s.vol);
-        if (s.bass && bgmStep % 2 === 0) beep((s.bassBase || 98) * Math.pow(2, (n % 12) / 12), 0.18, "square", 0.03);
+        beep(s.base * Math.pow(2, n / 12), md, s.wave, v);                                              // ①メロディ
+        var h = s.harm ? s.harm[i % s.harm.length] : (n - 7);                                           // ②ハモリ：harm指定があれば従う／無ければ完全5度下（常に協和）
+        if (h !== null && h !== undefined) beep(s.base * Math.pow(2, h / 12), md, "triangle", v * 0.5);
+      }
+      if (s.bass) {                                                                                      // ③ベース：bassmel指定があればその音／無ければメロディ根音。休符は根音キープ
+        var b = s.bassmel ? s.bassmel[bgmStep % s.bassmel.length] : ((n === null ? 0 : n) % 12);
+        if (b !== null && b !== undefined) beep((s.bassBase || 98) * Math.pow(2, b / 12), (s.bassdur || 0.2), "square", (s.bassvol || 0.033));
       }
       bgmStep++;
     }, song.tempo);
   }
-  function startBGM() { playBGMSong(BGM_SONGS[Math.floor(Math.random() * BGM_SONGS.length)]); }   // バトル：3曲からランダム
-  function startTitleBGM() { playBGMSong(TITLE_SONG); }
+  var resultBGM = null;   // リザルト表示中の曲(WIN/LOSE)を保持＝音ON/OFF切替で復帰できるように
+  function startBGM() { resultBGM = null; playBGMSong(BGM_SONGS[Math.floor(Math.random() * BGM_SONGS.length)]); }   // バトル：3曲からランダム
+  function startTitleBGM() { resultBGM = null; playBGMSong(TITLE_SONG); }
+  function startMenuBGM() { resultBGM = null; if (bgmSong === MENU_SONG && bgmTimer) return; playBGMSong(MENU_SONG); }   // 選択系画面（画面をまたいでも途切れず継続）
+  function startWinBGM() { resultBGM = WIN_SONG; playBGMSong(WIN_SONG); }
+  function startLoseBGM() { resultBGM = LOSE_SONG; playBGMSong(LOSE_SONG); }
   function stopBGM() { if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; } }
+  // いまの画面に合うBGMを鳴らす（音をONに戻したときの復帰用）
+  function resumeBGM() {
+    if (!settings.sound) return;
+    if (currentScreen === "title") startTitleBGM();
+    else if (currentScreen === "battle") { if (battle && !battle.over) startBGM(); else if (resultBGM) playBGMSong(resultBGM); }
+    else startMenuBGM();
+  }
 
   /* ---------------- 画面遷移 ---------------- */
   var currentScreen = "title";
@@ -561,7 +639,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       if (ids[i] === name) el.classList.add("active"); else el.classList.remove("active");
     }
     if (name === "title") { updateSoloBadges(); startTitleBGM(); }
-    else if (name !== "battle") stopBGM();   // バトルのBGMはbeginBattleで管理
+    else if (name === "battle") { /* バトルのBGMはbeginBattleで管理 */ }
+    else startMenuBGM();   // 選択系画面（むずかしさ/せってい/ほぞん/QR）にも静かなメニュー曲＝無音をなくす
     window.scrollTo(0, 0);
   }
 
@@ -653,9 +732,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
     return { palette: palette, indices: indices };
   }
-  // 名前のUTF-8変換（最大8文字・最大24バイトに丸め）
+  // 名前のUTF-8変換（日本語8/英語12文字・最大24バイトに丸め＝QR枠は不変）
   function strToBytes(s) {
-    s = (s || "").slice(0, 8); var bytes;
+    s = (s || "").slice(0, 12); var bytes;
     if (window.TextEncoder) bytes = Array.prototype.slice.call(new TextEncoder().encode(s));
     else { var u = unescape(encodeURIComponent(s)); bytes = []; for (var i = 0; i < u.length; i++) bytes.push(u.charCodeAt(i)); }
     return bytes.slice(0, 24);
@@ -765,7 +844,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("passives-head").textContent = "▼ " + L("もっている ちから（2つ）", "Passives (2)");
     $("setup-hint").textContent = L("各20以上・合計256・開始時に±3", "Each ≥20 · total 256 · ±3 at start");
     $("name-label").textContent = L("なまえ", "Name");
-    $("nameinput").placeholder = L("8もじまで（任意）", "≤8 chars (optional)");
+    $("nameinput").maxLength = (LANG === "en") ? 12 : 8;   // 英語は12文字まで（日本語は8）
+    $("nameinput").placeholder = L("8もじまで（任意）", "≤12 chars (optional)");
     $("savebtn").textContent = "💾 " + L("このキャラを ほぞん", "Save this character");
     $("retakebtn").textContent = "↺ " + L("とりなおす", "Retake");
     var lbl;
@@ -992,11 +1072,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var btn = $("mode-solo"); if (!btn) return;
     var b = btn.querySelector(".solo-badges");
     if (!b) { b = document.createElement("span"); b.className = "solo-badges"; btn.appendChild(b); }
-    var s = ""; for (var i = 0; i < 5; i++) s += (i < soloProgress) ? "★" : "☆";
+    var s = ""; for (var i = 0; i < 7; i++) s += (i < soloProgress) ? "★" : "☆";
     b.textContent = s;
   }
   function nextSolo() {
-    var enemy = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: pickSkills(), passives: pickPassives() };
+    // 難易度で敵のスキ/パッシブ数を変える：⑥むずすぎ=物理3魔法3・パッシブ4／⑦ムリゲー=ランダム6・パッシブ6／他=4・2
+    var eskills, epass;
+    if (soloDiff === "insane") { eskills = pick6skills(); epass = pickPassivesN(6); }
+    else if (soloDiff === "extreme") { eskills = pick3phys3magic(); epass = pickPassivesN(4); }
+    else { eskills = pickSkills(); epass = pickPassives(); }
+    var enemy = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: eskills, passives: epass };
     var f0 = buildFighter(pending.player, { label: L("あなた", "YOU"), index: 0 });
     var f1 = buildFighter(enemy, {
       label: L("てき", "ENEMY"), index: 1, isAI: true,
@@ -1010,10 +1095,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   // 実効ステータス。パッシブ(全+20→×(1+0.2×個数))＋⑯ラッキー(毎ターン1ステ+50)＋バフ(スピード/スペシャル)を反映し、各256でカンスト。
   // 重複は加算スタック：①攻×2=×1.4、⑩全+20×2=+40。⑬antibuffを持つ相手がいると自分のバフ(スピード/スペシャル)は無効。
   function buffOn(f) { if (!battle || !battle.fighters) return true; var opp = battle.fighters[1 - f.index]; return !(opp && pcount(opp, "antibuff") > 0); }
-  function effAtk(f) { var v = (f.final.atk + 20 * pcount(f, "allplus") + (f.luckyStat === "atk" ? 50 : 0)) * (1 + 0.2 * pcount(f, "atkup")); if (f.buffs.allup && buffOn(f)) v *= 2; return Math.min(256, Math.floor(v)); }
-  function effDef(f) { var v = (f.final.def + 20 * pcount(f, "allplus") + (f.luckyStat === "def" ? 50 : 0)) * (1 + 0.2 * pcount(f, "defup")); if (f.buffs.allup && buffOn(f)) v *= 2; return Math.min(256, Math.floor(v)); }
+  function effAtk(f) { var v = (f.final.atk + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "atk" ? 50 : 0)) * (1 + 0.2 * pcount(f, "atkup")); if (f.buffs.allup && buffOn(f)) v *= 2; return Math.min(256, Math.floor(v)); }
+  function effDef(f) { var v = (f.final.def + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "def" ? 50 : 0)) * (1 + 0.2 * pcount(f, "defup")); if (f.buffs.allup && buffOn(f)) v *= 2; return Math.min(256, Math.floor(v)); }
   function effSpd(f) {
-    var v = (f.final.spd + 20 * pcount(f, "allplus") + (f.luckyStat === "spd" ? 50 : 0)) * (1 + 0.2 * pcount(f, "spdup"));
+    var v = (f.final.spd + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "spd" ? 50 : 0)) * (1 + 0.2 * pcount(f, "spdup"));
     if (buffOn(f)) {
       if (f.buffs.speedup) { var s = Math.min(2, f.buffs.speedup.stacks || 1); v = v * (2 * s) + 30 * s; }  // スピード：×2+30、重ね掛けで最大×4+60(2段)
       if (f.buffs.allup) v *= 2;
@@ -1052,12 +1137,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (battle && battle.kind === "solo") { el.style.display = "block"; el.textContent = L("ステージ ", "STAGE ") + (soloStage + 1) + " / 5  〔" + diffName(soloDiff) + "〕"; }
     else el.style.display = "none";
   }
-  var DIFFS = ["easy", "normal", "hard", "veryhard", "ultimate"];
+  var DIFFS = ["easy", "normal", "hard", "veryhard", "ultimate", "extreme", "insane"];
   function diffName(d) {
-    return d === "easy" ? L("やさしい", "EASY") : d === "normal" ? L("ふつう", "NORMAL") : d === "hard" ? L("むずかしい", "HARD") : d === "veryhard" ? L("げきむず", "VERY HARD") : L("ちょうむず", "ULTIMATE");
+    return d === "easy" ? L("やさしい", "EASY") : d === "normal" ? L("ふつう", "NORMAL") : d === "hard" ? L("むずかしい", "HARD")
+      : d === "veryhard" ? L("げきむず", "VERY HARD") : d === "ultimate" ? L("ちょうむず", "ULTIMATE")
+      : d === "extreme" ? L("むずすぎ", "EXTREME") : L("ムリゲー", "INSANE");
   }
   function diffDesc(d) {
-    return d === "easy" ? L("敵のHP 300", "Enemy HP 300") : d === "normal" ? L("敵のHP 600", "Enemy HP 600") : d === "hard" ? L("敵のHP 999", "Enemy HP 999") : d === "veryhard" ? L("敵HP999・毎ターン50かいふく", "Enemy HP999 · +50/turn") : L("敵HP999・50%で2回こうどう", "Enemy HP999 · 50% double act");
+    return d === "easy" ? L("敵のHP 300", "Enemy HP 300") : d === "normal" ? L("敵のHP 600", "Enemy HP 600") : d === "hard" ? L("敵のHP 999", "Enemy HP 999")
+      : d === "veryhard" ? L("敵HP999・毎ターン50かいふく", "Enemy HP999 · +50/turn") : d === "ultimate" ? L("敵HP999・50%で2回こうどう", "Enemy HP999 · 50% double act")
+      : d === "extreme" ? L("敵HP999・スキル6・パッシブ4", "Enemy HP999 · 6 skills · 4 passives") : L("敵HP999・スキル6・パッシブ6", "Enemy HP999 · 6 skills · 6 passives");
   }
   function diffMaxHp(d) { return d === "easy" ? 300 : d === "normal" ? 600 : 999; }
   function diffRegen(d) { return d === "veryhard" ? 50 : 0; }
@@ -1121,7 +1210,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     else showCommands(idx);
   }
   function aiChoose(f) {
-    var usable = f.skills.filter(function (s) { return !(s.once && f.used[s.id]); });
+    var usable = f.skills.filter(function (s) { return !onceSpent(f, s); });
     if (f.hp < f.maxHp * 0.35) { for (var i = 0; i < usable.length; i++) if (usable[i].special === "heal") { if (Math.random() < 0.7) return usable[i]; } }
     return usable[Math.floor(Math.random() * usable.length)];
   }
@@ -1134,7 +1223,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       (function (skill) {
         var btn = document.createElement("button");
         btn.className = "cmd " + (skill.type === "magic" ? "magic" : "phys");
-        var used = skill.once && f.used[skill.id];
+        var used = onceSpent(f, skill);
         var nm = document.createElement("span"); nm.className = "cmdname"; nm.textContent = sname(skill);
         var ds = document.createElement("span"); ds.className = "cmddesc"; ds.textContent = used ? L("つかった", "used") : sdesc(skill);
         btn.appendChild(nm); btn.appendChild(ds);
@@ -1166,16 +1255,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (battle.busy || battle.over || battle.active !== idx) return;
     battle.busy = true; hideCommands(); $("turnlabel").textContent = "";
     var f = battle.fighters[idx], opp = battle.fighters[1 - idx];
-    if (skill.once) f.used[skill.id] = true;
+    if (skill.once) f.used[skill.id] = (f.used[skill.id] || 0) + 1;
     pushLog(L(f.label + "の " + sname(skill) + "！", f.label + " uses " + sname(skill) + "!"));
     if (skill.type === "phys") resolvePhysical(f, opp, skill); else resolveMagic(f, opp, skill);
   }
   function resolvePhysical(f, opp, skill) {
+    if (skill.multi) { resolveMultiHit(f, opp, skill); return; }   // ⑮ルミナスアーツ等の連撃は専用処理
     // 命中は通常式（70+自速−敵速+補正、最低3%）＋④命中+20%×個数。ダメージ基礎値は技の formula で分岐。
-    var hitRate = 70 + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + skill.hit + 20 * pcount(f, "hitup");
+    var hitRate = 70 + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + skill.hit + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");
     if (hitRate < 3) hitRate = 3;
     if (!roll(hitRate)) { pushLog(L("しかし ミス！", "But it missed!")); sfx.miss(); playMiss(opp.index, afterAction); return; }
-    var crit = roll(skill.crit + 20 * pcount(f, "critup")), dmg;   // ⑤会心+20%×個数
+    var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup")), dmg;   // ⑤会心+20%×個数 ＋⑱命中会心+20
     var base = skill.formula === "atkspd" ? (effAtk(f) + effSpd(f))   // 体当たり/猪突猛進
              : skill.formula === "atkdef" ? (effAtk(f) + effDef(f))   // 背負い投げ/地獄車
              : (effAtk(f) * skill.power);
@@ -1183,8 +1273,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     else dmg = (base - effDef(opp)) * randF(0.95, 1.05);
     dmg = Math.floor(dmg); if (dmg < 1) dmg = 1;
     var dmgLog = crit ? L("かいしんの いちげき！ " + dmg + " ダメージ", "CRITICAL! " + dmg + " damage") : L(dmg + " ダメージ", dmg + " damage");
-    // ⑦ 物理反射：10%×個数で完全反射（受け手はダメージ0・攻撃者へ100%返す）
-    if (pcount(opp, "refphys") > 0 && roll(10 * pcount(opp, "refphys"))) {
+    // ⑦⑳ 物理反射：10%×個数で完全反射（受け手はダメージ0・攻撃者へ100%返す）
+    var rp = refCount(opp, "refphys"); if (rp > 0 && roll(10 * rp)) {
       pushLog(L(opp.label + "は こうげきを はねかえした！", opp.label + " reflected the attack!"));
       var enR = applyDamage(f, dmg);
       pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);   // 反射で殴った側(opp)が吸収
@@ -1196,12 +1286,38 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (crit) sfx.crit(); else sfx.hit();
     playPhysFX(skill, f.index, opp.index, dmg, crit, afterAction);
   }
+  // 連撃（ルミナスアーツ）：skill.multi 回、1発ごとに命中/会心を判定。当たれば (攻×power−防)+flat、会心は防御無視×1.2+flat。外れたら演出なしで次へ。
+  function resolveMultiHit(f, opp, skill) {
+    var hits = skill.multi || 5, i = 0;
+    function one() {
+      if (battle.over || opp.hp <= 0 || i >= hits) { afterAction(); return; }
+      i++;
+      var hitRate = skill.hit + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");   // 連撃は基礎=skill.hit(30%)＝速度差で増減。速いと全的中、遅いと数発外す
+      if (hitRate < 3) hitRate = 3;
+      if (!roll(hitRate)) { pushLog(L(i + "げきめ ミス！", "Hit " + i + " missed!")); one(); return; }   // 外れたらモーション無しで次の一撃へ
+      var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup"));
+      var base = effAtk(f) * skill.power;
+      var dmg = Math.floor(((crit ? base * 1.2 : base - effDef(opp)) + (skill.flat || 0)) * randF(0.95, 1.05)); if (dmg < 1) dmg = 1;
+      var dmgLog = crit ? L(i + "げきめ かいしん！ " + dmg, "Hit " + i + " CRIT! " + dmg) : L(i + "げきめ " + dmg + " ダメージ", "Hit " + i + ": " + dmg);
+      skill._luxAng = (i - 1) * 1.15;   // 一撃ごとに角度を変えて連続感（FXが参照）
+      var rp = refCount(opp, "refphys"); if (rp > 0 && roll(10 * rp)) {   // 物理反射（1発ごと）
+        pushLog(L(opp.label + "は はねかえした！", opp.label + " reflected!"));
+        var enR = applyDamage(f, dmg); pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+        if (crit) sfx.crit(); else sfx.hit();
+        playPhysFX(skill, opp.index, f.index, dmg, crit, one); return;
+      }
+      var en = applyDamage(opp, dmg); pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+      if (crit) sfx.crit(); else sfx.hit();
+      playPhysFX(skill, f.index, opp.index, dmg, crit, one);
+    }
+    one();
+  }
   function resolveMagic(f, opp, skill) {
     var sp = skill.special;
     if (sp === "barrier" || sp === "heal" || sp === "speedup" || sp === "allup") { applySelfMagic(f, skill); return; }
     var target = opp;
     if (opp.buffs.barrier) { opp.buffs.barrier = null; target = f; pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!")); }
-    else if (pcount(opp, "refmag") > 0 && roll(10 * pcount(opp, "refmag"))) { target = f; pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!")); }   // ⑥ 魔法反射(常時10%×個数)
+    else if (refCount(opp, "refmag") > 0 && roll(10 * refCount(opp, "refmag"))) { target = f; pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!")); }   // ⑥⑳ 魔法反射(常時10%×個数)
     applyOffensiveMagic(f, target, skill);
   }
   function applyOffensiveMagic(f, target, skill) {
@@ -1298,7 +1414,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
 
   /* ---------------- リザルト / 連戦インター ---------------- */
   function showSoloNext() {
-    sfx.win();
+    sfx.win(); startWinBGM();
     $("resultwin").textContent = L((soloStage) + " たい クリア！", "Stage " + soloStage + " clear!");
     $("resultwin").style.color = "#7cff9c";
     $("resultsub").textContent = L("つぎの てきが あらわれる…（" + (soloStage + 1) + "/5）", "Next enemy appears… (" + (soloStage + 1) + "/5)");
@@ -1312,30 +1428,30 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("totitlebtn").style.display = "block";
     $("totitlebtn").textContent = L("タイトルへ", "Title");
     if (kind === "vs") {
-      sfx.win();
+      sfx.win(); startWinBGM();
       rw.textContent = L(winner.label + " の しょうり！", winner.label + " WINS!");
       rw.style.color = winner.index === 0 ? "#5ad6ff" : "#ff9a5a";
       rs.textContent = L("よく たたかった！", "Well fought!");
       $("restartbtn").textContent = L("もういちど", "Rematch");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; if (mode === "qr") startBattleQR(); else startBattleHotseat(); };
     } else if (kind === "soloclear") {
-      sfx.win();
+      sfx.win(); startWinBGM();
       rw.textContent = "★ " + diffName(soloDiff) + " " + L("クリア！", "CLEAR!");
       rw.style.color = "#ffd24a";
-      rs.textContent = (soloProgress >= 5)
-        ? L("バッジ5こ コンプリート！🏆 ともだちに じまんしよう！", "All 5 badges! 🏆 Brag to your friends!")
-        : L("バッジGET ★（" + soloProgress + "/5） つぎの むずかしさ かいほう！", "Badge ★ (" + soloProgress + "/5) New difficulty unlocked!");
+      rs.textContent = (soloProgress >= 7)
+        ? L("バッジ7こ コンプリート！🏆 ともだちに じまんしよう！", "All 7 badges! 🏆 Brag to your friends!")
+        : L("バッジGET ★（" + soloProgress + "/7） つぎの むずかしさ かいほう！", "Badge ★ (" + soloProgress + "/7) New difficulty unlocked!");
       $("restartbtn").textContent = L("もういちど", "Play Again");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
     } else if (kind === "qr") {
       var youWon = winner && winner.index === 0;
-      if (youWon) { sfx.win(); rw.textContent = L("あいての せんしに かった！", "You beat their fighter!"); rw.style.color = "#7cff9c"; }
-      else { sfx.lose(); rw.textContent = L("あいての せんしに まけた…", "Their fighter won…"); rw.style.color = "#ff5a6a"; }
+      if (youWon) { sfx.win(); startWinBGM(); rw.textContent = L("あいての せんしに かった！", "You beat their fighter!"); rw.style.color = "#7cff9c"; }
+      else { sfx.lose(); startLoseBGM(); rw.textContent = L("あいての せんしに まけた…", "Their fighter won…"); rw.style.color = "#ff5a6a"; }
       rs.innerHTML = L("ともだちと けっかを みせあおう！<br>2人とも かったら ひきわけ → もう1かい！", "Compare results with your friend!<br>If you both win, it's a draw → play again!");
       $("restartbtn").textContent = L("もういちど（おなじ あいて）", "Rematch (same rival)");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startBattleQR(); };
     } else {
-      sfx.lose();
+      sfx.lose(); startLoseBGM();
       rw.textContent = L("まけて しまった…", "You lost…");
       rw.style.color = "#ff5a6a";
       rs.textContent = L((soloStage) + " たい たおした（" + diffName(soloDiff) + "）", "Defeated " + soloStage + " (" + diffName(soloDiff) + ")");
@@ -1528,6 +1644,31 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         if (t >= 0.4) pStar(tp.x - dir * 16, tp.y, (crit ? 34 : 26) * (0.6 + 0.4 * Math.sin(t * 40)), 8, "#fff", 1 - (t - 0.4) / 0.6);
         dmgPop(tp.x, tp.y, t, dmg, crit);
       }, done);
+      case "魔剣": return runFX(560, function (t) {
+        hit(t, 9, 0.18); drawScene();
+        var g1 = Math.min(1, t / 0.4), g2 = Math.max(0, (t - 0.28) / 0.5);
+        pL(tp.x - 56 * g1, tp.y - 56 * g1, tp.x + 56 * g1, tp.y + 56 * g1, crit ? 9 : 6, "#16002a", (1 - t) * 0.95);   // 右斜めの黒い斬撃
+        pL(tp.x - 56 * g1, tp.y - 56 * g1, tp.x + 56 * g1, tp.y + 56 * g1, 2, "#7a3cff", (1 - t) * 0.7);
+        if (g2 > 0) { pL(tp.x + 56 * g2, tp.y - 56 * g2, tp.x - 56 * g2, tp.y + 56 * g2, crit ? 9 : 6, "#1c0838", (1 - t) * 0.95); pL(tp.x + 56 * g2, tp.y - 56 * g2, tp.x - 56 * g2, tp.y + 56 * g2, 2, "#a05cff", (1 - t) * 0.7); }   // 左斜め＝クロス
+        if (t > 0.45) { var sg = (t - 0.45) / 0.55; pStar(tp.x, tp.y, (crit ? 26 : 20) * (1 - sg), 4, "#d8b8ff", 1 - sg); pC(tp.x, tp.y, (crit ? 9 : 6) * (1 - sg), "#fff", (1 - sg) * 0.9); }   // 斬り口が輝く
+        sparks(tp.x, tp.y, t, crit ? 12 : 8, "#c8a0ff", 54, 0); dmgPop(tp.x, tp.y, t, dmg, crit);
+      }, done);
+      case "魔弾": return runFX(520, function (t) {
+        hit(t, 7, 0.16); drawScene();
+        var beam = Math.min(1, t / 0.45), ex = cp.x + (tp.x - cp.x) * (0.15 + 1.0 * beam);   // ビームが伸びて貫通
+        pL(cp.x + dir * 22, cp.y, ex + dir * 26, tp.y, crit ? 11 : 8, "#1c0030", 1 - t * 0.4);   // 黒い芯
+        pL(cp.x + dir * 22, cp.y, ex + dir * 26, tp.y, crit ? 5 : 3, "#b45cff", 1 - t * 0.4);     // 紫のレーザー
+        if (beam >= 1) { pC(tp.x, tp.y, (crit ? 16 : 12) * (1 - t), "#fff", 1 - t); pStar(tp.x, tp.y, (crit ? 22 : 16) * (1 - t), 5, "#d0a8ff", 1 - t); }   // 着弾が光り輝く
+        sparks(tp.x, tp.y, t, 7, "#b45cff", 46, 0); dmgPop(tp.x, tp.y, t, dmg, crit);
+      }, done);
+      case "ルミナスアーツ": return runFX(190, function (t) {   // 5連の各回で呼ばれる＝短い光の一撃
+        battle.shake = 5 * cm * (1 - t); D.hitFlash = Math.max(0, 1 - t * 2); drawScene();
+        var ang = skill._luxAng || 0;   // 一撃ごとに角度が変わる
+        pL(tp.x - Math.cos(ang) * 52, tp.y - Math.sin(ang) * 52, tp.x + Math.cos(ang) * 52, tp.y + Math.sin(ang) * 52, crit ? 8 : 5, "#fff", (1 - t) * 0.95);
+        pL(tp.x - Math.cos(ang) * 52, tp.y - Math.sin(ang) * 52, tp.x + Math.cos(ang) * 52, tp.y + Math.sin(ang) * 52, 2, "#fff7c0", (1 - t) * 0.85);
+        pStar(tp.x, tp.y, (crit ? 16 : 12) * (1 - t), 4, "#fff7c0", 1 - t);
+        sparks(tp.x, tp.y, t, crit ? 8 : 5, "#fff", 42, 0); dmgPop(tp.x, tp.y, t, dmg, crit);
+      }, done);
       default: return runFX(440, function (t) { hit(t, 7, 0.16); drawScene(); sparks(tp.x, tp.y, t, 8, "#fff", 46, 1); dmgPop(tp.x, tp.y, t, dmg, crit); }, done);
     }
   }
@@ -1543,22 +1684,24 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         drawCharge(cp.x, cp.y, t / CH, col);
       } else if (t < FLY) {
         var mt = (t - CH) / (FLY - CH), x = cp.x + (tp.x - cp.x) * mt, y = cp.y + (tp.y - cp.y) * mt;
-        if (nm === "サンダー") { for (var k = 0; k < 5; k++) pC(tp.x + (Math.random() * 2 - 1) * 16, tp.y - 96 + (Math.random() * 2 - 1) * 8, 2.5, col, mt); }
+        if (nm === "サンダー" || nm === "サンダーテンペスト") { for (var k = 0; k < 5; k++) pC(tp.x + (Math.random() * 2 - 1) * 16, tp.y - 96 + (Math.random() * 2 - 1) * 8, 2.5, col, mt); }
         else {
           for (var tr = 0; tr < 4; tr++) { var trm = mt - tr * 0.08; if (trm < 0) continue; pC(cp.x + (tp.x - cp.x) * trm, cp.y + (tp.y - cp.y) * trm, 9 - tr * 1.6, col, 1 - tr * 0.22); }
-          if (nm === "アイス") pStar(x, y, 11, 4, "#eaffff", 1);
+          if (nm === "アイス" || nm === "絶対零度") pStar(x, y, nm === "絶対零度" ? 16 : 11, 4, "#eaffff", 1);
           else if (nm === "ダーク") { pC(x, y, 11, col, 1); pC(x, y, 5, "#160028", 1); }
           else if (nm === "ライト") { pC(x, y, 9, "#fff", 1); for (var r = 0; r < 4; r++) { var a = r / 4 * Math.PI * 2 + t * 6; pL(x, y, x + Math.cos(a) * 16, y + Math.sin(a) * 16, 2, col, 0.8); } }
+          else if (nm === "サン・ファイア") { pC(x, y, 17, col, 0.95); pC(x, y, 10, "#ffe23c", 0.9); pC(x, y, 4, "#fff", 1); }
           else { pC(x, y, 9, "#fff", 0.9); pC(x, y, 11, col, 0.8); if (nm === "ファイア") pC(x + (Math.random() * 2 - 1) * 6, y + (Math.random() * 2 - 1) * 6, 5, "#ffd24a", 0.85); }
         }
       } else {
         var bt = (t - FLY) / (1 - FLY);
         if (!fired) { fired = true; if (settings.sound) sfx.impact(); }
         battle.flash = 0.3 * (1 - bt); if (D) D.hitFlash = (1 - bt) * (sp ? 0.5 : 1);
-        if (nm === "サンダー") { pBolt(tp.x, tp.y - 100, tp.x, tp.y, 8, 5 * (1 - bt) + 2, "#fff", 1 - bt); pBolt(tp.x, tp.y - 100, tp.x - 18, tp.y - 28, 5, 2, col, (1 - bt) * 0.7); pC(tp.x, tp.y, 28 * (1 - bt), col, (1 - bt) * 0.5); }
-        else if (nm === "アイス") { for (var k = 0; k < 8; k++) { var a = k / 8 * Math.PI * 2; pL(tp.x, tp.y, tp.x + Math.cos(a) * bt * 50, tp.y + Math.sin(a) * bt * 50, 3, "#eaffff", 1 - bt); } pR(tp.x, tp.y, 10 + bt * 34, 2, col, 1 - bt); }
+        if (nm === "サンダー" || nm === "サンダーテンペスト") { pBolt(tp.x, tp.y - 100, tp.x, tp.y, 8, 5 * (1 - bt) + 2, "#fff", 1 - bt); pBolt(tp.x, tp.y - 100, tp.x - 18, tp.y - 28, 5, 2, col, (1 - bt) * 0.7); pC(tp.x, tp.y, 28 * (1 - bt), col, (1 - bt) * 0.5); if (nm === "サンダーテンペスト") { for (var w = 0; w < 10; w++) { var aw = w / 10 * Math.PI * 2 + bt * 7; pC(tp.x + Math.cos(aw) * bt * 56, tp.y + Math.sin(aw) * bt * 56, 3, col, (1 - bt) * 0.85); } pR(tp.x, tp.y, 14 + bt * 48, 2, col, (1 - bt) * 0.7); } }
+        else if (nm === "アイス" || nm === "絶対零度") { for (var k = 0; k < 8; k++) { var a = k / 8 * Math.PI * 2; pL(tp.x, tp.y, tp.x + Math.cos(a) * bt * 50, tp.y + Math.sin(a) * bt * 50, 3, "#eaffff", 1 - bt); } pR(tp.x, tp.y, 10 + bt * 34, 2, col, 1 - bt); if (nm === "絶対零度") { pR(tp.x, tp.y, 12 + bt * 30, 3, "#bdf2ff", 1 - bt); for (var c2 = 0; c2 < 6; c2++) { var ac2 = c2 / 6 * Math.PI * 2; pL(tp.x + Math.cos(ac2) * 10, tp.y + Math.sin(ac2) * 10, tp.x + Math.cos(ac2) * (10 + bt * 32), tp.y + Math.sin(ac2) * (10 + bt * 32), 3, "#eaffff", 1 - bt); } pStar(tp.x, tp.y, 30 * (1 - bt), 6, "#fff", (1 - bt) * 0.8); } }
         else if (nm === "ダーク") { pR(tp.x, tp.y, 50 * (1 - bt) + 6, 3, col, 1 - bt); for (var k = 0; k < 10; k++) { var a = k / 10 * Math.PI * 2, rr = (1 - bt) * 40; pC(tp.x + Math.cos(a) * rr, tp.y + Math.sin(a) * rr, 3, col, bt < 0.5 ? bt * 2 : 2 - bt * 2); } }
         else if (nm === "ライト") { for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2; pL(tp.x, tp.y, tp.x + Math.cos(a) * (20 + bt * 44), tp.y + Math.sin(a) * (20 + bt * 44), 2, k % 2 ? "#fff" : col, 1 - bt); } pC(tp.x, tp.y, 28 * (1 - bt), "#fff", (1 - bt) * 0.7); }
+        else if (nm === "サン・ファイア") { battle.flash = 0.5 * (1 - bt); pC(tp.x, tp.y, 42 * (1 - bt) + 10, col, (1 - bt) * 0.65); pC(tp.x, tp.y, 26 * (1 - bt), "#ffe23c", (1 - bt) * 0.8); for (var fp = 0; fp < 8; fp++) { var fw = (9 - fp) * (1 - bt); pC(tp.x + (Math.random() * 2 - 1) * (fw + 2), tp.y - fp * 13 - bt * 26, Math.max(2, fw), fp < 2 ? "#fff" : (fp < 5 ? "#ffd24a" : col), (1 - bt) * 0.9); } pR(tp.x, tp.y, 12 + bt * 46, 3, col, (1 - bt) * 0.8); }
         else { for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2, rr = bt * 36; pC(tp.x + Math.cos(a) * rr, tp.y + Math.sin(a) * rr - (nm === "ファイア" ? bt * 14 : 0), 4 - bt * 2, col, 1 - bt); } pR(tp.x, tp.y, 10 + bt * 40, 3, col, (1 - bt) * 0.8); }
         dmgPop(tp.x, tp.y, 0.5 + bt * 0.5, dmg, false);
       }
@@ -1660,7 +1803,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     // 設定
     $("gearbtn").onclick = function () { sfx.select(); renderI18n(); $("settingsoverlay").style.display = "flex"; };
     $("set-close").onclick = function () { $("settingsoverlay").style.display = "none"; };
-    $("toggle-sound").onclick = function () { settings.sound = !settings.sound; saveSettings(); if (!settings.sound) stopBGM(); else if (currentScreen === "battle" && battle && !battle.over) startBGM(); else if (currentScreen === "title") startTitleBGM(); renderI18n(); };
+    $("toggle-sound").onclick = function () { settings.sound = !settings.sound; saveSettings(); if (!settings.sound) stopBGM(); else resumeBGM(); renderI18n(); };
     $("toggle-effects").onclick = function () { settings.effects = !settings.effects; saveSettings(); renderI18n(); };
 
     // タイトル → モード
@@ -1683,7 +1826,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("setup-back").onclick = function () { showScreen("title"); };
     $("btnsaved").onclick = function () { sfx.select(); openSaved(); };
     $("savebtn").onclick = function () { saveCurrentChar(); };
-    $("nameinput").oninput = function () { setupBuf.name = (this.value || "").slice(0, 8); };
+    $("nameinput").oninput = function () { setupBuf.name = (this.value || "").slice(0, (LANG === "en") ? 12 : 8); };
     $("saved-back").onclick = function () { showScreen("setup"); };
 
     // QR
