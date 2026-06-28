@@ -470,7 +470,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     switch (s.special) {
       case "bind": return L("魔法 バインド2〜7T(毎ターン20%で行動不能)", "MAG bind 2-7T (20%/turn stun)");
       case "poison": return L("魔法 毒 10〜50/T・2重で20〜100(最大2重)", "MAG poison 10-50/T, x2:20-100 (max2)");
-      case "barrier": return L("魔法 反射バリア・最大2枚(2枚で★も半減反射)", "MAG reflect, max2 (2=halve pierce)");
+      case "barrier": return L("魔法 反射バリア・最大2枚(反射が計2層で★も半減反射)", "MAG reflect, max2 (2 layers halve pierce)");
       case "down": return L("魔法 9%で戦闘不能", "MAG 9% KO foe");
       case "heal": return L("魔法 HP回復(攻+防)×1.5 ※1回", "MAG heal(atk+def)×1.5 *1");
       case "speedup": return L("魔法 素早さ2倍・最大256(2〜7T)", "MAG speed×2 max256 (2-7T)");
@@ -1321,32 +1321,25 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function resolveMagic(f, opp, skill) {
     var sp = skill.special;
     if (sp === "barrier" || sp === "heal" || sp === "speedup" || sp === "allup") { applySelfMagic(f, skill); return; }
-    var pierced = false;
-    // アクティブ アンチマジック バリア（最大2枚・重ねがけ）
-    if (opp.buffs.barrier) {
-      var bs = opp.buffs.barrier.stacks || 1;
-      if (skill.pierce) {
-        bs--; pierced = true;   // ★は1枚を貫通（破壊）
-        pushLog(L(sname(skill) + "は バリアを つらぬいた！", sname(skill) + " pierced the barrier!"));
-        if (bs > 0) {   // 2枚目が残る＝貫通しきれず半分のダメージで跳ね返す
-          opp.buffs.barrier = null;
-          pushLog(L("でも 2まいめの バリアで はねかえした！", "But the 2nd barrier reflected it!"));
-          applyOffensiveMagic(f, f, skill, true); return;   // 術者へ50%反射
-        }
-        opp.buffs.barrier = null;   // 1枚だった→貫通成功（下のパッシブ判定へ・pierced=true）
-      } else {
-        bs--;   // 通常魔法は1枚消費して100%反射
-        if (bs > 0) opp.buffs.barrier.stacks = bs; else opp.buffs.barrier = null;
-        pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!"));
-        applyOffensiveMagic(f, f, skill); return;
+    // 反射レイヤー数 ＝ アクティブ反射バリアの枚数 ＋ パッシブ反射の発動数（refmag/refbothを各20%で独立判定＝同時発動を数える）
+    var activeLayers = opp.buffs.barrier ? (opp.buffs.barrier.stacks || 1) : 0;
+    var passiveProcs = 0, refStacks = refCount(opp, "refmag");
+    for (var ri = 0; ri < refStacks; ri++) if (roll(20)) passiveProcs++;
+    var totalLayers = activeLayers + passiveProcs;
+    if (totalLayers === 0) { applyOffensiveMagic(f, opp, skill); return; }   // 反射レイヤー無し＝通常ヒット
+    if (skill.pierce) {
+      if (activeLayers > 0) opp.buffs.barrier = null;   // ★はアクティブバリアを破壊
+      pushLog(L(sname(skill) + "は バリアを つらぬいた！", sname(skill) + " pierced a barrier!"));   // 貫通＝破壊エフェクト（その都度）
+      if (totalLayers >= 2) {   // 計2レイヤー以上（アンチ2／アンチ1+パッシブ1以上／パッシブ2以上）＝貫通しきれず半分で跳ね返す
+        pushLog(L("でも もう1まいの バリアで はねかえした！", "But another barrier reflected it!"));
+        applyOffensiveMagic(f, f, skill, true); return;   // 術者へ50%反射
       }
+      applyOffensiveMagic(f, opp, skill, true); return;   // 1レイヤーのみ＝貫通成功・相手へ50%
     }
-    // ⑥⑳ パッシブ魔法反射：持続（消費されない）・毎回20%×個数でロール。★に貫通された後も有効。
-    if (refCount(opp, "refmag") > 0 && roll(20 * refCount(opp, "refmag"))) {
-      pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!"));
-      applyOffensiveMagic(f, f, skill, pierced); return;   // 術者へ反射（貫通済みなら50%のまま）
-    }
-    applyOffensiveMagic(f, opp, skill, pierced);
+    // 通常魔法：反射レイヤーが1枚でもあれば100%反射。アクティブは1枚消費（パッシブは消費しない）。
+    if (activeLayers > 0) { var nb = activeLayers - 1; if (nb > 0) opp.buffs.barrier.stacks = nb; else opp.buffs.barrier = null; }
+    pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!"));
+    applyOffensiveMagic(f, f, skill); return;
   }
   function applyOffensiveMagic(f, target, skill, pierce) {
     var sp = skill.special;
