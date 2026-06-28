@@ -418,36 +418,36 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var EXTRA_SKILLS = [
     { ja: "魔剣", en: "Dark Blade", type: "phys", power: 1.6, hit: 60, crit: 60 },
     { ja: "魔弾", en: "Dark Bullet", type: "phys", power: 1.6, hit: 100, crit: 20 },
-    { ja: "ルミナスアーツ", en: "Luminous Arts", type: "phys", multi: 5, power: 1.0, flat: 30, hit: 30, crit: 10 },   // 5連撃：各 (攻×1.0−防)+30、1発ごとに命中/会心判定
-    { ja: "サンダーテンペスト", en: "Thunder Tempest", type: "magic", power: 1.1, flat: 70, color: "#8cff6a" },
-    { ja: "絶対零度", en: "Absolute Zero", type: "magic", power: 1.2, flat: 100, color: "#bdf2ff" },
-    { ja: "サン・ファイア", en: "Sun Fire", type: "magic", power: 1.5, flat: 100, color: "#ff8a2c" }
+    { ja: "ルミナスアーツ", en: "Luminous Arts", type: "phys", multi: 5, power: 1.0, flat: 10, hit: 10, crit: 10 },   // 5連撃：各 (攻×1.0−防)+10・命中10基準(速度依存)。1発1秒でゆっくり表示
+    { ja: "サンダーテンペスト", en: "Thunder Tempest", type: "magic", power: 1.1, flat: 70, color: "#8cff6a", pierce: true },
+    { ja: "絶対零度", en: "Absolute Zero", type: "magic", power: 1.2, flat: 100, color: "#bdf2ff", pierce: true },
+    { ja: "サン・ファイア", en: "Sun Fire", type: "magic", power: 1.5, flat: 100, color: "#ff8a2c", pierce: true }
   ];
   var ALL_SKILLS = PHYS_SKILLS.concat(MAGIC_SKILLS).concat(EXTRA_SKILLS);
   for (var si = 0; si < ALL_SKILLS.length; si++) ALL_SKILLS[si].id = si;
 
   /* ---------------- パッシブスキル（持っているだけで発動・1人2つ・重複あり） ---------------- */
   var PASSIVES = [
-    { id: 0,  type: "atkup",   ja: "こうげき 20%アップ",       en: "ATK +20%" },
-    { id: 1,  type: "defup",   ja: "ぼうぎょ 20%アップ",       en: "DEF +20%" },
-    { id: 2,  type: "spdup",   ja: "すばやさ 20%アップ",       en: "SPD +20%" },
+    { id: 0,  type: "atkup",   ja: "こうげき +30",             en: "ATK +30" },
+    { id: 1,  type: "defup",   ja: "ぼうぎょ +30",             en: "DEF +30" },
+    { id: 2,  type: "spdup",   ja: "すばやさ +30",             en: "SPD +30" },
     { id: 3,  type: "hitup",   ja: "めいちゅう +20%",          en: "HIT +20%" },
     { id: 4,  type: "critup",  ja: "かいしん +20%",            en: "CRIT +20%" },
-    { id: 5,  type: "refmag",  ja: "10%で まほうを はねかえす", en: "10% reflect magic" },
-    { id: 6,  type: "refphys", ja: "10%で ぶつりを はねかえす", en: "10% reflect phys" },
-    { id: 7,  type: "double",  ja: "10%で 2かい こうどう",      en: "10% double act" },
-    { id: 8,  type: "regen",   ja: "まいターン HP20 かいふく",  en: "Regen 20/turn" },
+    { id: 5,  type: "refmag",  ja: "20%で まほうを はねかえす", en: "20% reflect magic" },
+    { id: 6,  type: "refphys", ja: "20%で ぶつりを はねかえす", en: "20% reflect phys" },
+    { id: 7,  type: "double",  ja: "20%で 2かい こうどう",      en: "20% double act" },
+    { id: 8,  type: "regen",   ja: "まいターン HP30 かいふく",  en: "Regen 30/turn" },
     { id: 9,  type: "allplus", ja: "ぜんステータス +20",        en: "All stats +20" },
     { id: 10, type: "endure",  ja: "1かいだけ HP1で たえる",    en: "Endure once (HP1)" },
     { id: 11, type: "first",     ja: "20%で せんせい こうげき",     en: "20% first strike" },
     { id: 12, type: "ailimmune", ja: "どく・バインド むこう",         en: "Immune to poison/bind" },
-    { id: 13, type: "antibuff",  ja: "あいての バフを むこうか",       en: "Nullify foe's buffs" },
+    { id: 13, type: "antibuff",  ja: "あいてのバフ発動で 自分にも同じバフ", en: "Mirror foe's buff onto self" },
     { id: 14, type: "leech",     ja: "あたえたダメージの20% きゅうしゅう", en: "Drain 20% of damage dealt" },
-    { id: 15, type: "lucky",     ja: "まいターン ランダムで1ステ+50", en: "+50 random stat each turn" },
+    { id: 15, type: "lucky",     ja: "まいターン ランダム1ステ +1〜最大", en: "+1..max to a random stat/turn" },
     { id: 16, type: "allplus30", ja: "ぜんパラメータ +30",            en: "All stats +30" },
     { id: 17, type: "hitcritup", ja: "めいちゅう・かいしん +20",       en: "HIT & CRIT +20" },
     { id: 18, type: "encore",    ja: "1かいかぎりの技を もう1かい",    en: "Reuse a once-only skill" },
-    { id: 19, type: "refboth",   ja: "10%で ぶつり・まほうを はねかえす", en: "10% reflect phys & magic" }
+    { id: 19, type: "refboth",   ja: "20%で ぶつり・まほうを はねかえす", en: "20% reflect phys & magic" }
   ];
   function pname(p) { return LANG === "en" ? p.en : p.ja; }
   // 12種から2つ・重複ありで抽選（同じものが2つ付くことがある）
@@ -466,11 +466,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (s.formula === "atkspd") return L("物理 (攻+速)−敵防", "PHYS (atk+spd)−def") + hc;
     if (s.formula === "atkdef") return L("物理 (攻+防)−敵防", "PHYS (atk+def)−def") + hc;
     if (s.type === "phys") return L("物理", "PHYS") + " ×" + s.power + hc;
-    if (!s.special) return L("魔法", "MAG") + " ×" + s.power + "+" + (s.flat || 0) + " " + L("必中", "SURE");
+    if (!s.special) return L("魔法", "MAG") + " ×" + s.power + "+" + (s.flat || 0) + " " + L("必中", "SURE") + (s.pierce ? L("・バリア貫通(50%)", " · pierce(50%)") : "");
     switch (s.special) {
       case "bind": return L("魔法 バインド2〜7T(毎ターン20%で行動不能)", "MAG bind 2-7T (20%/turn stun)");
-      case "poison": return L("魔法 毒 攻×0.25/T(2〜7T)", "MAG poison atk×0.25/T");
-      case "barrier": return L("魔法 反射バリア(4〜7T/1回)", "MAG reflect (4-7T/1x)");
+      case "poison": return L("魔法 毒 10〜50/T・2重で20〜100(最大2重)", "MAG poison 10-50/T, x2:20-100 (max2)");
+      case "barrier": return L("魔法 反射バリア・最大2枚(2枚で★も半減反射)", "MAG reflect, max2 (2=halve pierce)");
       case "down": return L("魔法 9%で戦闘不能", "MAG 9% KO foe");
       case "heal": return L("魔法 HP回復(攻+防)×1.5 ※1回", "MAG heal(atk+def)×1.5 *1");
       case "speedup": return L("魔法 素早さ2倍・最大256(2〜7T)", "MAG speed×2 max256 (2-7T)");
@@ -1028,9 +1028,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       hp: opts.maxHp || 999, alpha: 1,
       buffs: { speedup: null, allup: null, barrier: null }, bind: null, poison: null, used: {}
     };
-    f.regen += 20 * pcount(f, "regen");   // ⑨ 毎ターンHP回復（難易度regenに加算・重複で40）
+    f.regen += 30 * pcount(f, "regen");   // ⑨ 毎ターンHP回復30（難易度regenに加算・重複で60）
     f.endure = pcount(f, "endure");       // ⑪ HP1で耐える 残り回数（重複で2回）
-    f.luckyStat = pcount(f, "lucky") > 0 ? ["atk", "def", "spd"][randInt(0, 2)] : null;  // ⑯ ラッキー：今ターン+50中のステ
+    if (pcount(f, "lucky") > 0) { f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)]; f.luckyAmt = randInt(1, 256); } else { f.luckyStat = null; f.luckyAmt = 0; }   // ⑯ ラッキー：強化ステと量(1〜256)
     return f;
   }
   function startBattleHotseat() {
@@ -1094,15 +1094,21 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var battle = null, bcv, bctx, BW = 320, BH = 210, POS = [{ x: 78, y: 122 }, { x: 242, y: 122 }], SCALE = 6;
   // 実効ステータス。パッシブ(全+20→×(1+0.2×個数))＋⑯ラッキー(毎ターン1ステ+50)＋バフ(スピード/スペシャル)を反映し、各256でカンスト。
   // 重複は加算スタック：①攻×2=×1.4、⑩全+20×2=+40。⑬antibuffを持つ相手がいると自分のバフ(スピード/スペシャル)は無効。
-  function buffOn(f) { if (!battle || !battle.fighters) return true; var opp = battle.fighters[1 - f.index]; return !(opp && pcount(opp, "antibuff") > 0); }
-  function effAtk(f) { var v = (f.final.atk + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "atk" ? 50 : 0)) * (1 + 0.2 * pcount(f, "atkup")); if (f.buffs.allup && buffOn(f)) v *= 2; return Math.min(256, Math.floor(v)); }
-  function effDef(f) { var v = (f.final.def + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "def" ? 50 : 0)) * (1 + 0.2 * pcount(f, "defup")); if (f.buffs.allup && buffOn(f)) v *= 2; return Math.min(256, Math.floor(v)); }
+  // ⑭ あいてがバフを発動した瞬間、⑭を持つ自分にも同じバフをコピー（旧:無効化 → 新:ミラー）。
+  function mirrorBuff(applier, key) {
+    if (!battle || !battle.fighters) return;
+    var other = battle.fighters[1 - applier.index];
+    if (!other || pcount(other, "antibuff") <= 0 || !applier.buffs[key]) return;
+    other.buffs[key] = JSON.parse(JSON.stringify(applier.buffs[key]));
+    pushLog(L(other.label + "にも おなじ こうかが ミラー！", other.label + " mirrors the same buff!"));
+  }
+  // ①〜③はフラット加算+30（旧:×1.2）。⑯ラッキーは f.luckyAmt(1〜256)。各256カンスト。
+  function effAtk(f) { var v = f.final.atk + 30 * pcount(f, "atkup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "atk" ? (f.luckyAmt || 0) : 0); if (f.buffs.allup) v *= 2; return Math.min(256, Math.floor(v)); }
+  function effDef(f) { var v = f.final.def + 30 * pcount(f, "defup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "def" ? (f.luckyAmt || 0) : 0); if (f.buffs.allup) v *= 2; return Math.min(256, Math.floor(v)); }
   function effSpd(f) {
-    var v = (f.final.spd + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "spd" ? 50 : 0)) * (1 + 0.2 * pcount(f, "spdup"));
-    if (buffOn(f)) {
-      if (f.buffs.speedup) { var s = Math.min(2, f.buffs.speedup.stacks || 1); v = v * (2 * s) + 30 * s; }  // スピード：×2+30、重ね掛けで最大×4+60(2段)
-      if (f.buffs.allup) v *= 2;
-    }
+    var v = f.final.spd + 30 * pcount(f, "spdup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "spd" ? (f.luckyAmt || 0) : 0);
+    if (f.buffs.speedup) { var s = Math.min(2, f.buffs.speedup.stacks || 1); v = v * (2 * s) + 30 * s; }  // スピード：×2+30、重ね掛けで最大×4+60(2段)
+    if (f.buffs.allup) v *= 2;
     return Math.min(256, Math.floor(v));
   }
   // ⑮leech: 相手にダメージを与えたとき、与えたダメージの20%を自分が回復(吸収)。攻撃側のパッシブで判定。
@@ -1165,13 +1171,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function startTurn(f) {
     var log = [];
-    if (pcount(f, "lucky") > 0) f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)];  // ⑯ 毎ターン+50を再抽選（前ターン分は戻る）
+    if (pcount(f, "lucky") > 0) { f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)]; f.luckyAmt = randInt(1, 256); }  // ⑯ 毎ターン、強化ステと量(1〜256)を再抽選
     if (f.regen > 0 && f.hp > 0 && f.hp < f.maxHp) {
       var before = f.hp; f.hp = Math.min(f.maxHp, f.hp + f.regen);
       log.push(L(f.label + "は " + (f.hp - before) + " かいふく", f.label + " regenerates " + (f.hp - before)));
     }
     if (f.poison) {
-      var d = f.poison.dmg, enP = applyDamage(f, d);
+      var d = (f.poison.stacks >= 2 ? randInt(20, 100) : randInt(10, 50)), enP = applyDamage(f, d);   // 毒：1重10〜50/2重20〜100の毎ターンランダム
       log.push(L(f.label + "は どくで " + d + " ダメージ", f.label + " takes " + d + " poison damage"));
       if (enP) log.push(endureMsg(f));
       f.poison.turns--; if (f.poison.turns <= 0) { f.poison = null; log.push(L(f.label + "の どくが なおった", f.label + "'s poison wore off")); }
@@ -1274,7 +1280,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     dmg = Math.floor(dmg); if (dmg < 1) dmg = 1;
     var dmgLog = crit ? L("かいしんの いちげき！ " + dmg + " ダメージ", "CRITICAL! " + dmg + " damage") : L(dmg + " ダメージ", dmg + " damage");
     // ⑦⑳ 物理反射：10%×個数で完全反射（受け手はダメージ0・攻撃者へ100%返す）
-    var rp = refCount(opp, "refphys"); if (rp > 0 && roll(10 * rp)) {
+    var rp = refCount(opp, "refphys"); if (rp > 0 && roll(20 * rp)) {
       pushLog(L(opp.label + "は こうげきを はねかえした！", opp.label + " reflected the attack!"));
       var enR = applyDamage(f, dmg);
       pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);   // 反射で殴った側(opp)が吸収
@@ -1294,13 +1300,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       i++;
       var hitRate = skill.hit + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");   // 連撃は基礎=skill.hit(30%)＝速度差で増減。速いと全的中、遅いと数発外す
       if (hitRate < 3) hitRate = 3;
-      if (!roll(hitRate)) { pushLog(L(i + "げきめ ミス！", "Hit " + i + " missed!")); one(); return; }   // 外れたらモーション無しで次の一撃へ
+      if (!roll(hitRate)) { pushLog(L(i + "げきめ ミス！", "Hit " + i + " missed!")); runFX(450, function (t) { drawScene(); drawText(POS[opp.index].x, POS[opp.index].y - 50, "MISS", "#9fb3c8", 1 - t, 18); }, one); return; }   // 外れたら短くMISS表示して次の一撃へ
       var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup"));
       var base = effAtk(f) * skill.power;
       var dmg = Math.floor(((crit ? base * 1.2 : base - effDef(opp)) + (skill.flat || 0)) * randF(0.95, 1.05)); if (dmg < 1) dmg = 1;
       var dmgLog = crit ? L(i + "げきめ かいしん！ " + dmg, "Hit " + i + " CRIT! " + dmg) : L(i + "げきめ " + dmg + " ダメージ", "Hit " + i + ": " + dmg);
       skill._luxAng = (i - 1) * 1.15;   // 一撃ごとに角度を変えて連続感（FXが参照）
-      var rp = refCount(opp, "refphys"); if (rp > 0 && roll(10 * rp)) {   // 物理反射（1発ごと）
+      var rp = refCount(opp, "refphys"); if (rp > 0 && roll(20 * rp)) {   // 物理反射（1発ごと）
         pushLog(L(opp.label + "は はねかえした！", opp.label + " reflected!"));
         var enR = applyDamage(f, dmg); pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
         if (crit) sfx.crit(); else sfx.hit();
@@ -1315,20 +1321,44 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function resolveMagic(f, opp, skill) {
     var sp = skill.special;
     if (sp === "barrier" || sp === "heal" || sp === "speedup" || sp === "allup") { applySelfMagic(f, skill); return; }
-    var target = opp;
-    if (opp.buffs.barrier) { opp.buffs.barrier = null; target = f; pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!")); }
-    else if (refCount(opp, "refmag") > 0 && roll(10 * refCount(opp, "refmag"))) { target = f; pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!")); }   // ⑥⑳ 魔法反射(常時10%×個数)
-    applyOffensiveMagic(f, target, skill);
+    var pierced = false;
+    // アクティブ アンチマジック バリア（最大2枚・重ねがけ）
+    if (opp.buffs.barrier) {
+      var bs = opp.buffs.barrier.stacks || 1;
+      if (skill.pierce) {
+        bs--; pierced = true;   // ★は1枚を貫通（破壊）
+        pushLog(L(sname(skill) + "は バリアを つらぬいた！", sname(skill) + " pierced the barrier!"));
+        if (bs > 0) {   // 2枚目が残る＝貫通しきれず半分のダメージで跳ね返す
+          opp.buffs.barrier = null;
+          pushLog(L("でも 2まいめの バリアで はねかえした！", "But the 2nd barrier reflected it!"));
+          applyOffensiveMagic(f, f, skill, true); return;   // 術者へ50%反射
+        }
+        opp.buffs.barrier = null;   // 1枚だった→貫通成功（下のパッシブ判定へ・pierced=true）
+      } else {
+        bs--;   // 通常魔法は1枚消費して100%反射
+        if (bs > 0) opp.buffs.barrier.stacks = bs; else opp.buffs.barrier = null;
+        pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!"));
+        applyOffensiveMagic(f, f, skill); return;
+      }
+    }
+    // ⑥⑳ パッシブ魔法反射：持続（消費されない）・毎回20%×個数でロール。★に貫通された後も有効。
+    if (refCount(opp, "refmag") > 0 && roll(20 * refCount(opp, "refmag"))) {
+      pushLog(L(opp.label + "は まほうを はねかえした！", opp.label + " reflected the magic!"));
+      applyOffensiveMagic(f, f, skill, pierced); return;   // 術者へ反射（貫通済みなら50%のまま）
+    }
+    applyOffensiveMagic(f, opp, skill, pierced);
   }
-  function applyOffensiveMagic(f, target, skill) {
+  function applyOffensiveMagic(f, target, skill, pierce) {
     var sp = skill.special;
     if (!sp) {
-      var dmg = Math.floor((Math.max(0, effAtk(f) * skill.power - effDef(target)) + (skill.flat || 0)) * randF(0.95, 1.05)); if (dmg < 1) dmg = 1;   // 魔法も防御の影響を受ける(必中)。固定値(+30/+50)は防御で消えず最低保障(守備256でも数十は通る)
+      var dmg = Math.floor((Math.max(0, effAtk(f) * skill.power - effDef(target)) + (skill.flat || 0)) * randF(0.95, 1.05));   // 魔法も防御の影響を受ける(必中)。固定値は防御で消えず最低保障
+      if (pierce) dmg = Math.floor(dmg * 0.5);   // バリア貫通は本来の50%
+      if (dmg < 1) dmg = 1;
       var en = applyDamage(target, dmg);
       pushLog(L(dmg + " ダメージ", dmg + " damage"));
       if (en) pushLog(endureMsg(target));
       lifesteal(f, target, dmg);
-      playMagicFX(skill, f.index, target.index, dmg, afterAction); return;
+      playMagicFX(skill, f.index, target.index, dmg, afterAction, pierce); return;
     }
     if (sp === "bind") {
       if (pcount(target, "ailimmune") > 0) { pushLog(L(target.label + "には きかない！", "No effect on " + target.label + "!")); playMagicFX(skill, f.index, target.index, null, afterAction); return; }   // ⑬どく・バインド無効
@@ -1339,9 +1369,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
     if (sp === "poison") {
       if (pcount(target, "ailimmune") > 0) { pushLog(L(target.label + "には きかない！", "No effect on " + target.label + "!")); playMagicFX(skill, f.index, target.index, null, afterAction); return; }   // ⑬どく・バインド無効
-      var pd = Math.floor(effAtk(f) * 1.0 + 15); if (pd < 1) pd = 1;   // 毒：毎ターン 攻×1.0+15
-      target.poison = { turns: randInt(2, 7), dmg: pd };
-      pushLog(L(target.label + "は どくに なった！", target.label + " is poisoned!"));
+      if (target.poison) target.poison.stacks = Math.min(2, (target.poison.stacks || 1) + 1); else target.poison = { stacks: 1 };   // 最大2重まで重ねがけ
+      target.poison.turns = randInt(2, 7);   // ダメージは毎ターン抽選（1重10〜50/2重20〜100）
+      pushLog(L(target.label + "は どくに なった！" + (target.poison.stacks >= 2 ? "（2じゅう）" : ""), target.label + " is poisoned!" + (target.poison.stacks >= 2 ? " x2" : "")));
       playMagicFX(skill, f.index, target.index, null, afterAction); return;
     }
     if (sp === "down") {
@@ -1355,10 +1385,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function applySelfMagic(f, skill) {
     var sp = skill.special, color = skill.color || "#fff";
-    if (sp === "barrier") { f.buffs.barrier = { turns: randInt(4, 7) }; pushLog(L(f.label + "は 反射バリアを はった！", f.label + " raised a reflect barrier!")); sfx.buff(); playSelfFX(skill, f.index,L("バリア", "BARRIER"), afterAction); }
+    if (sp === "barrier") { if (f.buffs.barrier) f.buffs.barrier.stacks = Math.min(2, (f.buffs.barrier.stacks || 1) + 1); else f.buffs.barrier = { turns: randInt(4, 7), stacks: 1 }; f.buffs.barrier.turns = randInt(4, 7); mirrorBuff(f, "barrier"); pushLog(L(f.label + "は 反射バリアを はった！" + (f.buffs.barrier.stacks >= 2 ? "（2まい）" : ""), f.label + " raised a reflect barrier!" + (f.buffs.barrier.stacks >= 2 ? " x2" : ""))); sfx.buff(); playSelfFX(skill, f.index,L("バリア", "BARRIER"), afterAction); }
     else if (sp === "heal") { var amt = Math.floor((effAtk(f) + effDef(f)) * 1.5 + 50), before = f.hp; f.hp = Math.min(f.maxHp, f.hp + amt); pushLog(L(f.label + "は HPが " + (f.hp - before) + " かいふく！", f.label + " healed " + (f.hp - before) + " HP!")); sfx.heal(); playSelfFX(skill, f.index,L("かいふく", "HEAL"), afterAction); }
-    else if (sp === "speedup") { if (f.buffs.speedup) f.buffs.speedup.stacks = Math.min(2, (f.buffs.speedup.stacks || 1) + 1); else f.buffs.speedup = { turns: 0, stacks: 1 }; f.buffs.speedup.turns = randInt(2, 7); pushLog(L(f.label + "の すばやさ アップ！", f.label + "'s speed rose!")); sfx.buff(); playSelfFX(skill, f.index,L("スピード", "SPEED"), afterAction); }
-    else if (sp === "allup") { f.buffs.allup = { turns: randInt(2, 7) }; pushLog(L(f.label + "の ぜんのうりょく アップ！", f.label + "'s stats rose!")); sfx.buff(); playSelfFX(skill, f.index,L("パワーUP", "POWER UP"), afterAction); }
+    else if (sp === "speedup") { if (f.buffs.speedup) f.buffs.speedup.stacks = Math.min(2, (f.buffs.speedup.stacks || 1) + 1); else f.buffs.speedup = { turns: 0, stacks: 1 }; f.buffs.speedup.turns = randInt(2, 7); mirrorBuff(f, "speedup"); pushLog(L(f.label + "の すばやさ アップ！", f.label + "'s speed rose!")); sfx.buff(); playSelfFX(skill, f.index,L("スピード", "SPEED"), afterAction); }
+    else if (sp === "allup") { f.buffs.allup = { turns: randInt(2, 7) }; mirrorBuff(f, "allup"); pushLog(L(f.label + "の ぜんのうりょく アップ！", f.label + "'s stats rose!")); sfx.buff(); playSelfFX(skill, f.index,L("パワーUP", "POWER UP"), afterAction); }
     updateHud();   // スピード/スペシャルの上昇をHUDへ即時反映（色付け）
   }
   function afterAction() {
@@ -1370,7 +1400,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
     var actor = battle.fighters[battle.active];
     // ⑧ 2回行動: 10%×個数。1ターンに1回だけ。人間は「2かい こうどう はつどう！」が出てもう1つ特技を選べる／AIは自動。
-    if (!actor.dblUsed && pcount(actor, "double") > 0 && roll(10 * pcount(actor, "double"))) {
+    if (!actor.dblUsed && pcount(actor, "double") > 0 && roll(20 * pcount(actor, "double"))) {
       actor.dblUsed = true;
       pushLog(L(actor.label + "は 2かい こうどう はつどう！", actor.label + " DOUBLE ACTION!"));
       if (actor.isAI) {
@@ -1484,9 +1514,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function statusText(f) {
     var s = [];
-    if (f.poison) s.push(L("毒", "PSN"));
+    if (f.poison) for (var pq = 0; pq < (f.poison.stacks || 1); pq++) s.push(L("毒", "PSN"));   // 最大2つ
     if (f.bind) s.push(L("封", "BND"));
-    if (f.buffs.barrier) s.push(L("反", "RFL"));
+    if (f.buffs.barrier) for (var bq = 0; bq < (f.buffs.barrier.stacks || 1); bq++) s.push(L("反", "RFL"));   // 最大2つ
     if (f.buffs.speedup) s.push(L("速↑", "SPD↑"));
     if (f.buffs.allup) s.push(L("力↑", "PWR↑"));
     if (f.regen > 0) s.push(L("再生", "REGEN"));
@@ -1661,40 +1691,42 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         if (beam >= 1) { pC(tp.x, tp.y, (crit ? 16 : 12) * (1 - t), "#fff", 1 - t); pStar(tp.x, tp.y, (crit ? 22 : 16) * (1 - t), 5, "#d0a8ff", 1 - t); }   // 着弾が光り輝く
         sparks(tp.x, tp.y, t, 7, "#b45cff", 46, 0); dmgPop(tp.x, tp.y, t, dmg, crit);
       }, done);
-      case "ルミナスアーツ": return runFX(190, function (t) {   // 5連の各回で呼ばれる＝短い光の一撃
-        battle.shake = 5 * cm * (1 - t); D.hitFlash = Math.max(0, 1 - t * 2); drawScene();
+      case "ルミナスアーツ": return runFX(1000, function (t) {   // 5連の各回＝1発1秒でゆっくり見せる（一瞬すぎ対策）
+        var st = Math.min(1, t / 0.3);   // 斬撃はサッと出てサッと消える
+        battle.shake = 5 * cm * (1 - st); D.hitFlash = Math.max(0, 1 - t * 3); drawScene();
         var ang = skill._luxAng || 0;   // 一撃ごとに角度が変わる
-        pL(tp.x - Math.cos(ang) * 52, tp.y - Math.sin(ang) * 52, tp.x + Math.cos(ang) * 52, tp.y + Math.sin(ang) * 52, crit ? 8 : 5, "#fff", (1 - t) * 0.95);
-        pL(tp.x - Math.cos(ang) * 52, tp.y - Math.sin(ang) * 52, tp.x + Math.cos(ang) * 52, tp.y + Math.sin(ang) * 52, 2, "#fff7c0", (1 - t) * 0.85);
-        pStar(tp.x, tp.y, (crit ? 16 : 12) * (1 - t), 4, "#fff7c0", 1 - t);
-        sparks(tp.x, tp.y, t, crit ? 8 : 5, "#fff", 42, 0); dmgPop(tp.x, tp.y, t, dmg, crit);
+        if (st < 1) {
+          pL(tp.x - Math.cos(ang) * 52, tp.y - Math.sin(ang) * 52, tp.x + Math.cos(ang) * 52, tp.y + Math.sin(ang) * 52, crit ? 8 : 5, "#fff", (1 - st) * 0.95);
+          pL(tp.x - Math.cos(ang) * 52, tp.y - Math.sin(ang) * 52, tp.x + Math.cos(ang) * 52, tp.y + Math.sin(ang) * 52, 2, "#fff7c0", (1 - st) * 0.85);
+          pStar(tp.x, tp.y, (crit ? 16 : 12) * (1 - st), 4, "#fff7c0", 1 - st);
+          sparks(tp.x, tp.y, st, crit ? 8 : 5, "#fff", 42, 0);
+        }
+        dmgPop(tp.x, tp.y, t, dmg, crit);   // ダメージ数字は1秒かけてゆっくり表示
       }, done);
       default: return runFX(440, function (t) { hit(t, 7, 0.16); drawScene(); sparks(tp.x, tp.y, t, 8, "#fff", 46, 1); dmgPop(tp.x, tp.y, t, dmg, crit); }, done);
     }
   }
 
   // ---- 魔法：チャージ(約0.6秒) → 飛翔 → 着弾。技ごとに色と形を変える ----
-  function playMagicFX(skill, ci, ti, dmg, done) {
-    var cp = POS[ci], tp = POS[ti], D = battle.fighters[ti], col = skill.color || "#ffffff", nm = skill.ja, sp = skill.special;
-    var CH = 0.48, FLY = 0.76, fired = false;
+  function playMagicFX(skill, ci, ti, dmg, done, pierce) {
+    var reflected = (ti === ci), home = POS[ci], wall = POS[1 - ci], tp = POS[ti], D = battle.fighters[ti], col = skill.color || "#ffffff", nm = skill.ja, sp = skill.special;
+    var CH = 0.28, OUT = reflected ? 0.50 : 0.72, BACK = 0.78, fired = false;   // 必ず相手(wall)へ飛ぶ→反射なら術者(home)へ戻る
+    function fxOrb(x, y, fx, fy) { for (var o = 0; o < 4; o++) { var k = o * 0.07; pC(x + (fx - x) * k, y + (fy - y) * k, 9 - o * 1.6, col, 1 - o * 0.22); } pC(x, y, 8, "#fff", 0.9); pC(x, y, 11, col, 0.7); }
+    function fxReflect(p, rt) { pR(p.x, p.y, 14 + rt * 40, Math.max(1, 4 * (1 - rt)), "#4af0d6", (1 - rt) * 0.9); pR(p.x, p.y, 8 + rt * 24, Math.max(1, 3 * (1 - rt)), "#bfffff", (1 - rt) * 0.8); if (pierce) { for (var b = 0; b < 6; b++) { var ba = b / 6 * Math.PI * 2 + rt * 1.6, br = 20 + rt * 56; pL(p.x + Math.cos(ba) * br, p.y + Math.sin(ba) * br, p.x + Math.cos(ba + 1.05) * br, p.y + Math.sin(ba + 1.05) * br, Math.max(1, 4 * (1 - rt)), "#7df0ff", 1 - rt); } } }
     if (settings.sound) sfx.charge();
-    return runFX(1300, function (t) {
+    return runFX(reflected ? 1700 : 1300, function (t) {
       drawScene(); bctx.save();
       if (t < CH) {
-        drawCharge(cp.x, cp.y, t / CH, col);
-      } else if (t < FLY) {
-        var mt = (t - CH) / (FLY - CH), x = cp.x + (tp.x - cp.x) * mt, y = cp.y + (tp.y - cp.y) * mt;
-        if (nm === "サンダー" || nm === "サンダーテンペスト") { for (var k = 0; k < 5; k++) pC(tp.x + (Math.random() * 2 - 1) * 16, tp.y - 96 + (Math.random() * 2 - 1) * 8, 2.5, col, mt); }
-        else {
-          for (var tr = 0; tr < 4; tr++) { var trm = mt - tr * 0.08; if (trm < 0) continue; pC(cp.x + (tp.x - cp.x) * trm, cp.y + (tp.y - cp.y) * trm, 9 - tr * 1.6, col, 1 - tr * 0.22); }
-          if (nm === "アイス" || nm === "絶対零度") pStar(x, y, nm === "絶対零度" ? 16 : 11, 4, "#eaffff", 1);
-          else if (nm === "ダーク") { pC(x, y, 11, col, 1); pC(x, y, 5, "#160028", 1); }
-          else if (nm === "ライト") { pC(x, y, 9, "#fff", 1); for (var r = 0; r < 4; r++) { var a = r / 4 * Math.PI * 2 + t * 6; pL(x, y, x + Math.cos(a) * 16, y + Math.sin(a) * 16, 2, col, 0.8); } }
-          else if (nm === "サン・ファイア") { pC(x, y, 17, col, 0.95); pC(x, y, 10, "#ffe23c", 0.9); pC(x, y, 4, "#fff", 1); }
-          else { pC(x, y, 9, "#fff", 0.9); pC(x, y, 11, col, 0.8); if (nm === "ファイア") pC(x + (Math.random() * 2 - 1) * 6, y + (Math.random() * 2 - 1) * 6, 5, "#ffd24a", 0.85); }
-        }
+        drawCharge(home.x, home.y, t / CH, col);
+      } else if (t < OUT) {
+        var mt = (t - CH) / (OUT - CH);   // 必ず相手(wall)へ向かって飛ぶ
+        fxOrb(home.x + (wall.x - home.x) * mt, home.y + (wall.y - home.y) * mt, home.x, home.y);
+      } else if (reflected && t < BACK) {
+        var rt = (t - OUT) / (BACK - OUT);   // 壁で反射（貫通なら砕け）→反転して術者(home)へ戻る
+        fxReflect(wall, rt);
+        fxOrb(wall.x + (home.x - wall.x) * rt, wall.y + (home.y - wall.y) * rt, wall.x, wall.y);
       } else {
-        var bt = (t - FLY) / (1 - FLY);
+        var bt = reflected ? (t - BACK) / (1 - BACK) : (t - OUT) / (1 - OUT);
         if (!fired) { fired = true; if (settings.sound) sfx.impact(); }
         battle.flash = 0.3 * (1 - bt); if (D) D.hitFlash = (1 - bt) * (sp ? 0.5 : 1);
         if (nm === "サンダー" || nm === "サンダーテンペスト") { pBolt(tp.x, tp.y - 100, tp.x, tp.y, 8, 5 * (1 - bt) + 2, "#fff", 1 - bt); pBolt(tp.x, tp.y - 100, tp.x - 18, tp.y - 28, 5, 2, col, (1 - bt) * 0.7); pC(tp.x, tp.y, 28 * (1 - bt), col, (1 - bt) * 0.5); if (nm === "サンダーテンペスト") { for (var w = 0; w < 10; w++) { var aw = w / 10 * Math.PI * 2 + bt * 7; pC(tp.x + Math.cos(aw) * bt * 56, tp.y + Math.sin(aw) * bt * 56, 3, col, (1 - bt) * 0.85); } pR(tp.x, tp.y, 14 + bt * 48, 2, col, (1 - bt) * 0.7); } }
@@ -1703,6 +1735,15 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         else if (nm === "ライト") { for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2; pL(tp.x, tp.y, tp.x + Math.cos(a) * (20 + bt * 44), tp.y + Math.sin(a) * (20 + bt * 44), 2, k % 2 ? "#fff" : col, 1 - bt); } pC(tp.x, tp.y, 28 * (1 - bt), "#fff", (1 - bt) * 0.7); }
         else if (nm === "サン・ファイア") { battle.flash = 0.5 * (1 - bt); pC(tp.x, tp.y, 42 * (1 - bt) + 10, col, (1 - bt) * 0.65); pC(tp.x, tp.y, 26 * (1 - bt), "#ffe23c", (1 - bt) * 0.8); for (var fp = 0; fp < 8; fp++) { var fw = (9 - fp) * (1 - bt); pC(tp.x + (Math.random() * 2 - 1) * (fw + 2), tp.y - fp * 13 - bt * 26, Math.max(2, fw), fp < 2 ? "#fff" : (fp < 5 ? "#ffd24a" : col), (1 - bt) * 0.9); } pR(tp.x, tp.y, 12 + bt * 46, 3, col, (1 - bt) * 0.8); }
         else { for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2, rr = bt * 36; pC(tp.x + Math.cos(a) * rr, tp.y + Math.sin(a) * rr - (nm === "ファイア" ? bt * 14 : 0), 4 - bt * 2, col, 1 - bt); } pR(tp.x, tp.y, 10 + bt * 40, 3, col, (1 - bt) * 0.8); }
+        if (pierce && !reflected) {   // ★貫通の砕け（反射時は壁で表示済みなのでここでは出さない）
+          var brot = bt * 1.6;
+          for (var bkk = 0; bkk < 6; bkk++) {
+            var bang = brot + bkk / 6 * Math.PI * 2, brr = 22 + bt * 56;
+            pL(tp.x + Math.cos(bang) * brr, tp.y + Math.sin(bang) * brr, tp.x + Math.cos(bang + 1.05) * brr, tp.y + Math.sin(bang + 1.05) * brr, Math.max(1, 4 * (1 - bt)), "#7df0ff", 1 - bt);
+            pC(tp.x + Math.cos(bang) * (22 + bt * 72), tp.y + Math.sin(bang) * (22 + bt * 72), Math.max(1, 3 * (1 - bt)), "#cffaff", 1 - bt);
+          }
+          pR(tp.x, tp.y, 18 + bt * 30, Math.max(1, 3 * (1 - bt)), "#4af0d6", (1 - bt) * 0.9);
+        }
         dmgPop(tp.x, tp.y, 0.5 + bt * 0.5, dmg, false);
       }
       bctx.restore();
