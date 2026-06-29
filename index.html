@@ -112,7 +112,9 @@
   .savedstat{font-size:12px;color:#9ab;margin-top:2px;}
   .savedbtns{display:flex;gap:6px;flex:none;}
   .saveduse{width:auto;background:#1f6feb;font-size:13px;padding:9px 12px;}
+  .savedgift{width:auto;background:#3a2a6e;border-color:#7a5cff;font-size:16px;padding:9px 11px;}
   .saveddel{width:auto;background:#5a2230;border-color:#6e2c3e;font-size:16px;padding:9px 11px;}
+  #saved-receive{margin-top:12px;background:#3a2a6e;border-color:#7a5cff;}
   #saved-empty{color:#9ab;font-size:13px;line-height:1.7;margin:24px 10px;}
   #setup-hint{font-size:11px;color:#7e93b5;text-align:center;margin:4px 0;}
 
@@ -265,6 +267,7 @@
     <h2 id="saved-title"></h2>
     <p id="saved-empty" style="display:none;"></p>
     <div id="savedlist"></div>
+    <button id="saved-receive" class="giftbtn"></button>
     <button id="saved-back" class="backbtn"></button>
   </section>
 
@@ -981,20 +984,36 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (Array.isArray(obj.s)) localStorage.setItem("dbvs_saved", JSON.stringify(obj.s.slice(0, 9)));
     if (obj.c && typeof obj.c === "object") localStorage.setItem("dbvs_settings", JSON.stringify(obj.c));
   }
-  function openBackup(mode) {
+  var bkMode = "export";   // export=全データ書出 / import=全データ復元 / gift=戦士1体を渡す / receive=戦士1体を追加
+  function openBackup(mode, arg) {
     $("settingsoverlay").style.display = "none";
-    var exp = (mode === "export");
-    $("bk-title").textContent = exp ? L("バックアップを つくる", "Create backup") : L("データを ふっかつ", "Restore data");
-    $("bk-desc").textContent = exp
-      ? L("このコードを コピーして あんぜんな ところに ほぞんしてね。べつの たんまつ・ブラウザでも ふっかつできるよ。", "Copy this code and keep it safe. You can restore on any device or browser.")
-      : L("バックアップコードを はりつけて『ふっかつ』を おそう。", "Paste your backup code, then press Restore.");
-    $("bk-hint").style.display = exp ? "block" : "none";
+    bkMode = mode;
+    var isExport = (mode === "export" || mode === "gift");   // コピーして渡す系（読取専用）
     var ta = $("bk-text");
-    if (exp) { ta.value = makeBackup(); ta.readOnly = true; } else { ta.value = ""; ta.readOnly = false; }
-    $("bk-copy").style.display = exp ? "block" : "none";
-    $("bk-restore").style.display = exp ? "none" : "block";
+    if (mode === "export") {
+      $("bk-title").textContent = L("バックアップを つくる", "Create backup");
+      $("bk-desc").textContent = L("このコードを コピーして あんぜんな ところに ほぞんしてね。べつの たんまつ・ブラウザでも ふっかつできるよ。", "Copy this code and keep it safe. You can restore on any device or browser.");
+      ta.value = makeBackup(); ta.readOnly = true;
+    } else if (mode === "gift") {
+      $("bk-title").textContent = L("この せんしを ゆずる", "Gift this fighter");
+      $("bk-desc").textContent = L("このコードを ともだちに わたすと、その せんしを プレゼントできるよ。あいての せんしは きえないよ。", "Give this code to a friend to gift this fighter. Their own fighters won't be erased.");
+      ta.value = arg || ""; ta.readOnly = true;
+    } else if (mode === "import") {
+      $("bk-title").textContent = L("データを ふっかつ", "Restore data");
+      $("bk-desc").textContent = L("バックアップコードを はりつけて『ふっかつ』を おそう。いまの データは うわがきされるよ。", "Paste your backup code, then Restore. This overwrites your current data.");
+      ta.value = ""; ta.readOnly = false;
+    } else {   // receive
+      $("bk-title").textContent = L("せんしを もらう", "Receive a fighter");
+      $("bk-desc").textContent = L("ともだちの せんしコードを はりつけて『ついか』を おそう。いまの せんしは きえないよ。", "Paste a friend's fighter code, then Add. Your own fighters stay.");
+      ta.value = ""; ta.readOnly = false;
+    }
+    $("bk-hint").style.display = (mode === "export") ? "block" : "none";
+    $("bk-copy").style.display = isExport ? "block" : "none";
+    $("bk-copy").textContent = L("コピー", "Copy");
+    $("bk-restore").style.display = isExport ? "none" : "block";
+    $("bk-restore").textContent = (mode === "receive") ? L("ついか する", "Add") : L("ふっかつ する", "Restore");
     $("backupoverlay").style.display = "flex";
-    if (exp) { try { ta.focus(); ta.select(); } catch (e) {} }
+    if (isExport) { try { ta.focus(); ta.select(); } catch (e) {} }
   }
   function saveCurrentChar() {
     if (!setupBuf.pixels) return;
@@ -1016,9 +1035,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("saved-empty").style.display = arr.length ? "none" : "block";
     $("saved-empty").textContent = L("まだ ほぞんが ありません。キャラを つくって「ほぞん」を おそう", "No saved characters yet. Make one and tap Save.");
     $("saved-back").textContent = "‹ " + L("もどる", "Back");
+    $("saved-receive").textContent = "🎁 " + L("せんしを もらう（コードから）", "Receive a fighter (from a code)");
     var list = $("savedlist"); list.innerHTML = "";
     for (var i = 0; i < arr.length; i++) {
-      (function (data, idx) {
+      (function (data, idx, raw) {
         if (!data) return;
         var card = document.createElement("div"); card.className = "savedcard";
         var cv = document.createElement("canvas"); cv.width = 48; cv.height = 48; cv.className = "savedthumb pixel"; drawPixels(cv, data.pixels);
@@ -1028,10 +1048,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         info.appendChild(nm); info.appendChild(st);
         var btns = document.createElement("div"); btns.className = "savedbtns";
         var use = document.createElement("button"); use.className = "saveduse"; use.textContent = "▶ " + L("つかう", "Use"); use.onclick = function () { sfx.select(); useSaved(data); };
+        var gift = document.createElement("button"); gift.className = "savedgift"; gift.textContent = "🎁"; gift.setAttribute("aria-label", L("ゆずる", "Gift")); gift.onclick = function () { sfx.select(); openBackup("gift", raw); };
         var del = document.createElement("button"); del.className = "saveddel"; del.textContent = "🗑"; del.onclick = function () { if (confirm(L((data.name || "このキャラ") + " を さくじょしますか？", "Delete " + (data.name || "this character") + "?"))) { var a2 = loadSaved(); a2.splice(idx, 1); persistSaved(a2); openSaved(); } };
-        btns.appendChild(use); btns.appendChild(del);
+        btns.appendChild(use); btns.appendChild(gift); btns.appendChild(del);
         card.appendChild(cv); card.appendChild(info); card.appendChild(btns); list.appendChild(card);
-      })(decodeFighter(arr[i]), i);
+      })(decodeFighter(arr[i]), i, arr[i]);
     }
     showScreen("saved");
   }
@@ -2018,11 +2039,23 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       setTimeout(function () { $("bk-copy").textContent = L("コピー", "Copy"); }, 1500);
     };
     $("bk-restore").onclick = function () {
-      var code = $("bk-text").value;
-      if (!code.replace(/\s+/g, "")) { alert(L("コードを はりつけてね。", "Please paste your code.")); return; }
+      var clean = ($("bk-text").value || "").replace(/\s+/g, "");
+      if (!clean) { alert(L("コードを はりつけてね。", "Please paste a code.")); return; }
+      if (bkMode === "receive") {                                   // 戦士1体を追加（上書きしない）
+        var arr = loadSaved();
+        if (arr.length >= 9) { alert(L("ほぞんが いっぱい（9体）。さくじょしてから もらってね。", "Slots are full (9). Delete one first.")); return; }
+        var d = decodeFighter(clean);
+        if (!d || !d.pixels || !d.base) { alert(L("せんしコードが ただしくないみたい。もういちど かくにんしてね。", "That fighter code doesn't look valid. Please check it.")); return; }
+        arr.push(clean); persistSaved(arr); sfx.select();
+        $("backupoverlay").style.display = "none";
+        alert(L((d.name || "せんし") + " が なかまに なった！", (d.name || "A fighter") + " joined your team!"));
+        openSaved();
+        return;
+      }
+      // import = データ全体を復元（上書き＋リロード）
       if (!confirm(L("いまの データを バックアップで うわがきします。よろしい？", "Overwrite current data with this backup?"))) return;
       try {
-        applyBackup(code);
+        applyBackup(clean);
         alert(L("ふっかつ しました！がめんを ひらきなおすよ。", "Restored! Reloading…"));
         location.reload();
       } catch (e) {
@@ -2056,6 +2089,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("savebtn").onclick = function () { saveCurrentChar(); };
     $("nameinput").oninput = function () { setupBuf.name = (this.value || "").slice(0, (LANG === "en") ? 12 : 8); };
     $("saved-back").onclick = function () { showScreen("setup"); };
+    $("saved-receive").onclick = function () { sfx.select(); openBackup("receive"); };
 
     // QR
     $("qrshowbtn").onclick = function () { sfx.select(); openQRShow(); };
