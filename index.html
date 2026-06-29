@@ -164,7 +164,8 @@
 
   /* オーバーレイ */
   .overlay{display:none;position:absolute;inset:0;background:rgba(3,5,10,.93);z-index:100;align-items:center;justify-content:center;}
-  #resultbox{text-align:center;padding:24px;max-width:380px;width:100%;}
+  #resultfx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+  #resultbox{text-align:center;padding:24px;max-width:380px;width:100%;position:relative;z-index:1;}
   #resultwin{font-size:28px;font-weight:bold;text-shadow:2px 2px 0 #000;margin-bottom:6px;}
   #resultsub{color:#8aa0c0;font-size:13px;margin-bottom:22px;}
   #resultbox button{margin-top:8px;}
@@ -174,6 +175,9 @@
   .setrow .lab{font-size:14px;}
   .setrow .toggle{width:auto;padding:7px 16px;font-size:14px;background:#2a8a5a;border-color:#46d369;}
   .setrow .toggle.off{background:#5a2230;border-color:#ff5a6a;}
+  .volwrap{display:flex;align-items:center;gap:10px;}
+  #vol-slider{width:120px;height:22px;accent-color:#46d369;cursor:pointer;}
+  .volval{font-size:13px;color:#9fe3ff;min-width:58px;text-align:right;font-weight:bold;}
   .seg{display:flex;border:2px solid #2c416e;border-radius:8px;overflow:hidden;}
   .seg button{width:auto;padding:7px 14px;font-size:13px;border:none;border-radius:0;background:#0d1424;color:#7e93b5;box-shadow:none;}
   .seg button.on{background:#1f6feb;color:#fff;}
@@ -313,6 +317,7 @@
 
 <!-- リザルト -->
 <div id="resultoverlay" class="overlay">
+  <canvas id="resultfx"></canvas>
   <div id="resultbox">
     <div id="resultwin"></div>
     <div id="resultsub"></div>
@@ -327,7 +332,8 @@
     <h2 id="set-title"></h2>
     <div class="setrow"><span class="lab" id="set-lang-label"></span>
       <div class="seg"><button id="setlangja" class="on">日本語</button><button id="setlangen">EN</button></div></div>
-    <div class="setrow"><span class="lab" id="set-sound-label"></span><button id="toggle-sound" class="toggle"></button></div>
+    <div class="setrow"><span class="lab" id="set-sound-label"></span>
+      <div class="volwrap"><input type="range" id="vol-slider" min="0" max="3" step="0.1" value="1"><span id="vol-val" class="volval"></span></div></div>
     <div class="setrow"><span class="lab" id="set-effects-label"></span><button id="toggle-effects" class="toggle"></button></div>
     <button id="set-close" class="primary"></button>
   </div>
@@ -362,11 +368,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   "use strict";
 
   /* ---------------- 設定 / settings (localStorage) ---------------- */
-  var settings = { lang: "ja", sound: true, effects: true };
+  var settings = { lang: "ja", vol: 1, effects: true };   // vol: 0(ミュート)〜2(標準の2倍)
   try {
     var saved = JSON.parse(localStorage.getItem("dbvs_settings") || "{}");
     if (saved.lang) settings.lang = saved.lang;
-    if (typeof saved.sound === "boolean") settings.sound = saved.sound;
+    if (typeof saved.vol === "number") settings.vol = Math.max(0, Math.min(3, saved.vol));
+    else if (typeof saved.sound === "boolean") settings.vol = saved.sound ? 1 : 0;   // 旧設定からの移行
     if (typeof saved.effects === "boolean") settings.effects = saved.effects;
   } catch (e) {}
   function saveSettings() { try { localStorage.setItem("dbvs_settings", JSON.stringify(settings)); } catch (e) {} }
@@ -507,29 +514,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     return AC;
   }
   function beep(freq, dur, type, vol, when) {
-    if (!settings.sound) return;
+    if (settings.vol <= 0) return;
     var c = ac(); if (!c) return;
     var t = c.currentTime + (when || 0);
     var o = c.createOscillator(), g = c.createGain();
     o.type = type || "square"; o.frequency.setValueAtTime(freq, t);
-    g.gain.setValueAtTime(vol || 0.14, t);
+    g.gain.setValueAtTime((vol || 0.14) * settings.vol, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur);
   }
   function sweep(f1, f2, dur, type, vol) {
-    if (!settings.sound) return;
+    if (settings.vol <= 0) return;
     var c = ac(); if (!c) return; var t = c.currentTime;
     var o = c.createOscillator(), g = c.createGain();
     o.type = type || "sawtooth"; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(f2, t + dur);
-    g.gain.setValueAtTime(vol || 0.14, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    g.gain.setValueAtTime((vol || 0.14) * settings.vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur);
   }
   function noise(dur, vol) {
-    if (!settings.sound) return;
+    if (settings.vol <= 0) return;
     var c = ac(); if (!c) return;
     var n = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
     for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
-    var s = c.createBufferSource(); s.buffer = buf; var g = c.createGain(); g.gain.value = vol || 0.18;
+    var s = c.createBufferSource(); s.buffer = buf; var g = c.createGain(); g.gain.value = (vol || 0.18) * settings.vol;
     s.connect(g); g.connect(c.destination); s.start();
   }
   var sfx = {
@@ -546,7 +553,30 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     buff: function () { sweep(300, 800, 0.25, "square", 0.1); },
     down: function () { sweep(500, 60, 0.5, "sawtooth", 0.16); },
     win: function () { [523, 659, 784, 1046].forEach(function (f, i) { beep(f, 0.16, "square", 0.13, i * 0.13); }); },
-    lose: function () { [392, 330, 262].forEach(function (f, i) { beep(f, 0.22, "triangle", 0.13, i * 0.18); }); }
+    lose: function () { [392, 330, 262].forEach(function (f, i) { beep(f, 0.22, "triangle", 0.13, i * 0.18); }); },
+    pop: function () {   // 花火：ドン（破裂のボン）だけ
+      noise(0.14, 0.2);                                  // 破裂のノイズ
+      sweep(240, 42, 0.42, "sine", 0.19);                // 低音へ沈み込むドゥーン
+      beep(72, 0.3, "triangle", 0.12);                   // 深い余韻のドン
+    },
+    fanfare: function () {   // 難易度クリア（5戦目）の長いファンファーレ ※1〜4戦目のwinより明確に長い（約3.4秒）
+      var t = 0;
+      function n(f, d, v) { beep(f, d, "square", v || 0.14, t); beep(f / 2, d, "triangle", (v || 0.14) * 0.45, t); t += d; }
+      n(392, 0.14); n(392, 0.14); n(392, 0.16); n(523, 0.5); t += 0.06;                       // タタタ ターン（G G G C）
+      n(659, 0.16); n(587, 0.16); n(659, 0.16); n(698, 0.16); n(784, 0.5); t += 0.06;          // 上昇 → G5
+      n(523, 0.14); n(659, 0.14); n(784, 0.14); n(1046, 0.7);                                  // C E G → C6（締め）
+      for (var i = 0; i < 5; i++) beep(1046 + i * 131, 0.12, "triangle", 0.07, t + i * 0.06);   // きらめき
+    },
+    grandFanfare: function () {   // ムリゲー（全面）クリア用：ど派手で長い（約5.5秒）
+      var t = 0;
+      function n(f, d, v) { beep(f, d, "square", v || 0.15, t); beep(f / 2, d, "triangle", (v || 0.15) * 0.5, t); beep(f * 1.5, d, "sine", (v || 0.15) * 0.22, t); t += d; }
+      n(392, 0.16); n(392, 0.16); n(392, 0.18); n(523, 0.55); t += 0.07;                        // 堂々の序奏
+      n(659, 0.18); n(587, 0.18); n(659, 0.18); n(784, 0.55); t += 0.07;
+      n(523, 0.16); n(659, 0.16); n(784, 0.16); n(1046, 0.18); n(880, 0.16); n(1046, 0.55); t += 0.08;   // 主題
+      n(784, 0.16); n(1046, 0.16); n(1318, 0.18); n(1568, 0.9);                                 // クライマックス（高音で締め）
+      for (var i = 0; i < 12; i++) beep(1568 - i * 75, 0.13, "triangle", 0.08, t + i * 0.07);    // 大きなきらめき下降
+      beep(131, 1.0, "square", 0.11, t); beep(196, 1.0, "triangle", 0.07, t);                    // 低音の余韻
+    }
   };
   // BGMはWebAudio合成（音声ファイル不要＝容量増ほぼゼロ）。バトル(3曲ランダム)/タイトル/メニュー(選択画面)/勝利/敗北に専用曲＝無音をなくす。
   // 各曲: base(根音Hz)/tempo(ms)/wave/vol/mel(半音オフセット配列・nullは休符)/bass(ルート低音)。
@@ -599,9 +629,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   };
   var bgmSong = null;
   function playBGMSong(song) {
-    stopBGM(); if (!settings.sound || !song) return; bgmStep = 0; bgmSong = song;
+    stopBGM(); if (settings.vol <= 0 || !song) return; bgmStep = 0; bgmSong = song;
     bgmTimer = setInterval(function () {
-      if (!settings.sound) { stopBGM(); return; }
+      if (settings.vol <= 0) { stopBGM(); return; }
       var c = ac(); if (!c || c.state !== "running") return;   // ジェスチャ前(自動再生ブロック中)は鳴らさずスキップ＝バックログ防止
       var s = bgmSong, len = s.mel.length, i = bgmStep % len, n = s.mel[i], v = s.vol, md = s.dur || 0.16;
       if (n !== null) {
@@ -625,7 +655,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function stopBGM() { if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; } }
   // いまの画面に合うBGMを鳴らす（音をONに戻したときの復帰用）
   function resumeBGM() {
-    if (!settings.sound) return;
+    if (settings.vol <= 0) return;
     if (currentScreen === "title") startTitleBGM();
     else if (currentScreen === "battle") { if (battle && !battle.over) startBGM(); else if (resultBGM) playBGMSong(resultBGM); }
     else startMenuBGM();
@@ -634,7 +664,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   /* ---------------- 画面遷移 ---------------- */
   var currentScreen = "title";
   function showScreen(name) {
-    currentScreen = name;
+    currentScreen = name; stopResultFx();
     var ids = ["title", "difficulty", "setup", "saved", "qrhub", "qrshow", "qrscan", "battle"];
     for (var i = 0; i < ids.length; i++) {
       var el = $("screen-" + ids[i]);
@@ -1473,9 +1503,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; nextSolo(); };
     $("totitlebtn").style.display = "none";
     $("resultoverlay").style.display = "flex";
+    startResultFx("win");
   }
   function showResult(kind, winner) {
-    var rw = $("resultwin"), rs = $("resultsub");
+    var rw = $("resultwin"), rs = $("resultsub"), fxLevel = "win";
     $("totitlebtn").style.display = "block";
     $("totitlebtn").textContent = L("タイトルへ", "Title");
     if (kind === "vs") {
@@ -1486,8 +1517,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       $("restartbtn").textContent = L("もういちど", "Rematch");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; if (mode === "qr") startBattleQR(); else startBattleHotseat(); };
     } else if (kind === "soloclear") {
-      sfx.win(); startWinBGM();
-      rw.textContent = "★ " + diffName(soloDiff) + " " + L("クリア！", "CLEAR!");
+      var grand = (soloDiff === DIFFS[DIFFS.length - 1]); fxLevel = grand ? "grand" : "win";   // ムリゲー(insane)クリア＝全面クリア
+      (grand ? sfx.grandFanfare : sfx.fanfare)();
+      setTimeout(function () { if ($("resultoverlay").style.display === "flex") startWinBGM(); }, grand ? 5600 : 3500);   // 長いファンファーレの後にBGM開始
+      rw.textContent = grand ? "CONGRATULATIONS!" : ("★ " + diffName(soloDiff) + " " + L("クリア！", "CLEAR!"));
       rw.style.color = "#ffd24a";
       rs.textContent = (soloProgress >= 7)
         ? L("バッジ7こ コンプリート！🏆 ともだちに じまんしよう！", "All 7 badges! 🏆 Brag to your friends!")
@@ -1495,13 +1528,14 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       $("restartbtn").textContent = L("もういちど", "Play Again");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
     } else if (kind === "qr") {
-      var youWon = winner && winner.index === 0;
+      var youWon = winner && winner.index === 0; fxLevel = youWon ? "win" : "lose";
       if (youWon) { sfx.win(); startWinBGM(); rw.textContent = L("あいての せんしに かった！", "You beat their fighter!"); rw.style.color = "#7cff9c"; }
       else { sfx.lose(); startLoseBGM(); rw.textContent = L("あいての せんしに まけた…", "Their fighter won…"); rw.style.color = "#ff5a6a"; }
       rs.innerHTML = L("ともだちと けっかを みせあおう！<br>2人とも かったら ひきわけ → もう1かい！", "Compare results with your friend!<br>If you both win, it's a draw → play again!");
       $("restartbtn").textContent = L("もういちど（おなじ あいて）", "Rematch (same rival)");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startBattleQR(); };
     } else {
+      fxLevel = "lose";
       sfx.lose(); startLoseBGM();
       rw.textContent = L("まけて しまった…", "You lost…");
       rw.style.color = "#ff5a6a";
@@ -1510,6 +1544,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
     }
     $("resultoverlay").style.display = "flex";
+    startResultFx(fxLevel);
   }
 
   /* ---------------- HUD / ログ ---------------- */
@@ -1734,7 +1769,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var CH = 0.28, OUT = reflected ? 0.50 : 0.72, BACK = 0.78, fired = false, bounced = false;   // 必ず相手(wall)へ飛ぶ→反射なら術者(home)へ戻る
     function fxOrb(x, y, fx, fy) { for (var o = 0; o < 4; o++) { var k = o * 0.07; pC(x + (fx - x) * k, y + (fy - y) * k, 9 - o * 1.6, col, 1 - o * 0.22); } pC(x, y, 8, "#fff", 0.9); pC(x, y, 11, col, 0.7); }
     function fxReflect(p, rt) { pR(p.x, p.y, 14 + rt * 40, Math.max(1, 4 * (1 - rt)), "#4af0d6", (1 - rt) * 0.9); pR(p.x, p.y, 8 + rt * 24, Math.max(1, 3 * (1 - rt)), "#bfffff", (1 - rt) * 0.8); if (pierce) { for (var b = 0; b < 6; b++) { var ba = b / 6 * Math.PI * 2 + rt * 1.6, br = 20 + rt * 56; pL(p.x + Math.cos(ba) * br, p.y + Math.sin(ba) * br, p.x + Math.cos(ba + 1.05) * br, p.y + Math.sin(ba + 1.05) * br, Math.max(1, 4 * (1 - rt)), "#7df0ff", 1 - rt); } } }
-    if (settings.sound) sfx.charge();
+    if (settings.vol > 0) sfx.charge();
     return runFX(reflected ? 1700 : 1300, function (t) {
       drawScene(); bctx.save();
       if (t < CH) {
@@ -1749,7 +1784,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         fxOrb(wall.x + (home.x - wall.x) * rt, wall.y + (home.y - wall.y) * rt, wall.x, wall.y);
       } else {
         var bt = reflected ? (t - BACK) / (1 - BACK) : (t - OUT) / (1 - OUT);
-        if (!fired) { fired = true; if (settings.sound) sfx.impact(); if (pierce && !reflected) sfx.shatter(); }   // 貫通して相手に当たる＝割れる音
+        if (!fired) { fired = true; if (settings.vol > 0) sfx.impact(); if (pierce && !reflected) sfx.shatter(); }   // 貫通して相手に当たる＝割れる音
         battle.flash = 0.3 * (1 - bt); if (D) D.hitFlash = (1 - bt) * (sp ? 0.5 : 1);
         if (nm === "サンダー" || nm === "サンダーテンペスト") { pBolt(tp.x, tp.y - 100, tp.x, tp.y, 8, 5 * (1 - bt) + 2, "#fff", 1 - bt); pBolt(tp.x, tp.y - 100, tp.x - 18, tp.y - 28, 5, 2, col, (1 - bt) * 0.7); pC(tp.x, tp.y, 28 * (1 - bt), col, (1 - bt) * 0.5); if (nm === "サンダーテンペスト") { for (var w = 0; w < 10; w++) { var aw = w / 10 * Math.PI * 2 + bt * 7; pC(tp.x + Math.cos(aw) * bt * 56, tp.y + Math.sin(aw) * bt * 56, 3, col, (1 - bt) * 0.85); } pR(tp.x, tp.y, 14 + bt * 48, 2, col, (1 - bt) * 0.7); } }
         else if (nm === "アイス" || nm === "絶対零度") { for (var k = 0; k < 8; k++) { var a = k / 8 * Math.PI * 2; pL(tp.x, tp.y, tp.x + Math.cos(a) * bt * 50, tp.y + Math.sin(a) * bt * 50, 3, "#eaffff", 1 - bt); } pR(tp.x, tp.y, 10 + bt * 34, 2, col, 1 - bt); if (nm === "絶対零度") { pR(tp.x, tp.y, 12 + bt * 30, 3, "#bdf2ff", 1 - bt); for (var c2 = 0; c2 < 6; c2++) { var ac2 = c2 / 6 * Math.PI * 2; pL(tp.x + Math.cos(ac2) * 10, tp.y + Math.sin(ac2) * 10, tp.x + Math.cos(ac2) * (10 + bt * 32), tp.y + Math.sin(ac2) * (10 + bt * 32), 3, "#eaffff", 1 - bt); } pStar(tp.x, tp.y, 30 * (1 - bt), 6, "#fff", (1 - bt) * 0.8); } }
@@ -1781,6 +1816,39 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       drawText(tp.x, tp.y - 46, L("戦闘不能", "DOWN"), "#ff5a6a", Math.min(1, t * 1.4), 18);
       if (t < 1) requestAnimationFrame(frame); else if (done) done();
     })(start);
+  }
+  // === 結果オーバーレイ上の演出（勝利テキストの後ろで紙吹雪＆花火）===
+  var resultFxRAF = null;
+  function stopResultFx() {
+    if (resultFxRAF) { cancelAnimationFrame(resultFxRAF); resultFxRAF = null; }
+    var c = $("resultfx"); if (c) c.getContext("2d").clearRect(0, 0, c.width, c.height);
+  }
+  function startResultFx(level) {   // 'grand'(全面クリア) | 'win' | 'lose'
+    stopResultFx();
+    var cv = $("resultfx"), ov = $("resultoverlay"); if (!cv || !ov) return;
+    var W = cv.width = ov.clientWidth || 360, H = cv.height = ov.clientHeight || 640, ctx = cv.getContext("2d");
+    var WIN = (level !== "lose"), grand = (level === "grand"), eco = !settings.effects;
+    var COLS = WIN ? ["#ff5a6a", "#ffd24a", "#7cff9c", "#5ad6ff", "#c07bff", "#ff9a5a", "#ffffff"] : ["#5a6a86", "#7e93b5", "#48506a"];
+    var conf = [], fw = [], start = performance.now(), last = start, nextFw = start + 200;
+    var cn = WIN ? (eco ? 26 : (grand ? 130 : 80)) : (eco ? 12 : 26);
+    for (var i = 0; i < cn; i++) conf.push({ x: Math.random() * W, y: -Math.random() * H, vx: (Math.random() * 2 - 1) * (WIN ? 40 : 10), vy: (WIN ? 60 : 24) + Math.random() * (WIN ? 90 : 30), col: COLS[i % COLS.length], sz: (WIN ? 4 : 3) + Math.random() * 4 });
+    function loop(now) {
+      var dt = Math.min(0.05, (now - last) / 1000); last = now;
+      ctx.clearRect(0, 0, W, H);
+      for (var c = 0; c < conf.length; c++) {
+        var p = conf[c]; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (WIN ? 70 : 20) * dt;
+        if (p.y > H + 10) { p.y = -10; p.x = Math.random() * W; p.vy = (WIN ? 60 : 24) + Math.random() * (WIN ? 90 : 30); }
+        ctx.globalAlpha = WIN ? 0.95 : 0.5; ctx.fillStyle = p.col; ctx.fillRect(p.x, p.y, p.sz, p.sz * 1.7);
+      }
+      if (WIN && !eco && now >= nextFw) { nextFw = now + 90 + Math.random() * (grand ? 620 : 950); fw.push({ x: W * (0.12 + Math.random() * 0.76), y: H * (0.08 + Math.random() * 0.32), age: 0, col: COLS[Math.floor(Math.random() * COLS.length)] }); sfx.pop(); }   // 打ち上げ間隔は完全ランダム
+      for (var fI = fw.length - 1; fI >= 0; fI--) {
+        var b = fw[fI]; b.age += dt; var ft = b.age; if (ft >= 1) { fw.splice(fI, 1); continue; }
+        var n = grand ? 22 : 16; for (var k = 0; k < n; k++) { var a = k / n * Math.PI * 2, r = ft * W * 0.18; ctx.globalAlpha = 1 - ft; ctx.fillStyle = b.col; ctx.beginPath(); ctx.arc(b.x + Math.cos(a) * r, b.y + Math.sin(a) * r + ft * ft * 30, Math.max(0.4, 3.4 * (1 - ft)), 0, Math.PI * 2); ctx.fill(); }
+      }
+      ctx.globalAlpha = 1;
+      resultFxRAF = requestAnimationFrame(loop);
+    }
+    resultFxRAF = requestAnimationFrame(loop);
   }
   function playSelfFX(skill, idx, label, done) {
     var p = POS[idx], col = skill.color || "#ffffff", sp = skill.special;
@@ -1832,8 +1900,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("set-effects-label").textContent = L("エフェクト", "Effects");
     $("set-close").textContent = L("とじる", "Close");
     $("setlangja").classList.toggle("on", LANG === "ja"); $("setlangen").classList.toggle("on", LANG === "en");
-    $("toggle-sound").textContent = settings.sound ? L("オン", "ON") : L("オフ", "OFF");
-    $("toggle-sound").classList.toggle("off", !settings.sound);
+    $("vol-slider").value = settings.vol;
+    $("vol-val").textContent = settings.vol <= 0 ? L("ミュート", "Mute") : ("×" + settings.vol.toFixed(1));
     $("toggle-effects").textContent = settings.effects ? L("オン", "ON") : L("オフ", "OFF");
     $("toggle-effects").classList.toggle("off", !settings.effects);
     $("gearbtn").setAttribute("aria-label", L("せってい", "Settings"));
@@ -1866,7 +1934,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     // 設定
     $("gearbtn").onclick = function () { sfx.select(); renderI18n(); $("settingsoverlay").style.display = "flex"; };
     $("set-close").onclick = function () { $("settingsoverlay").style.display = "none"; };
-    $("toggle-sound").onclick = function () { settings.sound = !settings.sound; saveSettings(); if (!settings.sound) stopBGM(); else resumeBGM(); renderI18n(); };
+    $("vol-slider").oninput = function () {
+      var prev = settings.vol;
+      settings.vol = Math.max(0, Math.min(3, parseFloat(this.value) || 0)); saveSettings();
+      $("vol-val").textContent = settings.vol <= 0 ? L("ミュート", "Mute") : ("×" + settings.vol.toFixed(1));
+      if (settings.vol <= 0 && prev > 0) stopBGM();                 // 0でミュート
+      else if (settings.vol > 0 && prev <= 0) resumeBGM();          // 0→音ありで復帰（途中の音量変更は走行中BGMが自動反映）
+    };
     $("toggle-effects").onclick = function () { settings.effects = !settings.effects; saveSettings(); renderI18n(); };
 
     // タイトル → モード
