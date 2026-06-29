@@ -178,6 +178,15 @@
   .volwrap{display:flex;align-items:center;gap:10px;}
   #vol-slider{width:120px;height:22px;accent-color:#46d369;cursor:pointer;}
   .volval{font-size:13px;color:#9fe3ff;min-width:58px;text-align:right;font-weight:bold;}
+  .setrow.col{flex-direction:column;align-items:stretch;gap:8px;}
+  .databtns{display:flex;gap:8px;}
+  .setrow.col .minib{flex:1;width:auto;padding:9px 10px;font-size:14px;}
+  #backupbox{background:#0d1424;border:2px solid #38507e;border-radius:12px;padding:18px;max-width:360px;width:90%;text-align:center;}
+  #backupbox h2{font-size:18px;margin:0 0 8px;color:#ffd24a;}
+  #bk-desc{font-size:13px;color:#cfe0f5;line-height:1.6;margin:0 0 10px;}
+  #bk-text{width:100%;height:120px;resize:none;font-family:"Courier New",monospace;font-size:12px;background:#04060a;color:#9fe3ff;border:2px solid #2c416e;border-radius:8px;padding:8px;box-sizing:border-box;word-break:break-all;}
+  #bk-hint{font-size:11px;color:#ffd24a;line-height:1.5;margin:8px 0 4px;}
+  #backupbox button{margin-top:8px;}
   .seg{display:flex;border:2px solid #2c416e;border-radius:8px;overflow:hidden;}
   .seg button{width:auto;padding:7px 14px;font-size:13px;border:none;border-radius:0;background:#0d1424;color:#7e93b5;box-shadow:none;}
   .seg button.on{background:#1f6feb;color:#fff;}
@@ -335,7 +344,22 @@
     <div class="setrow"><span class="lab" id="set-sound-label"></span>
       <div class="volwrap"><input type="range" id="vol-slider" min="0" max="3" step="0.1" value="1"><span id="vol-val" class="volval"></span></div></div>
     <div class="setrow"><span class="lab" id="set-effects-label"></span><button id="toggle-effects" class="toggle"></button></div>
+    <div class="setrow col"><span class="lab" id="set-data-label"></span>
+      <div class="databtns"><button id="bk-export-btn" class="minib accent"></button><button id="bk-import-btn" class="minib"></button></div></div>
     <button id="set-close" class="primary"></button>
+  </div>
+</div>
+
+<!-- データのバックアップ/復元（戦士・バッジ・設定を1コードに） -->
+<div id="backupoverlay" class="overlay">
+  <div id="backupbox">
+    <h2 id="bk-title"></h2>
+    <p id="bk-desc"></p>
+    <textarea id="bk-text" rows="5" spellcheck="false" autocomplete="off"></textarea>
+    <p id="bk-hint"></p>
+    <button id="bk-copy" class="accent"></button>
+    <button id="bk-restore" class="primary"></button>
+    <button id="bk-close"></button>
   </div>
 </div>
 
@@ -941,6 +965,37 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   /* ---------------- キャラのローカル保存（最大9体・localStorage dbvs_saved） ---------------- */
   function loadSaved() { try { var a = JSON.parse(localStorage.getItem("dbvs_saved") || "[]"); return Array.isArray(a) ? a.slice(0, 9) : []; } catch (e) { return []; } }
   function persistSaved(arr) { try { localStorage.setItem("dbvs_saved", JSON.stringify(arr.slice(0, 9))); } catch (e) {} }
+
+  /* ---------------- データのバックアップ/復元（戦士・バッジ・設定を1コードに。端末/ブラウザ変更・再インストールでも引き継げる） ---------------- */
+  function b64enc(s) { return btoa(unescape(encodeURIComponent(s))); }   // UTF-8安全なbase64
+  function b64dec(s) { return decodeURIComponent(escape(atob(s))); }
+  function makeBackup() {
+    var payload = { v: 1, p: soloProgress, s: loadSaved(), c: settings };   // バッジ進捗・保存戦士(最大9)・設定
+    return "DBVSB1." + b64enc(JSON.stringify(payload));
+  }
+  function applyBackup(code) {
+    code = (code || "").replace(/\s+/g, "");                               // 改行/空白は除去
+    if (code.indexOf("DBVSB1.") !== 0) throw new Error("format");
+    var obj = JSON.parse(b64dec(code.slice(7)));
+    if (typeof obj.p === "number") localStorage.setItem("dbvs_progress", String(Math.max(0, Math.min(7, obj.p))));
+    if (Array.isArray(obj.s)) localStorage.setItem("dbvs_saved", JSON.stringify(obj.s.slice(0, 9)));
+    if (obj.c && typeof obj.c === "object") localStorage.setItem("dbvs_settings", JSON.stringify(obj.c));
+  }
+  function openBackup(mode) {
+    $("settingsoverlay").style.display = "none";
+    var exp = (mode === "export");
+    $("bk-title").textContent = exp ? L("バックアップを つくる", "Create backup") : L("データを ふっかつ", "Restore data");
+    $("bk-desc").textContent = exp
+      ? L("このコードを コピーして あんぜんな ところに ほぞんしてね。べつの たんまつ・ブラウザでも ふっかつできるよ。", "Copy this code and keep it safe. You can restore on any device or browser.")
+      : L("バックアップコードを はりつけて『ふっかつ』を おそう。", "Paste your backup code, then press Restore.");
+    $("bk-hint").style.display = exp ? "block" : "none";
+    var ta = $("bk-text");
+    if (exp) { ta.value = makeBackup(); ta.readOnly = true; } else { ta.value = ""; ta.readOnly = false; }
+    $("bk-copy").style.display = exp ? "block" : "none";
+    $("bk-restore").style.display = exp ? "none" : "block";
+    $("backupoverlay").style.display = "flex";
+    if (exp) { try { ta.focus(); ta.select(); } catch (e) {} }
+  }
   function saveCurrentChar() {
     if (!setupBuf.pixels) return;
     var arr = loadSaved();
@@ -1898,6 +1953,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("set-lang-label").textContent = L("ことば / Language", "Language / ことば");
     $("set-sound-label").textContent = L("おと", "Sound");
     $("set-effects-label").textContent = L("エフェクト", "Effects");
+    $("set-data-label").textContent = L("データ（戦士・バッジ）", "Data (fighters/badges)");
+    $("bk-export-btn").textContent = L("バックアップ", "Backup");
+    $("bk-import-btn").textContent = L("ふっかつ", "Restore");
+    $("bk-copy").textContent = L("コピー", "Copy");
+    $("bk-restore").textContent = L("ふっかつ する", "Restore");
+    $("bk-close").textContent = L("とじる", "Close");
+    $("bk-hint").textContent = L("💡 iPhoneは ホームがめんに ついかすると きえにくいよ", "💡 On iPhone, Add to Home Screen so data won't be cleared.");
     $("set-close").textContent = L("とじる", "Close");
     $("setlangja").classList.toggle("on", LANG === "ja"); $("setlangen").classList.toggle("on", LANG === "en");
     $("vol-slider").value = settings.vol;
@@ -1942,6 +2004,35 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       else if (settings.vol > 0 && prev <= 0) resumeBGM();          // 0→音ありで復帰（途中の音量変更は走行中BGMが自動反映）
     };
     $("toggle-effects").onclick = function () { settings.effects = !settings.effects; saveSettings(); renderI18n(); };
+    // データのバックアップ/復元
+    $("bk-export-btn").onclick = function () { sfx.select(); openBackup("export"); };
+    $("bk-import-btn").onclick = function () { sfx.select(); openBackup("import"); };
+    $("bk-close").onclick = function () { $("backupoverlay").style.display = "none"; };
+    $("bk-copy").onclick = function () {
+      var ta = $("bk-text"); ta.readOnly = false; ta.focus(); ta.select();
+      var ok = false;
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(ta.value).then(function () {}, function () {}); ok = true; }
+      else { try { ok = document.execCommand("copy"); } catch (e) {} }
+      ta.readOnly = true; sfx.select();
+      $("bk-copy").textContent = ok ? L("コピーした！", "Copied!") : L("コピー", "Copy");
+      setTimeout(function () { $("bk-copy").textContent = L("コピー", "Copy"); }, 1500);
+    };
+    $("bk-restore").onclick = function () {
+      var code = $("bk-text").value;
+      if (!code.replace(/\s+/g, "")) { alert(L("コードを はりつけてね。", "Please paste your code.")); return; }
+      if (!confirm(L("いまの データを バックアップで うわがきします。よろしい？", "Overwrite current data with this backup?"))) return;
+      try {
+        applyBackup(code);
+        alert(L("ふっかつ しました！がめんを ひらきなおすよ。", "Restored! Reloading…"));
+        location.reload();
+      } catch (e) {
+        alert(L("コードが ただしくないみたい。もういちど かくにんしてね。", "That code doesn't look valid. Please check it."));
+      }
+    };
+    // 保存データが消えにくいよう「永続化」を要求（対応ブラウザのみ・best-effort）
+    if (navigator.storage && navigator.storage.persist) {
+      try { navigator.storage.persisted().then(function (p) { if (!p) navigator.storage.persist(); }); } catch (e) {}
+    }
 
     // タイトル → モード
     $("mode-solo").onclick = function () { sfx.select(); openDifficulty(); };
