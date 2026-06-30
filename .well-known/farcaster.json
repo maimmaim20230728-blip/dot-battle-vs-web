@@ -1,4 +1,9 @@
 {
+  "accountAssociation": {
+    "header": "eyJmaWQiOjMzMzkzMTUsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg2RGYyOTIyRjc4OUVmMTFmNjk3NDREMEZkYWZCNDhmN2VhNjRmYTExIn0",
+    "payload": "eyJkb21haW4iOiJkb3QtYmF0dGxlLXZzLXdlYi52ZXJjZWwuYXBwIn0",
+    "signature": "gud85vj6Bb6RgViGcDYe65AymcrrC7HNYRmtwBeijz8DYRlxkXMHjf91E+7/+cXD2cOC9/TVipjfdyZ0vIreVxs="
+  },
   "miniapp": {
     "version": "1",
     "name": "Dot Battle VS",
