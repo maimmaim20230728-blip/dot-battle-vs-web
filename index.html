@@ -11,10 +11,6 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#070a12">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<!-- Farcaster Mini App 埋め込み（タイムラインで画像＋ボタンのカードとして表示・タップで起動） -->
-<meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://dot-battle-vs-web.vercel.app/icons/farcaster-embed.png","button":{"title":"⚔ Battle / 対戦","action":{"type":"launch_miniapp","name":"Dot Battle VS","url":"https://dot-battle-vs-web.vercel.app/","splashImageUrl":"https://dot-battle-vs-web.vercel.app/icons/icon-512.png","splashBackgroundColor":"#070a12"}}}' />
-<!-- 旧クライアント/バリデータ互換のための fc:frame 併記（中身は同一） -->
-<meta name="fc:frame" content='{"version":"1","imageUrl":"https://dot-battle-vs-web.vercel.app/icons/farcaster-embed.png","button":{"title":"⚔ Battle / 対戦","action":{"type":"launch_frame","name":"Dot Battle VS","url":"https://dot-battle-vs-web.vercel.app/","splashImageUrl":"https://dot-battle-vs-web.vercel.app/icons/icon-512.png","splashBackgroundColor":"#070a12"}}}' />
 <title>ドットバトルVS / DOT BATTLE VS</title>
 <style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -100,6 +96,10 @@
   .skillcard{background:#101a30;border-left:5px solid #5aa0ff;border-radius:6px;padding:8px 10px;}
   .skillcard.magic{border-left-color:#c07bff;}
   .skillcard b{font-size:15px;} .skillcard span{display:block;font-size:11px;color:#9ab;margin-top:3px;}
+  /* レア度による色分け（技・パッシブ共通）。S=虹色グラデの太文字／A=金／B=銀。他クラスの色に勝つよう!important */
+  .rar-S{font-weight:900!important;background:linear-gradient(90deg,#ff5a6a,#ffa54a,#ffe24a,#7cff9c,#5ad6ff,#c07bff,#ff6ad5)!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;text-shadow:none!important;}
+  .rar-A{color:#ffd24a!important;-webkit-text-fill-color:#ffd24a!important;text-shadow:none!important;}
+  .rar-B{color:#cfd8e2!important;-webkit-text-fill-color:#cfd8e2!important;text-shadow:none!important;}
   #passives-head{font-size:14px;margin:8px 0 4px;color:#ffd24a;}
   #passivelist{display:grid;gap:7px;}
   .passcard{display:flex;align-items:center;gap:8px;background:#1a1530;border-left:5px solid #ffd24a;border-radius:6px;padding:8px 10px;}
@@ -446,7 +446,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     { ja: "ライト", en: "Light", type: "magic", power: 1.0, flat: 50, color: "#ffffff" },
     { ja: "バインド", en: "Bind", type: "magic", special: "bind", color: "#9c7b4a" },
     { ja: "ポイズン", en: "Poison", type: "magic", special: "poison", color: "#7ce04a" },
-    { ja: "アンチマジック", en: "Anti-Magic", type: "magic", special: "barrier", color: "#4af0d6" },
+    { ja: "バリア", en: "Barrier", type: "magic", special: "barrier", color: "#4af0d6" },
     { ja: "ダウン", en: "Down", type: "magic", special: "down", color: "#cfd6e0" },
     { ja: "リカバリー", en: "Recovery", type: "magic", special: "heal", once: true, color: "#7cff9c" },
     { ja: "スピード", en: "Speed", type: "magic", special: "speedup", color: "#5affc8" },
@@ -456,13 +456,15 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var EXTRA_SKILLS = [
     { ja: "魔剣", en: "Dark Blade", type: "phys", power: 1.6, hit: 60, crit: 60, pierce: true },
     { ja: "魔弾", en: "Dark Bullet", type: "phys", power: 1.6, hit: 100, crit: 20, pierce: true },
-    { ja: "ルミナスアーツ", en: "Luminous Arts", type: "phys", multi: 5, power: 1.0, flat: 10, hit: 10, crit: 10, pierce: true },   // 5連撃：各 max(0,攻×1.0−防)+10・命中10基準(速度依存)・乱数広め。1発1秒で表示
+    { ja: "ルミナスアーツ", en: "Luminous Arts", type: "phys", multi: 5, power: 1.0, flat: 10, hit: 10, crit: 10, pierce: true },   // 5連撃：各 max(0,攻×1.0−防)+10・命中は表示10だが他物理と同じ+30基本で実質40基準(速度依存)・乱数広め。1発1秒で表示
     { ja: "サンダーテンペスト", en: "Thunder Tempest", type: "magic", power: 1.1, flat: 70, color: "#8cff6a", pierce: true },
     { ja: "絶対零度", en: "Absolute Zero", type: "magic", power: 1.2, flat: 100, color: "#bdf2ff", pierce: true },
     { ja: "サン・ファイア", en: "Sun Fire", type: "magic", power: 1.5, flat: 100, color: "#ff8a2c", pierce: true }
   ];
   var ALL_SKILLS = PHYS_SKILLS.concat(MAGIC_SKILLS).concat(EXTRA_SKILLS);
-  for (var si = 0; si < ALL_SKILLS.length; si++) ALL_SKILLS[si].id = si;
+  var RARITY_S = [19, 21, 22, 23, 24, 25, 26, 27, 28, 29];   // S＝金：バリア/リカバリー/スピード/スペシャル＋レア6
+  var RARITY_A = [1, 3, 5, 7, 9, 11, 15, 16, 17, 18, 20];    // A＝銀：強めの物理＋妨害魔法
+  for (var si = 0; si < ALL_SKILLS.length; si++) { ALL_SKILLS[si].id = si; ALL_SKILLS[si].rarity = RARITY_S.indexOf(si) >= 0 ? "S" : (RARITY_A.indexOf(si) >= 0 ? "A" : "B"); }   // 残りはB＝黒
 
   /* ---------------- パッシブスキル（持っているだけで発動・1人2つ・重複あり） ---------------- */
   var PASSIVES = [
@@ -481,12 +483,15 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     { id: 12, type: "ailimmune", ja: "どく・バインド むこう",         en: "Immune to poison/bind" },
     { id: 13, type: "antibuff",  ja: "あいてのバフ発動で 自分にも同じバフ", en: "Mirror foe's buff onto self" },
     { id: 14, type: "leech",     ja: "あたえたダメージの20% きゅうしゅう", en: "Drain 20% of damage dealt" },
-    { id: 15, type: "lucky",     ja: "まいターン ランダム1ステ +1〜最大", en: "+1..max to a random stat/turn" },
+    { id: 15, type: "lucky",     ja: "まいターン ランダム1ステ +50〜200", en: "+50..200 to a random stat/turn" },
     { id: 16, type: "allplus30", ja: "ぜんパラメータ +30",            en: "All stats +30" },
     { id: 17, type: "hitcritup", ja: "めいちゅう・かいしん +20",       en: "HIT & CRIT +20" },
     { id: 18, type: "encore",    ja: "1かいかぎりの技を もう1かい",    en: "Reuse a once-only skill" },
     { id: 19, type: "refboth",   ja: "20%で ぶつり・まほうを はねかえす", en: "20% reflect phys & magic" }
   ];
+  var PRARITY_S = [15, 16, 17, 18, 19];                     // S＝白文字＋虹縁
+  var PRARITY_A = [5, 6, 7, 8, 9, 10, 12, 13, 14];          // A＝金
+  for (var pri = 0; pri < PASSIVES.length; pri++) { PASSIVES[pri].rarity = PRARITY_S.indexOf(PASSIVES[pri].id) >= 0 ? "S" : (PRARITY_A.indexOf(PASSIVES[pri].id) >= 0 ? "A" : "B"); }   // 残りB＝銀
   function pname(p) { return LANG === "en" ? p.en : p.ja; }
   // 12種から2つ・重複ありで抽選（同じものが2つ付くことがある）
   function pickPassivesN(n) { var out = []; for (var i = 0; i < n; i++) out.push(PASSIVES[Math.floor(Math.random() * PASSIVES.length)]); return out; }   // n個・重複あり
@@ -724,10 +729,18 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function correctStats(st) {
     var keys = ["atk", "def", "spd"];
-    for (var k = 0; k < keys.length; k++) {
-      while (st[keys[k]] < 20) { st[keys[k]]++; st[highestKey(st, keys[k])]--; }
+    for (var k = 0; k < keys.length; k++) {                                    // 下限25：不足分を最大ステから移す
+      while (st[keys[k]] < 25) { st[keys[k]]++; st[highestKey(st, keys[k])]--; }
+    }
+    for (var k2 = 0; k2 < keys.length; k2++) {                                 // 上限200：超過分を最小ステへ移す（合計256は維持）
+      while (st[keys[k2]] > 200) { st[keys[k2]]--; st[lowestKey(st, keys[k2])]++; }
     }
     return st;
+  }
+  function lowestKey(st, exclude) {
+    var order = ["atk", "def", "spd"], best = null, bestV = 99999;
+    for (var i = 0; i < order.length; i++) { if (order[i] === exclude) continue; if (st[order[i]] < bestV) { bestV = st[order[i]]; best = order[i]; } }
+    return best;
   }
   function highestKey(st, exclude) {
     var order = ["atk", "def", "spd"], best = null, bestV = -1;
@@ -738,8 +751,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     return best;
   }
   function genRandomStats() {
-    // 各20以上・合計256（最大偏り 216/20/20）
-    var a = randInt(20, 216), b = randInt(20, 236 - a), c = 256 - a - b;
+    // 各25〜200・合計256（最大偏り 200/31/25 など）
+    var a = randInt(25, 200);
+    var b = randInt(Math.max(25, 56 - a), Math.min(200, 231 - a));   // c=256-a-b が25〜200に収まる範囲でbを抽選
+    var c = 256 - a - b;
     var arr = [a, b, c];
     for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
     return { atk: arr[0], def: arr[1], spd: arr[2] };
@@ -906,7 +921,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("lbl-spd").textContent = L("すばやさ", "SPD");
     $("skills-head").textContent = "▼ " + L("おぼえた とくぎ（4つ）", "Skills (4)");
     $("passives-head").textContent = "▼ " + L("もっている ちから（2つ）", "Passives (2)");
-    $("setup-hint").textContent = L("各20以上・合計256・開始時に±3", "Each ≥20 · total 256 · ±3 at start");
+    $("setup-hint").textContent = L("各25〜200・合計256・開始時に少し変動", "Each 25–200 · total 256 · slight start shift");
     $("name-label").textContent = L("なまえ", "Name");
     $("nameinput").maxLength = (LANG === "en") ? 12 : 8;   // 英語は12文字まで（日本語は8）
     $("nameinput").placeholder = L("8もじまで（任意）", "≤12 chars (optional)");
@@ -931,6 +946,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     img.onerror = function () { URL.revokeObjectURL(url); alert(L("画像を よみこめませんでした", "Could not load image")); };
     img.src = url;
   }
+  var AUTO_NICKS = ["攻撃の戦士", "守りの戦士", "素早さの戦士", "バランスの戦士", "Attacker", "Defender", "Speedster", "All-Rounder"];   // 自動ニックネーム（両言語）。ユーザーが変えていなければ再計算
+  function autoNickname(b) {   // 1ステが150超ならそれに応じた名前・無ければバランス
+    if (b.atk > 150) return L("攻撃の戦士", "Attacker");
+    if (b.def > 150) return L("守りの戦士", "Defender");
+    if (b.spd > 150) return L("素早さの戦士", "Speedster");
+    return L("バランスの戦士", "All-Rounder");
+  }
   function renderSetupResult() {
     drawPixels($("previewcanvas"), setupBuf.pixels);
     $("previewwrap").classList.remove("empty");
@@ -943,7 +965,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       var s = setupBuf.skills[i], div = document.createElement("div");
       div.className = "skillcard " + (s.type === "magic" ? "magic" : "phys");
       div.innerHTML = "<b></b><span></span>";
-      div.querySelector("b").textContent = sname(s);
+      var bEl = div.querySelector("b"); bEl.textContent = sname(s); bEl.className = "rar-" + s.rarity;   // レア度で文字色(S金/A銀/B黒白縁)
       div.querySelector("span").textContent = sdesc(s);
       sk.appendChild(div);
     }
@@ -952,10 +974,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       var pp = setupBuf.passives[pi], pdiv = document.createElement("div");
       pdiv.className = "passcard";
       var ico = document.createElement("b"); ico.textContent = "★";
-      var nm = document.createElement("span"); nm.textContent = pname(pp);
+      var nm = document.createElement("span"); nm.textContent = pname(pp); nm.className = "rar-" + pp.rarity;   // レア度で色
       pdiv.appendChild(ico); pdiv.appendChild(nm); pl.appendChild(pdiv);
     }
-    $("nameinput").value = setupBuf.name || "";
+    if (!setupBuf.name || AUTO_NICKS.indexOf(setupBuf.name) >= 0) setupBuf.name = autoNickname(b);   // 初期ニックネーム自動入力（未入力or前回の自動名なら再計算・カスタム名は保持）
+    $("nameinput").value = setupBuf.name;
     $("setupresult").style.display = "block";
     $("confirmbtn").disabled = false;
   }
@@ -1126,11 +1149,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
 
   /* ---------------- バトル構築 ---------------- */
   function finalize(base) {
-    return {
-      atk: clamp(base.atk + randInt(-3, 3), 20, 256),
-      def: clamp(base.def + randInt(-3, 3), 20, 256),
-      spd: clamp(base.spd + randInt(-3, 3), 20, 256)
-    };
+    var s = { atk: base.atk, def: base.def, spd: base.spd };
+    var keys = ["atk", "def", "spd"], from = keys[randInt(0, 2)], to = keys[randInt(0, 2)];   // 合計256を保ったまま0〜7ぶんを1ステから別ステへ移す小さな揺らぎ
+    var amt = Math.min(randInt(0, 7), s[from] - 25, 200 - s[to]);   // fromが25未満/toが200超にならない範囲
+    if (from !== to && amt > 0) { s[from] -= amt; s[to] += amt; }
+    return { atk: s.atk, def: s.def, spd: s.spd };
   }
   function buildFighter(data, opts) {
     var f = {
@@ -1143,7 +1166,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     };
     f.regen += 30 * pcount(f, "regen");   // ⑨ 毎ターンHP回復30（難易度regenに加算・重複で60）
     f.endure = pcount(f, "endure");       // ⑪ HP1で耐える 残り回数（重複で2回）
-    if (pcount(f, "lucky") > 0) { f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)]; f.luckyAmt = randInt(1, 256); } else { f.luckyStat = null; f.luckyAmt = 0; }   // ⑯ ラッキー：強化ステと量(1〜256)
+    if (pcount(f, "lucky") > 0) { f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)]; f.luckyAmt = randInt(50, 200); } else { f.luckyStat = null; f.luckyAmt = 0; }   // ⑯ ラッキー：強化ステと量(50〜200)
     return f;
   }
   function startBattleHotseat() {
@@ -1284,7 +1307,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function startTurn(f) {
     var log = [];
-    if (pcount(f, "lucky") > 0) { f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)]; f.luckyAmt = randInt(1, 256); }  // ⑯ 毎ターン、強化ステと量(1〜256)を再抽選
+    if (pcount(f, "lucky") > 0) { f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)]; f.luckyAmt = randInt(50, 200); }  // ⑯ 毎ターン、強化ステと量(50〜200)を再抽選
     if (f.regen > 0 && f.hp > 0 && f.hp < f.maxHp) {
       var before = f.hp; f.hp = Math.min(f.maxHp, f.hp + f.regen);
       log.push(L(f.label + "は " + (f.hp - before) + " かいふく", f.label + " regenerates " + (f.hp - before)));
@@ -1343,7 +1366,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         var btn = document.createElement("button");
         btn.className = "cmd " + (skill.type === "magic" ? "magic" : "phys");
         var used = onceSpent(f, skill);
-        var nm = document.createElement("span"); nm.className = "cmdname"; nm.textContent = sname(skill);
+        var nm = document.createElement("span"); nm.className = "cmdname rar-" + skill.rarity; nm.textContent = sname(skill);   // レア度で文字色
         var ds = document.createElement("span"); ds.className = "cmddesc"; ds.textContent = used ? L("つかった", "used") : sdesc(skill);
         btn.appendChild(nm); btn.appendChild(ds);
         if (used) { btn.disabled = true; btn.classList.add("used"); }
@@ -1356,7 +1379,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var bp = $("battlepassives"); bp.innerHTML = "";
     var lab = document.createElement("span"); lab.className = "bpass-label"; lab.textContent = "▼ " + L("じぶんの ちから（パッシブ）", "Your passives");
     bp.appendChild(lab);
-    for (var pi = 0; pi < f.passives.length; pi++) { var pchip = document.createElement("span"); pchip.className = "bpass"; pchip.textContent = "★ " + pname(f.passives[pi]); bp.appendChild(pchip); }
+    for (var pi = 0; pi < f.passives.length; pi++) { var pchip = document.createElement("span"); pchip.className = "bpass rar-" + f.passives[pi].rarity; pchip.textContent = "★ " + pname(f.passives[pi]); bp.appendChild(pchip); }
     bp.style.display = f.passives.length ? "flex" : "none";
     var sb = $("surrenderbtn"); if (sb) sb.style.display = "block";   // 人間のターンだけ降参可
   }
@@ -1378,11 +1401,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     pushLog(L(f.label + "の " + sname(skill) + "！", f.label + " uses " + sname(skill) + "!"));
     if (skill.type === "phys") resolvePhysical(f, opp, skill); else resolveMagic(f, opp, skill);
   }
+  function barrierLayers(t) { return t.buffs.barrier ? Math.min(2, t.buffs.barrier.stacks || 1) : 0; }   // 魔法「バリア」の残り枚数(0〜2)
+  function consumeBarrier(t, n) { if (!t.buffs.barrier) return; var s = (t.buffs.barrier.stacks || 1) - n; if (s > 0) t.buffs.barrier.stacks = s; else t.buffs.barrier = null; }
   function resolvePhysical(f, opp, skill) {
     if (skill.multi) { resolveMultiHit(f, opp, skill); return; }   // ⑮ルミナスアーツ等の連撃は専用処理
-    // 命中は通常式（70+自速−敵速+補正、最低3%）＋④命中+20%×個数。ダメージ基礎値は技の formula で分岐。
-    var hitRate = 70 + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + skill.hit + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");
-    if (hitRate < 3) hitRate = 3;
+    // 命中は通常式（30+自速−敵速+補正）＋④命中+20%×個数。物理は必中も必ず回避も無し＝下限5%・上限95%にクランプ。ダメージ基礎値は技の formula で分岐。
+    var hitRate = 30 + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + skill.hit + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");
+    hitRate = Math.max(5, Math.min(95, hitRate));
     if (!roll(hitRate)) { pushLog(L("しかし ミス！", "But it missed!")); sfx.miss(); playMiss(opp.index, afterAction); return; }
     var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup")), dmg;   // ⑤会心+20%×個数 ＋⑱命中会心+20
     var base = skill.formula === "atkspd" ? (effAtk(f) + effSpd(f))   // 体当たり/猪突猛進
@@ -1392,7 +1417,32 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     else dmg = (base - effDef(opp)) * randF(0.95, 1.05);
     dmg = Math.floor(dmg); if (dmg < 1) dmg = 1;
     var dmgLog = crit ? L("かいしんの いちげき！ " + dmg + " ダメージ", "CRITICAL! " + dmg + " damage") : L(dmg + " ダメージ", dmg + " damage");
-    // ⑦⑳ 物理反射（レイヤー方式）：発動数を数え、★物理は1層貫通(50%)・計2層以上なら50%反射、通常物理は1層で100%反射。
+    // バリア×物理：バリア有りなら新ルール。貫通技(魔剣/魔弾/ルミナス)と通常物理で分岐。バリア0枚は下の従来パッシブ反射へ。
+    var pB = barrierLayers(opp);
+    if (pB >= 1) {
+      var ppOn = refProcs(opp, "refphys") > 0, isReflect;
+      if (skill.pierce) {                                       // 貫通技
+        if (ppOn) { if (pB >= 2) { isReflect = true; }          // 2枚＋発動＝1.0倍反射（dmgそのまま）
+                    else { isReflect = false; dmg = 1; } }       // 1枚＋発動＝ダメージ1
+        else { isReflect = false; dmg = Math.max(1, Math.floor(dmg * (pB >= 2 ? 0.5 : 0.75))); }   // 不発＝2枚50%/1枚75%
+      } else {                                                  // 通常物理
+        if (ppOn) { isReflect = true; dmg = Math.max(1, Math.floor(dmg * (pB >= 2 ? 1.5 : 1.2))); }  // 発動＝2枚1.5倍/1枚1.2倍反射
+        else { isReflect = false; dmg = (pB >= 2) ? 1 : Math.max(1, Math.floor(dmg * 0.5)); }         // 不発＝2枚ダメ1/1枚半減
+      }
+      consumeBarrier(opp, pB);   // バリアは1枚時1・2枚時2＝全消費
+      dmgLog = crit ? L("かいしんの いちげき！ " + dmg + " ダメージ", "CRITICAL! " + dmg + " damage") : L(dmg + " ダメージ", dmg + " damage");
+      if (isReflect) {
+        sfx.deflect(); pushLog(L(opp.label + "は バリアで はねかえした！", opp.label + " reflected with a barrier!"));
+        var enBR = applyDamage(f, dmg); pushLog(dmgLog); if (enBR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+        if (crit) sfx.crit(); else sfx.hit();
+        playPhysFX(skill, opp.index, f.index, dmg, crit, afterAction); return;
+      }
+      sfx.shatter(); pushLog(L(opp.label + "の バリアが ふせいだ！", opp.label + "'s barrier blocked it!"));
+      var enBB = applyDamage(opp, dmg); pushLog(dmgLog); if (enBB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+      if (crit) sfx.crit(); else sfx.hit();
+      playPhysFX(skill, f.index, opp.index, dmg, crit, afterAction); return;
+    }
+    // ⑦⑳ 物理反射（バリア0枚時の従来レイヤー方式）：★物理は1層貫通(50%)・計2層以上なら50%反射、通常物理は1層で100%反射。
     var pp = refProcs(opp, "refphys");
     if (pp > 0) {
       if (skill.pierce) {
@@ -1420,20 +1470,36 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   // 連撃（ルミナスアーツ）：skill.multi 回、1発ごとに命中/会心を判定。当たれば (攻×power−防)+flat、会心は防御無視×1.2+flat。外れたら演出なしで次へ。
   function resolveMultiHit(f, opp, skill) {
-    var hits = skill.multi || 5, i = 0;
+    var hits = skill.multi || 5, i = 0, luxB = barrierLayers(opp);   // バリア枚数はこの攻撃中は固定。消費は攻撃終了時に1枚でも2枚でも全消滅
     function one() {
-      if (battle.over || opp.hp <= 0 || i >= hits) { afterAction(); return; }
+      if (battle.over || opp.hp <= 0 || i >= hits) { if (luxB >= 1 && opp.buffs.barrier) opp.buffs.barrier = null; afterAction(); return; }   // 5発1セット終了でバリア全消滅
       i++;
-      var hitRate = skill.hit + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");   // 連撃は基礎=skill.hit(30%)＝速度差で増減。速いと全的中、遅いと数発外す
-      if (hitRate < 3) hitRate = 3;
+      var hitRate = 30 + skill.hit + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");   // 連撃も通常物理と同じ30+命中値。ルミナスは命中値10＝同速で実質40%。速いと全的中、遅いと数発外す
+      hitRate = Math.max(5, Math.min(95, hitRate));   // 物理は必中も必ず回避も無し（下限5%・上限95%）
       if (!roll(hitRate)) { pushLog(L(i + "げきめ ミス！", "Hit " + i + " missed!")); runFX(450, function (t) { drawScene(); drawText(POS[opp.index].x, POS[opp.index].y - 50, "MISS", "#9fb3c8", 1 - t, 18); }, one); return; }   // 外れたら短くMISS表示して次の一撃へ
       var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup"));
       var base = effAtk(f) * skill.power;
       var dmg = Math.floor(((crit ? base * 1.2 : Math.max(0, base - effDef(opp))) + (skill.flat || 0)) * randF(0.8, 1.2)); if (dmg < 1) dmg = 1;   // 攻−防は0止め＝+10最低保証(防256でも約8〜12)・乱数は他より広め
       var dmgLog = crit ? L(i + "げきめ かいしん！ " + dmg, "Hit " + i + " CRIT! " + dmg) : L(i + "げきめ " + dmg + " ダメージ", "Hit " + i + ": " + dmg);
       skill._luxAng = (i - 1) * 1.15;   // 一撃ごとに角度を変えて連続感（FXが参照）
-      var pp = refProcs(opp, "refphys");   // 物理反射（1発ごと・レイヤー方式）
-      if (pp > 0) {
+      var pp = refProcs(opp, "refphys");   // 物理反射（1発ごと）
+      if (luxB >= 1) {   // バリア有り：ルミナスは貫通技（1発ごと・貫通テーブル）。消費は攻撃終了時にまとめて全消滅
+        var isRefL;
+        if (pp > 0) { if (luxB >= 2) { isRefL = true; } else { isRefL = false; dmg = 1; } }   // 発動＝2枚1.0倍反射/1枚ダメージ1
+        else { isRefL = false; dmg = Math.max(1, Math.floor(dmg * (luxB >= 2 ? 0.5 : 0.75))); }   // 不発＝2枚50%/1枚75%
+        dmgLog = crit ? L(i + "げきめ かいしん！ " + dmg, "Hit " + i + " CRIT! " + dmg) : L(i + "げきめ " + dmg + " ダメージ", "Hit " + i + ": " + dmg);
+        if (isRefL) {
+          sfx.deflect(); pushLog(L(opp.label + "は はねかえした！", opp.label + " reflected!"));
+          var enLR = applyDamage(f, dmg); pushLog(dmgLog); if (enLR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+          if (crit) sfx.crit(); else sfx.hit();
+          playPhysFX(skill, opp.index, f.index, dmg, crit, one); return;
+        }
+        sfx.shatter();
+        var enLB = applyDamage(opp, dmg); pushLog(dmgLog); if (enLB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+        if (crit) sfx.crit(); else sfx.hit();
+        playPhysFX(skill, f.index, opp.index, dmg, crit, one); return;
+      }
+      if (pp > 0) {   // バリア0枚：従来のパッシブ反射（★貫通）
         if (skill.pierce) {
           dmg = Math.max(1, Math.floor(dmg * 0.5));   // ★は貫通＝半減
           dmgLog = crit ? L(i + "げきめ かいしん！ " + dmg, "Hit " + i + " CRIT! " + dmg) : L(i + "げきめ " + dmg + " ダメージ", "Hit " + i + ": " + dmg);
@@ -2127,18 +2193,6 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       navigator.serviceWorker.register("service-worker.js").catch(function () {});
     });
   }
-</script>
-<!-- Farcaster Mini App: 埋め込み表示(iframe/webview)時のみ同梱SDKを遅延ロードし ready() を通知。
-     通常ブラウザ/PWAでは読み込まないので軽さを維持。外部オリジンへの通信はしない（CSP維持）。 -->
-<script>
-  (function () {
-    var inFarcaster = (window.self !== window.top) || !!window.ReactNativeWebView;
-    if (!inFarcaster) return;
-    var s = document.createElement("script");
-    s.src = "farcaster-sdk.js";
-    s.onload = function () { try { window.FCSDK && window.FCSDK.sdk.actions.ready(); } catch (e) {} };
-    document.head.appendChild(s);
-  })();
 </script>
 </body>
 </html>
