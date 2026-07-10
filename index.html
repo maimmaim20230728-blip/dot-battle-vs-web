@@ -506,8 +506,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     { id: 18, type: "encore",    ja: "1かいかぎりの技を もう1かい",    en: "Reuse a once-only skill" },
     { id: 19, type: "refboth",   ja: "20%で ぶつり・まほうを はねかえす", en: "20% reflect phys & magic" }
   ];
-  var PRARITY_S = [15, 16, 17, 18, 19];                     // S＝白文字＋虹縁
-  var PRARITY_A = [5, 6, 7, 8, 9, 10, 12, 13, 14];          // A＝金
+  var PRARITY_S = [15, 16, 18, 19];                         // S＝虹グラデ
+  var PRARITY_A = [5, 6, 7, 8, 9, 10, 12, 13, 14, 17];      // A＝金（17命中会心+20はA）
   for (var pri = 0; pri < PASSIVES.length; pri++) { PASSIVES[pri].rarity = PRARITY_S.indexOf(PASSIVES[pri].id) >= 0 ? "S" : (PRARITY_A.indexOf(PASSIVES[pri].id) >= 0 ? "A" : "B"); }   // 残りB＝銀
   function pname(p) { return LANG === "en" ? p.en : p.ja; }
   // 12種から2つ・重複ありで抽選（同じものが2つ付くことがある）
