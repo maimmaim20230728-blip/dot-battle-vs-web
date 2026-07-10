@@ -64,7 +64,15 @@
   .bigbtn .mtitle{display:block;font-size:16px;}
   .bigbtn .mdesc{display:block;font-size:11px;color:#9ab;margin-top:3px;font-weight:normal;}
   #mode-solo{background:#3a2a6e;border-color:#7a5cff;} #mode-hotseat{background:#1f5a4a;border-color:#46d3a0;}
-  #mode-qr{background:#5a2a4a;border-color:#ff5aa0;}
+  #mode-qr{background:#5a2a4a;border-color:#ff5aa0;} #mode-mychar{background:#2a3a6e;border-color:#5a8aff;}
+  .diff-infinity{background:linear-gradient(90deg,#3a1a4a,#5a2a3a);border-color:#ffd24a;box-shadow:0 0 12px rgba(255,210,74,.35);}
+  #battlemaster{margin:2px auto 10px;font-size:13px;font-weight:bold;color:#ffd24a;text-shadow:1px 1px 0 #000;letter-spacing:.5px;}
+  #screen-mychar{padding-top:6px;}
+  .pickcard{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#0d1424;border:2px solid #38507e;border-radius:10px;padding:8px 10px;margin-bottom:8px;}
+  .pickcard .pickinfo{display:flex;flex-direction:column;min-width:0;}
+  .pickcard .pickinfo b{font-size:15px;color:#e2ecfb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pickcard .pickinfo small{font-size:12px;color:#9ab;}
+  .pick-empty{color:#9ab;font-size:13px;line-height:1.7;margin:24px 10px;text-align:center;}
   #soyogilink{display:block;margin-top:16px;font-size:12px;color:#9be0c0;text-decoration:none;
     border:1px dashed #2c6e54;border-radius:8px;padding:10px;}
   #soyogilink:active{background:#0f1f18;}
@@ -97,7 +105,7 @@
   .skillcard.magic{border-left-color:#c07bff;}
   .skillcard b{font-size:15px;} .skillcard span{display:block;font-size:11px;color:#9ab;margin-top:3px;}
   /* レア度による色分け（技・パッシブ共通）。S=虹色グラデの太文字／A=金／B=銀。他クラスの色に勝つよう!important */
-  .rar-S{font-weight:900!important;background:linear-gradient(90deg,#ff5a6a,#ffa54a,#ffe24a,#7cff9c,#5ad6ff,#c07bff,#ff6ad5)!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;text-shadow:none!important;}
+  .rar-S{font-weight:900!important;background:repeating-linear-gradient(135deg,#ff5a6a 0,#ffa54a .3em,#ffe24a .6em,#7cff9c .9em,#5ad6ff 1.2em,#c07bff 1.5em,#ff6ad5 1.8em,#ff5a6a 2.1em)!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;text-shadow:none!important;}
   .rar-A{color:#ffd24a!important;-webkit-text-fill-color:#ffd24a!important;text-shadow:none!important;}
   .rar-B{color:#cfd8e2!important;-webkit-text-fill-color:#cfd8e2!important;text-shadow:none!important;}
   #passives-head{font-size:14px;margin:8px 0 4px;color:#ffd24a;}
@@ -218,12 +226,21 @@
     <div class="logo"><span class="logo-main">ドットバトル</span><span class="logo-vs">VS</span><small>DOT BATTLE VS</small></div>
     <div class="badges"><span id="b1"></span><span id="b2"></span><span id="b3"></span></div>
     <p id="subtitle"></p>
+    <div id="battlemaster" style="display:none;"></div>
     <div class="modes">
       <button id="mode-solo" class="bigbtn"></button>
       <button id="mode-hotseat" class="bigbtn"></button>
       <button id="mode-qr" class="bigbtn"></button>
+      <button id="mode-mychar" class="bigbtn"></button>
     </div>
     <a id="soyogilink" href="https://soyogi.hp.peraichi.com/top" target="_blank" rel="noopener noreferrer"></a>
+  </section>
+
+  <!-- じぶんのキャラで（保存キャラで対戦 / 保存キャラ ランダム5連戦） -->
+  <section id="screen-mychar" class="screen">
+    <h2 id="mychar-title"></h2>
+    <div id="mychar-list" class="modes"></div>
+    <button id="mychar-back" class="backbtn"></button>
   </section>
 
   <!-- 難易度（ソロ：解放式・クリアでバッジ＆次が出現） -->
@@ -701,7 +718,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var currentScreen = "title";
   function showScreen(name) {
     currentScreen = name; stopResultFx();
-    var ids = ["title", "difficulty", "setup", "saved", "qrhub", "qrshow", "qrscan", "battle"];
+    var ids = ["title", "difficulty", "setup", "saved", "qrhub", "qrshow", "qrscan", "battle", "mychar"];
     for (var i = 0; i < ids.length; i++) {
       var el = $("screen-" + ids[i]);
       if (!el) continue;
@@ -887,9 +904,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
 
   /* ---------------- フロー状態 ---------------- */
-  var mode = null;          // 'solo' | 'hotseat' | 'qr'
+  var mode = null;          // 'solo' | 'hotseat' | 'qr' | 'mychar'
   var soloDiff = null;      // 'easy'|'normal'|'hard'|'vhard'
   var soloStage = 0;
+  var soloMode = "diff";    // 'diff'=難易度ソロ / 'saved'=保存キャラ ランダム5連戦
   var setupTarget = null;   // 'player'|'p1'|'p2'|'you'
   var setupBuf = { pixels: null, base: null, skills: null, passives: null, name: "" };
   var pending = {};         // built fighter data by key
@@ -995,12 +1013,14 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   /* ---------------- キャラのローカル保存（最大9体・localStorage dbvs_saved） ---------------- */
   function loadSaved() { try { var a = JSON.parse(localStorage.getItem("dbvs_saved") || "[]"); return Array.isArray(a) ? a.slice(0, 9) : []; } catch (e) { return []; } }
   function persistSaved(arr) { try { localStorage.setItem("dbvs_saved", JSON.stringify(arr.slice(0, 9))); } catch (e) {} }
+  function getInfinityBest() { try { var v = parseInt(localStorage.getItem("dbvs_infinity_best"), 10); return (v > 0) ? v : 0; } catch (e) { return 0; } }   // 無限バトルの最高連勝
+  function setInfinityBest(v) { try { localStorage.setItem("dbvs_infinity_best", String(v)); } catch (e) {} }
 
   /* ---------------- データのバックアップ/復元（戦士・バッジ・設定を1コードに。端末/ブラウザ変更・再インストールでも引き継げる） ---------------- */
   function b64enc(s) { return btoa(unescape(encodeURIComponent(s))); }   // UTF-8安全なbase64
   function b64dec(s) { return decodeURIComponent(escape(atob(s))); }
   function makeBackup() {
-    var payload = { v: 1, p: soloProgress, s: loadSaved(), c: settings };   // バッジ進捗・保存戦士(最大9)・設定
+    var payload = { v: 1, p: soloProgress, s: loadSaved(), c: settings, b: getInfinityBest() };   // バッジ進捗・保存戦士(最大9)・設定・無限最高記録
     return "DBVSB1." + b64enc(JSON.stringify(payload));
   }
   function applyBackup(code) {
@@ -1010,6 +1030,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (typeof obj.p === "number") localStorage.setItem("dbvs_progress", String(Math.max(0, Math.min(7, obj.p))));
     if (Array.isArray(obj.s)) localStorage.setItem("dbvs_saved", JSON.stringify(obj.s.slice(0, 9)));
     if (obj.c && typeof obj.c === "object") localStorage.setItem("dbvs_settings", JSON.stringify(obj.c));
+    if (typeof obj.b === "number" && obj.b > 0) localStorage.setItem("dbvs_infinity_best", String(obj.b));
   }
   var bkMode = "export";   // export=全データ書出 / import=全データ復元 / gift=戦士1体を渡す / receive=戦士1体を追加
   function openBackup(mode, arg) {
@@ -1183,7 +1204,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function startSoloRun() { soloStage = 0; nextSolo(); }
   // ソロ難易度（解放式）: 解放済み＋次の1つだけ表示。クリア済みには★。
   function openDifficulty() {
-    mode = "solo"; pending = {};
+    mode = "solo"; pending = {}; soloMode = "diff";
     $("diff-title").textContent = L("むずかしさを えらぼう", "Choose difficulty");
     $("diff-back").textContent = "‹ " + L("もどる", "Back");
     var list = $("diff-list"); list.innerHTML = "";
@@ -1201,6 +1222,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         list.appendChild(btn);
       })(DIFFS[i], i);
     }
+    if (soloProgress >= DIFFS.length) {   // ムリゲー(全7)クリアで解放＝やりこみ
+      var best = getInfinityBest();
+      var ib = document.createElement("button"); ib.className = "bigbtn diff-infinity";
+      var it = document.createElement("span"); it.className = "mtitle"; it.textContent = "♾ " + L("無限ハチャメチャバトル", "Endless Chaos Battle");
+      var idesc = document.createElement("span"); idesc.className = "mdesc";
+      idesc.textContent = L("負けるまで無限！全難易度＆保存キャラが出現", "Endless until you lose! All difficulties + saved foes") + (best > 0 ? L("（最高 " + best + "れんしょう）", " (best " + best + ")") : "");
+      ib.appendChild(it); ib.appendChild(idesc);
+      ib.onclick = function () { sfx.select(); soloMode = "infinity"; startSetupFor("player"); };
+      list.appendChild(ib);
+    }
     showScreen("difficulty");
   }
   // ソロボタンのバッジ表示（★=クリア済 ☆=未クリア、5枠）
@@ -1210,19 +1241,95 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (!b) { b = document.createElement("span"); b.className = "solo-badges"; btn.appendChild(b); }
     var s = ""; for (var i = 0; i < 7; i++) s += (i < soloProgress) ? "★" : "☆";
     b.textContent = s;
+    var bm = $("battlemaster");
+    if (bm) { var best = getInfinityBest(); if (best >= 99) { bm.style.display = "block"; bm.textContent = "👑 " + L("バトルマスター", "BATTLE MASTER") + L("（さいこう " + best + "れんしょう）", " (best " + best + ")"); } else bm.style.display = "none"; }
+  }
+  /* ---------------- じぶんのキャラで（保存キャラ対戦 / 保存キャラ ランダム5連戦） ---------------- */
+  function openMyChar() {
+    mode = "mychar";
+    $("mychar-title").textContent = L("じぶんの キャラで", "Your Characters");
+    $("mychar-back").textContent = "‹ " + L("もどる", "Back");
+    $("mychar-back").onclick = function () { showScreen("title"); };
+    var list = $("mychar-list"); list.innerHTML = "";
+    if (!loadSaved().length) {
+      var msg = document.createElement("p"); msg.className = "pick-empty";
+      msg.textContent = L("さきに キャラを ほぞんしてね（キャラ作成の 💾ボタン）", "Save a character first (💾 in character setup)");
+      list.appendChild(msg); showScreen("mychar"); return;
+    }
+    list.appendChild(bigOption("⚔ " + L("えらんで たいせん", "Pick & Battle"), L("2たいえらんで 1たい1（ミラーOK・あいてはAI）", "Pick 2 for 1v1 (mirror OK · foe is AI)"), pickForSelfBattle));
+    list.appendChild(bigOption("🔥 " + L("ほぞんキャラ ５れんせん", "Saved 5-in-a-row"), L("じぶんを1たいえらんで ほぞんキャラと ランダム5れんせん", "Pick your fighter · fight 5 random saved foes"), pickForSavedRun));
+    showScreen("mychar");
+  }
+  function bigOption(title, desc, onclick) {
+    var btn = document.createElement("button"); btn.className = "bigbtn";
+    var t = document.createElement("span"); t.className = "mtitle"; t.textContent = title;
+    var d = document.createElement("span"); d.className = "mdesc"; d.textContent = desc;
+    btn.appendChild(t); btn.appendChild(d); btn.onclick = function () { sfx.select(); onclick(); };
+    return btn;
+  }
+  function openPick(title, cb) {
+    $("mychar-title").textContent = title;
+    var list = $("mychar-list"); list.innerHTML = "";
+    var saved = loadSaved();
+    for (var i = 0; i < saved.length; i++) {
+      (function (raw) {
+        var data = decodeFighter(raw); if (!data) return;
+        var card = document.createElement("button"); card.className = "pickcard";
+        var cv = document.createElement("canvas"); cv.width = 44; cv.height = 44; cv.className = "savedthumb pixel"; drawPixels(cv, data.pixels);
+        var info = document.createElement("span"); info.className = "pickinfo";
+        var nm = document.createElement("b"); nm.textContent = data.name || L("ななし", "(no name)");
+        var st = document.createElement("small"); st.textContent = L("攻", "A") + data.base.atk + " " + L("防", "D") + data.base.def + " " + L("速", "S") + data.base.spd;
+        info.appendChild(nm); info.appendChild(st);
+        card.appendChild(cv); card.appendChild(info);
+        card.onclick = function () { sfx.select(); cb(data, raw); };
+        list.appendChild(card);
+      })(saved[i]);
+    }
+    showScreen("mychar");
+  }
+  function pickForSelfBattle() {
+    openPick(L("じぶん（1P）を えらぶ", "Pick YOU (1P)"), function (d1) {
+      openPick(L("あいて（2P）を えらぶ", "Pick FOE (2P)"), function (d2) {
+        pending.self1 = d1; pending.self2 = d2; startBattleSelf();
+      });
+    });
+  }
+  function startBattleSelf() {
+    var f0 = buildFighter(pending.self1, { label: pending.self1.name || "1P", index: 0 });
+    var f1 = buildFighter(pending.self2, { label: pending.self2.name || "2P", index: 1, isAI: true });
+    beginBattle(f0, f1, { kind: "self" });
+  }
+  function pickForSavedRun() {
+    openPick(L("じぶんを えらぶ", "Pick your fighter"), function (d) {
+      pending.player = d; soloMode = "saved"; startSoloRun();
+    });
   }
   function nextSolo() {
-    // 難易度で敵のスキ/パッシブ数を変える：⑥むずすぎ=物理3魔法3・パッシブ4／⑦ムリゲー=ランダム6・パッシブ6／他=4・2
-    var eskills, epass;
-    if (soloDiff === "insane") { eskills = pick6skills(); epass = pickPassivesN(6); }
-    else if (soloDiff === "extreme") { eskills = pick3phys3magic(); epass = pickPassivesN(4); }
-    else { eskills = pickSkills(); epass = pickPassives(); }
-    var enemy = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: eskills, passives: epass };
     var f0 = buildFighter(pending.player, { label: L("あなた", "YOU"), index: 0 });
-    var f1 = buildFighter(enemy, {
-      label: L("てき", "ENEMY"), index: 1, isAI: true,
-      maxHp: diffMaxHp(soloDiff), regen: diffRegen(soloDiff), doubleAct: diffDouble(soloDiff)
-    });
+    var f1;
+    if (soloMode === "saved") {   // 保存キャラから完全ランダム（自分含む・重複可・ミラーもあり得る）
+      var saved = loadSaved(), enemy = saved.length ? decodeFighter(saved[randInt(0, saved.length - 1)]) : null;
+      if (!enemy) enemy = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: pickSkills(), passives: pickPassives() };   // 保険
+      f1 = buildFighter(enemy, { label: (enemy.name || L("てき", "ENEMY")), index: 1, isAI: true });   // 既定HP999・難易度スケールなし
+    } else if (soloMode === "infinity") {   // 無限ハチャメチャ：10%で保存キャラ・90%でランダム難易度の敵
+      var isav = loadSaved();
+      if (isav.length && roll(10)) { var ie = decodeFighter(isav[randInt(0, isav.length - 1)]); if (ie) f1 = buildFighter(ie, { label: (ie.name || L("てき", "ENEMY")), index: 1, isAI: true }); }
+      if (!f1) {   // ランダムな難易度の敵（易〜ムリゲーの生成をランダムに）
+        var rd = DIFFS[randInt(0, DIFFS.length - 1)], rsk, rpa;
+        if (rd === "insane") { rsk = pick6skills(); rpa = pickPassivesN(6); }
+        else if (rd === "extreme") { rsk = pick3phys3magic(); rpa = pickPassivesN(4); }
+        else { rsk = pickSkills(); rpa = pickPassives(); }
+        var ren = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: rsk, passives: rpa };
+        f1 = buildFighter(ren, { label: L("てき", "ENEMY"), index: 1, isAI: true, maxHp: diffMaxHp(rd), regen: diffRegen(rd), doubleAct: diffDouble(rd) });
+      }
+    } else {   // 難易度ソロ：ランダム敵＋難易度スケール（⑥物理3魔法3/⑦ランダム6・パッシブ増）
+      var eskills, epass;
+      if (soloDiff === "insane") { eskills = pick6skills(); epass = pickPassivesN(6); }
+      else if (soloDiff === "extreme") { eskills = pick3phys3magic(); epass = pickPassivesN(4); }
+      else { eskills = pickSkills(); epass = pickPassives(); }
+      var en = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: eskills, passives: epass };
+      f1 = buildFighter(en, { label: L("てき", "ENEMY"), index: 1, isAI: true, maxHp: diffMaxHp(soloDiff), regen: diffRegen(soloDiff), doubleAct: diffDouble(soloDiff) });
+    }
     beginBattle(f0, f1, { kind: "solo" });
   }
 
@@ -1276,7 +1383,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function updateStageInfo() {
     var el = $("stageinfo");
-    if (battle && battle.kind === "solo") { el.style.display = "block"; el.textContent = L("ステージ ", "STAGE ") + (soloStage + 1) + " / 5  〔" + diffName(soloDiff) + "〕"; }
+    if (battle && battle.kind === "solo") { el.style.display = "block"; if (soloMode === "infinity") { el.textContent = "♾ " + L(soloStage + " れんしょうちゅう", soloStage + " win streak"); } else { var tag = (soloMode === "saved") ? L("ほぞん5れんせん", "Saved run") : diffName(soloDiff); el.textContent = L("ステージ ", "STAGE ") + (soloStage + 1) + " / 5  〔" + tag + "〕"; } }
     else el.style.display = "none";
   }
   var DIFFS = ["easy", "normal", "hard", "veryhard", "ultimate", "extreme", "insane"];
@@ -1626,15 +1733,22 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     sfx.down();
     playFade(loser.index, function () {
       if (battle.kind === "solo") {
-        if (winner.index === 0) {
+        if (soloMode === "infinity") {
+          if (winner.index === 0) { soloStage++; showSoloNext(); }   // 無限：勝ち続ける
+          else showResult("infinity");                                // 負けた時点でスコア発表
+        } else if (winner.index === 0) {
           soloStage++;
           if (soloStage >= 5) {
-            var di = DIFFS.indexOf(soloDiff);
-            if (di === soloProgress) { soloProgress++; saveProgress(); }   // 最前線をクリア→バッジ獲得＆次を解放
-            showResult("soloclear");
+            if (soloMode === "saved") { showResult("savedclear"); }   // 保存5連戦クリア（バッジ解放なし）
+            else {
+              var di = DIFFS.indexOf(soloDiff);
+              if (di === soloProgress) { soloProgress++; saveProgress(); }   // 最前線をクリア→バッジ獲得＆次を解放
+              showResult("soloclear");
+            }
           } else showSoloNext();
         } else showResult("sololose");
       } else if (battle.kind === "qr") showResult("qr", winner);
+      else if (battle.kind === "self") showResult("self", winner);
       else showResult("vs", winner);
     });
   }
@@ -1642,9 +1756,14 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   /* ---------------- リザルト / 連戦インター ---------------- */
   function showSoloNext() {
     sfx.win(); startWinBGM();
-    $("resultwin").textContent = L((soloStage) + " たい クリア！", "Stage " + soloStage + " clear!");
+    if (soloMode === "infinity") {
+      $("resultwin").textContent = L(soloStage + " れんしょう！", soloStage + " WINS!");
+      $("resultsub").textContent = L("つぎの てきが あらわれる…", "Next enemy appears…");
+    } else {
+      $("resultwin").textContent = L((soloStage) + " たい クリア！", "Stage " + soloStage + " clear!");
+      $("resultsub").textContent = L("つぎの てきが あらわれる…（" + (soloStage + 1) + "/5）", "Next enemy appears… (" + (soloStage + 1) + "/5)");
+    }
     $("resultwin").style.color = "#7cff9c";
-    $("resultsub").textContent = L("つぎの てきが あらわれる…（" + (soloStage + 1) + "/5）", "Next enemy appears… (" + (soloStage + 1) + "/5)");
     $("restartbtn").textContent = L("つぎへ ▶", "Next ▶");
     $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; nextSolo(); };
     $("totitlebtn").style.display = "none";
@@ -1680,12 +1799,43 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       rs.innerHTML = L("ともだちと けっかを みせあおう！<br>2人とも かったら ひきわけ → もう1かい！", "Compare results with your friend!<br>If you both win, it's a draw → play again!");
       $("restartbtn").textContent = L("もういちど（おなじ あいて）", "Rematch (same rival)");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startBattleQR(); };
+    } else if (kind === "self") {
+      sfx.win(); startWinBGM();
+      rw.textContent = L(winner.label + " の しょうり！", winner.label + " WINS!");
+      rw.style.color = winner.index === 0 ? "#5ad6ff" : "#ff9a5a";
+      rs.textContent = L("じぶんの キャラどうしの たいせん！", "Your own characters battled!");
+      $("restartbtn").textContent = L("もういちど", "Rematch");
+      $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startBattleSelf(); };
+    } else if (kind === "savedclear") {
+      fxLevel = "win"; sfx.fanfare();
+      setTimeout(function () { if ($("resultoverlay").style.display === "flex") startWinBGM(); }, 3500);
+      rw.textContent = L("５れんせん クリア！", "5-in-a-row CLEAR!");
+      rw.style.color = "#ffd24a";
+      rs.textContent = L("ほぞんキャラ 5たいを ぜんぶ たおした！", "Beat 5 saved characters!");
+      $("restartbtn").textContent = L("もういちど", "Play Again");
+      $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
+    } else if (kind === "infinity") {
+      var wins = soloStage, best = getInfinityBest(), newBest = wins > best;
+      if (newBest) { setInfinityBest(wins); best = wins; }
+      var master = best >= 99, grand = wins >= 50;   // 50連勝以上でコングラチュレーション／99連勝以上でバトルマスター
+      fxLevel = grand ? "grand" : "win";
+      (grand ? sfx.grandFanfare : sfx.fanfare)();
+      setTimeout(function () { if ($("resultoverlay").style.display === "flex") startWinBGM(); }, grand ? 5600 : 3500);
+      rw.textContent = grand ? "CONGRATULATIONS!" : L(wins + " れんしょう！", wins + " WINS!");
+      rw.style.color = "#ffd24a";
+      var sub = L("スコア " + wins + " ／ さいこう " + best, "Score " + wins + " / Best " + best);
+      if (master) sub += L("　👑 バトルマスター！", "  👑 BATTLE MASTER!");
+      else if (newBest) sub += L("　🎉 さいこうきろく！", "  🎉 NEW BEST!");
+      rs.textContent = sub;
+      $("restartbtn").textContent = L("もういちど", "Play Again");
+      $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
     } else {
       fxLevel = "lose";
       sfx.lose(); startLoseBGM();
       rw.textContent = L("まけて しまった…", "You lost…");
       rw.style.color = "#ff5a6a";
-      rs.textContent = L((soloStage) + " たい たおした（" + diffName(soloDiff) + "）", "Defeated " + soloStage + " (" + diffName(soloDiff) + ")");
+      var loseTag = (soloMode === "saved") ? L("ほぞん5れんせん", "saved run") : diffName(soloDiff);
+      rs.textContent = L((soloStage) + " たい たおした（" + loseTag + "）", "Defeated " + soloStage + " (" + loseTag + ")");
       $("restartbtn").textContent = L("もういちど", "Retry");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
     }
@@ -2038,6 +2188,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     setModeBtn("mode-solo", "🗡 ", L("ひとりで（5れんせん）", "Solo (5 in a row)"), L("ランダムな敵と連続バトル", "Fight 5 random foes"));
     setModeBtn("mode-hotseat", "🤝 ", L("ふたりで（1だい）", "2 Players (1 device)"), L("こうたいで あそぶ", "Take turns on one device"));
     setModeBtn("mode-qr", "📱 ", L("2だいで（QRたいせん）", "2 Devices (QR)"), L("QRで相手を読取→各端末で対戦", "Scan rival's QR → battle on each device"));
+    setModeBtn("mode-mychar", "🎴 ", L("じぶんの キャラで", "Your characters"), L("保存キャラで 対戦 or ランダム5連戦", "Battle / 5-in-a-row with saved chars"));
     $("soyogilink").textContent = "🌿 " + L("アプリ開発：介護と支援の相談どころ「そよぎ」", "App dev by 'Soyogi' — care & support");
     updateSoloBadges();
     $("set-title").textContent = L("せってい", "Settings");
@@ -2141,6 +2292,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("mode-solo").onclick = function () { sfx.select(); openDifficulty(); };
     $("mode-hotseat").onclick = function () { sfx.select(); mode = "hotseat"; pending = {}; startSetupFor("p1"); };
     $("mode-qr").onclick = function () { sfx.select(); mode = "qr"; pending = {}; startSetupFor("you"); };
+    $("mode-mychar").onclick = function () { sfx.select(); pending = {}; openMyChar(); };
     // 難易度
     $("diff-back").onclick = function () { showScreen("title"); };
 
