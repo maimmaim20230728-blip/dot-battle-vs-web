@@ -409,6 +409,7 @@
     <div class="setrow"><span class="lab" id="set-sound-label"></span>
       <div class="volwrap"><input type="range" id="vol-slider" min="0" max="3" step="0.1" value="1"><span id="vol-val" class="volval"></span></div></div>
     <div class="setrow"><span class="lab" id="set-effects-label"></span><button id="toggle-effects" class="toggle"></button></div>
+    <div class="setrow"><span class="lab" id="set-vibrate-label"></span><button id="toggle-vibrate" class="toggle"></button></div>
     <div class="setrow col"><span class="lab" id="set-data-label"></span>
       <div class="databtns"><button id="bk-export-btn" class="minib accent"></button><button id="bk-import-btn" class="minib"></button></div></div>
     <button id="set-close" class="primary"></button>
@@ -466,7 +467,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   "use strict";
 
   /* ---------------- 設定 / settings (localStorage) ---------------- */
-  var settings = { lang: "ja", vol: 1, effects: true, watchSpeed: 1 };   // vol: 0(ミュート)〜2(標準の2倍) / watchSpeed: 観戦モードの再生速度
+  var settings = { lang: "ja", vol: 1, effects: true, watchSpeed: 1, vibrate: true };   // vol: 0(ミュート)〜2(標準の2倍) / watchSpeed: 観戦モードの再生速度 / vibrate: 被弾振動
   var WATCH_SPEEDS = [0.125, 0.25, 0.5, 1, 2, 4, 8];   // 観戦モードの選べる速度（この配列でしか受け付けない）
   try {
     var saved = JSON.parse(localStorage.getItem("dbvs_settings") || "{}");
@@ -475,6 +476,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     else if (typeof saved.sound === "boolean") settings.vol = saved.sound ? 1 : 0;   // 旧設定からの移行
     if (typeof saved.effects === "boolean") settings.effects = saved.effects;
     if (typeof saved.watchSpeed === "number" && WATCH_SPEEDS.indexOf(saved.watchSpeed) >= 0) settings.watchSpeed = saved.watchSpeed;
+    if (typeof saved.vibrate === "boolean") settings.vibrate = saved.vibrate;
   } catch (e) {}
   function saveSettings() { try { localStorage.setItem("dbvs_settings", JSON.stringify(settings)); } catch (e) {} }
   // ソロの解放進捗（クリアした難易度の数 0〜5。永続。バッジ数でもある）
@@ -660,6 +662,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.lang_label": "ことば / Language",
       "settings.sound_label": "おと",
       "settings.effects_label": "エフェクト",
+      "settings.vibrate_label": "しんどう",
       "settings.data_label": "データ（戦士・バッジ）",
       "settings.backup_btn": "バックアップ",
       "settings.restore_btn": "ふっかつ",
@@ -924,6 +927,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.lang_label": "Language / ことば",
       "settings.sound_label": "Sound",
       "settings.effects_label": "Effects",
+      "settings.vibrate_label": "Vibration",
       "settings.data_label": "Data (fighters/badges)",
       "settings.backup_btn": "Backup",
       "settings.restore_btn": "Restore",
@@ -1212,6 +1216,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "استعادة",
       "settings.sound_label": "الصوت",
       "settings.title": "الإعدادات",
+      "settings.vibrate_label": "الاهتزاز",
       "setup.camera": "كاميرا",
       "setup.confirm_1p": "تأكيد 1P ▶",
       "setup.create": "أنشئ: {who}",
@@ -1530,6 +1535,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "ফিরিয়ে আনো",
       "settings.sound_label": "শব্দ",
       "settings.title": "সেটিংস",
+      "settings.vibrate_label": "কম্পন",
       "setup.camera": "ক্যামেরা",
       "setup.confirm_1p": "1P চূড়ান্ত ▶",
       "setup.create": "{who} বানাও",
@@ -1848,6 +1854,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "Wiederherstellen",
       "settings.sound_label": "Ton",
       "settings.title": "Einstellungen",
+      "settings.vibrate_label": "Vibration",
       "setup.camera": "Kamera",
       "setup.confirm_1p": "1P bestätigen ▶",
       "setup.create": "Erstellen: {who}",
@@ -2166,6 +2173,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "Restaurar",
       "settings.sound_label": "Sonido",
       "settings.title": "Ajustes",
+      "settings.vibrate_label": "Vibración",
       "setup.camera": "Cámara",
       "setup.confirm_1p": "Confirmar 1P ▶",
       "setup.create": "Crear: {who}",
@@ -2484,6 +2492,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "Restaurer",
       "settings.sound_label": "Son",
       "settings.title": "Réglages",
+      "settings.vibrate_label": "Vibrations",
       "setup.camera": "Caméra",
       "setup.confirm_1p": "Valider 1P ▶",
       "setup.create": "Création : {who}",
@@ -2802,6 +2811,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "वापस लाओ",
       "settings.sound_label": "आवाज़",
       "settings.title": "सेटिंग",
+      "settings.vibrate_label": "कंपन",
       "setup.camera": "कैमरा",
       "setup.confirm_1p": "1P पक्का ▶",
       "setup.create": "{who} बनाओ",
@@ -3120,6 +3130,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "Pulihkan",
       "settings.sound_label": "Suara",
       "settings.title": "Pengaturan",
+      "settings.vibrate_label": "Getaran",
       "setup.camera": "Kamera",
       "setup.confirm_1p": "Konfirmasi 1P ▶",
       "setup.create": "Buat {who}",
@@ -3438,6 +3449,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "Ripristina",
       "settings.sound_label": "Audio",
       "settings.title": "Impostazioni",
+      "settings.vibrate_label": "Vibrazione",
       "setup.camera": "Fotocamera",
       "setup.confirm_1p": "Conferma 1P ▶",
       "setup.create": "Crea: {who}",
@@ -3756,6 +3768,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "복원",
       "settings.sound_label": "소리",
       "settings.title": "설정",
+      "settings.vibrate_label": "진동",
       "setup.camera": "카메라",
       "setup.confirm_1p": "1P 확정 ▶",
       "setup.create": "{who} 만들기",
@@ -4074,6 +4087,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "Restaurar",
       "settings.sound_label": "Som",
       "settings.title": "Ajustes",
+      "settings.vibrate_label": "Vibração",
       "setup.camera": "Câmera",
       "setup.confirm_1p": "Confirmar 1P ▶",
       "setup.create": "Criar: {who}",
@@ -4392,6 +4406,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "Восстановить",
       "settings.sound_label": "Звук",
       "settings.title": "Настройки",
+      "settings.vibrate_label": "Вибрация",
       "setup.camera": "Камера",
       "setup.confirm_1p": "Готово 1P ▶",
       "setup.create": "Создаём: {who}",
@@ -4710,6 +4725,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.restore_btn": "恢复",
       "settings.sound_label": "声音",
       "settings.title": "设置",
+      "settings.vibrate_label": "震动",
       "setup.camera": "相机",
       "setup.confirm_1p": "确定1P ▶",
       "setup.create": "创建{who}",
@@ -5817,9 +5833,19 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (dealer.hp > b) pushLog(t("passive.leech", {name: dealer.label, n: (dealer.hp - b)}));
   }
 
+  // 自分(人間操作側)が被弾したときの端末振動。通常=短い一発／会心=強め二段。
+  // 設定OFF・AI側(観戦含む)・振動API非対応端末(iPhone等)では何もしない。
+  function buzzHit(target, crit) {
+    try {
+      if (!settings.vibrate || !target || target.isAI) return;
+      if (navigator.vibrate) navigator.vibrate(crit ? [90, 45, 130] : 55);
+    } catch (e) {}
+  }
   // ダメージ適用を一元化。⑪「HP1で耐える」をここで処理（残回数があれば0以下にならずHP1で踏みとどまる）。endured を返す。
-  function applyDamage(target, dmg) {
+  // crit(省略可)は被弾振動の強さの切替にだけ使う。ダメージ0のときは振動しない。
+  function applyDamage(target, dmg, crit) {
     if (dmg < 0) dmg = 0;
+    if (dmg > 0) buzzHit(target, !!crit);
     if (target.hp > 0 && dmg >= target.hp && target.endure > 0) { target.endure--; target.hp = 1; return true; }
     target.hp = Math.max(0, target.hp - dmg);
     return false;
@@ -5996,12 +6022,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       dmgLog = crit ? t("battle.crit_dmg", {n: dmg}) : t("battle.dmg", {n: dmg});
       if (isReflect) {
         sfx.deflect(); pushLog(t("battle.reflect_barrier", {name: opp.label}));
-        var enBR = applyDamage(f, dmg); pushLog(dmgLog); if (enBR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+        var enBR = applyDamage(f, dmg, crit); pushLog(dmgLog); if (enBR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
         if (crit) sfx.crit(); else sfx.hit();
         playPhysFX(skill, opp.index, f.index, dmg, crit, afterAction); return;
       }
       sfx.shatter(); pushLog(t("battle.barrier_blocked", {name: opp.label}));
-      var enBB = applyDamage(opp, dmg); pushLog(dmgLog); if (enBB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+      var enBB = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (enBB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
       if (crit) sfx.crit(); else sfx.hit();
       playPhysFX(skill, f.index, opp.index, dmg, crit, afterAction); return;
     }
@@ -6014,19 +6040,19 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         sfx.shatter(); pushLog(t("battle.pierce_barrier", {skill: sname(skill)}));
         if (pp >= 2) {   // 2層以上＝残りで50%反射
           sfx.deflect(); pushLog(t("battle.reflect_attack", {name: opp.label}));
-          var enR = applyDamage(f, dmg); pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+          var enR = applyDamage(f, dmg, crit); pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
           if (crit) sfx.crit(); else sfx.hit();
           playPhysFX(skill, opp.index, f.index, dmg, crit, afterAction); return;
         }
         // 1層のみ＝貫通成功（下の通常ヒットへ・dmg半減済み）
       } else {   // 通常物理＝100%反射
         sfx.deflect(); pushLog(t("battle.reflect_attack", {name: opp.label}));
-        var enR2 = applyDamage(f, dmg); pushLog(dmgLog); if (enR2) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+        var enR2 = applyDamage(f, dmg, crit); pushLog(dmgLog); if (enR2) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
         if (crit) sfx.crit(); else sfx.hit();
         playPhysFX(skill, opp.index, f.index, dmg, crit, afterAction); return;
       }
     }
-    var en = applyDamage(opp, dmg);
+    var en = applyDamage(opp, dmg, crit);
     pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
     if (crit) sfx.crit(); else sfx.hit();
     playPhysFX(skill, f.index, opp.index, dmg, crit, afterAction);
@@ -6053,12 +6079,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         dmgLog = crit ? t("battle.hit_crit", {i: i, n: dmg}) : t("battle.hit_dmg", {i: i, n: dmg});
         if (isRefL) {
           sfx.deflect(); pushLog(t("battle.reflected", {name: opp.label}));
-          var enLR = applyDamage(f, dmg); pushLog(dmgLog); if (enLR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+          var enLR = applyDamage(f, dmg, crit); pushLog(dmgLog); if (enLR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
           if (crit) sfx.crit(); else sfx.hit();
           playPhysFX(skill, opp.index, f.index, dmg, crit, one); return;
         }
         sfx.shatter();
-        var enLB = applyDamage(opp, dmg); pushLog(dmgLog); if (enLB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+        var enLB = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (enLB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
         if (crit) sfx.crit(); else sfx.hit();
         playPhysFX(skill, f.index, opp.index, dmg, crit, one); return;
       }
@@ -6069,18 +6095,18 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
           sfx.shatter();
           if (pp >= 2) {   // 2層以上＝50%反射
             sfx.deflect(); pushLog(t("battle.reflected", {name: opp.label}));
-            var enR = applyDamage(f, dmg); pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+            var enR = applyDamage(f, dmg, crit); pushLog(dmgLog); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
             if (crit) sfx.crit(); else sfx.hit();
             playPhysFX(skill, opp.index, f.index, dmg, crit, one); return;
           }
         } else {   // 通常＝100%反射
           sfx.deflect(); pushLog(t("battle.reflected", {name: opp.label}));
-          var enR2 = applyDamage(f, dmg); pushLog(dmgLog); if (enR2) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
+          var enR2 = applyDamage(f, dmg, crit); pushLog(dmgLog); if (enR2) pushLog(endureMsg(f)); lifesteal(opp, f, dmg);
           if (crit) sfx.crit(); else sfx.hit();
           playPhysFX(skill, opp.index, f.index, dmg, crit, one); return;
         }
       }
-      var en = applyDamage(opp, dmg); pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+      var en = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
       if (crit) sfx.crit(); else sfx.hit();
       playPhysFX(skill, f.index, opp.index, dmg, crit, one);
     }
@@ -6136,7 +6162,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
     if (sp === "down") {
       if (roll(9)) {
-        var enD = applyDamage(target, target.hp);   // 即戦闘不能。⑪所持ならHP1で耐える
+        var enD = applyDamage(target, target.hp, true);   // 即戦闘不能。⑪所持ならHP1で耐える（振動は会心扱い）
         if (enD) pushLog(endureMsg(target));
         else pushLog(t("battle.down", {name: target.label}));
       } else pushLog(t("battle.no_effect"));
@@ -7003,6 +7029,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("set-lang-label").textContent = t("settings.lang_label");
     $("set-sound-label").textContent = t("settings.sound_label");
     $("set-effects-label").textContent = t("settings.effects_label");
+    $("set-vibrate-label").textContent = t("settings.vibrate_label");
     $("set-data-label").textContent = t("settings.data_label");
     $("bk-export-btn").textContent = t("settings.backup_btn");
     $("bk-import-btn").textContent = t("settings.restore_btn");
@@ -7018,6 +7045,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("vol-val").textContent = settings.vol <= 0 ? t("settings.mute") : ("×" + settings.vol.toFixed(1));
     $("toggle-effects").textContent = settings.effects ? t("settings.on") : t("settings.off");
     $("toggle-effects").classList.toggle("off", !settings.effects);
+    $("toggle-vibrate").textContent = settings.vibrate ? t("settings.on") : t("settings.off");
+    $("toggle-vibrate").classList.toggle("off", !settings.vibrate);
     $("gearbtn").setAttribute("aria-label", t("settings.title"));
     $("surrenderbtn").textContent = "🏳 " + t("battle.surrender");
     $("confirm-no").textContent = t("confirm.cancel");
@@ -7074,6 +7103,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       else if (settings.vol > 0 && prev <= 0) resumeBGM();          // 0→音ありで復帰（途中の音量変更は走行中BGMが自動反映）
     };
     $("toggle-effects").onclick = function () { settings.effects = !settings.effects; saveSettings(); renderI18n(); };
+    $("toggle-vibrate").onclick = function () {
+      settings.vibrate = !settings.vibrate; saveSettings(); renderI18n();
+      if (settings.vibrate) { try { if (navigator.vibrate) navigator.vibrate(55); } catch (e) {} }   // ONにした瞬間に試し振動
+    };
     // データのバックアップ/復元
     $("bk-export-btn").onclick = function () { sfx.select(); openBackup("export"); };
     $("bk-import-btn").onclick = function () { sfx.select(); openBackup("import"); };
