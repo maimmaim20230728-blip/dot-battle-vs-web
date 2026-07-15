@@ -210,6 +210,34 @@
   .langitem{width:100%;padding:12px 8px;font-size:15px;background:#1b2740;border:2px solid #38507e;}
   .langitem.on{background:#1f6feb;border-color:#5aa0ff;color:#fff;}
   #lang-close{margin-top:14px;}
+
+  /* 観戦モード（トーナメント / そうあたりせん） */
+  #screen-watch{padding-top:6px;}
+  #watch-title{text-align:center;font-size:20px;margin:6px 0 6px;color:#ffd24a;}
+  #watch-sub{text-align:center;font-size:12.5px;color:#9fe3ff;min-height:18px;margin:0 6px 10px;line-height:1.5;}
+  #watch-board{display:grid;gap:10px;}
+  .wround{background:#0d1424;border:2px solid #243a63;border-radius:10px;padding:8px 10px;}
+  .wround-name{font-size:13px;font-weight:bold;color:#ffd24a;margin-bottom:6px;letter-spacing:.5px;}
+  .wmatch{display:flex;align-items:center;gap:6px;padding:4px 2px;border-top:1px solid #17233d;font-size:14px;}
+  .wmatch:first-of-type{border-top:none;}
+  .wmatch .wname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cfe0f5;}
+  .wmatch .wname.wwin{color:#ffd24a;font-weight:bold;}
+  .wmatch .wvs{flex:none;font-size:11px;color:#7e93b5;font-weight:bold;}
+  .wmatch .wbye{flex:none;font-size:11px;color:#9be0c0;background:#0f1f18;border:1px solid #2c6e54;border-radius:6px;padding:2px 7px;}
+  .wstand{display:flex;align-items:center;gap:8px;padding:6px 2px;border-top:1px solid #17233d;font-size:14px;}
+  .wstand:first-of-type{border-top:none;}
+  .wstand .wname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e2ecfb;}
+  .wstand .wwins{flex:none;font-weight:bold;color:#9fe3ff;}
+  #watch-quit{margin-top:14px;background:#2a1822;border:2px solid #6e2c3e;color:#ffb0c0;}
+
+  /* スピードバー（観戦中だけ表示・上部中央のピル列。通常プレイでは絶対に出さない） */
+  #speedbar{position:absolute;top:2px;left:0;right:0;z-index:70;justify-content:center;
+    align-items:center;flex-wrap:wrap;gap:4px;padding:0 6px;pointer-events:none;}
+  #speedbar .spdlabel{pointer-events:none;font-size:10px;color:#9fc0ea;margin-right:2px;
+    background:rgba(7,10,18,.82);border-radius:6px;padding:2px 6px;}
+  .spdbtn{pointer-events:auto;width:auto;padding:4px 7px;font-size:12px;line-height:1;
+    background:rgba(20,32,58,.92);border:2px solid #3a567f;border-radius:8px;box-shadow:none;color:#cfe0f5;}
+  .spdbtn.on{background:#1f6feb;border-color:#5aa0ff;color:#fff;}
 </style>
 </head>
 <body>
@@ -348,7 +376,18 @@
     <div id="battlepassives" class="bpassives"></div>
     <button id="surrenderbtn" class="surrender"></button>
   </section>
+
+  <!-- 観戦モード（トーナメント / そうあたりせん：対戦表・順位表） -->
+  <section id="screen-watch" class="screen">
+    <h2 id="watch-title"></h2>
+    <div id="watch-sub"></div>
+    <div id="watch-board"></div>
+    <button id="watch-quit" class="backbtn"></button>
+  </section>
 </div>
+
+<!-- 観戦スピードバー（観戦中だけ表示） -->
+<div id="speedbar" style="display:none"></div>
 
 <!-- リザルト -->
 <div id="resultoverlay" class="overlay">
@@ -427,13 +466,15 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   "use strict";
 
   /* ---------------- 設定 / settings (localStorage) ---------------- */
-  var settings = { lang: "ja", vol: 1, effects: true };   // vol: 0(ミュート)〜2(標準の2倍)
+  var settings = { lang: "ja", vol: 1, effects: true, watchSpeed: 1 };   // vol: 0(ミュート)〜2(標準の2倍) / watchSpeed: 観戦モードの再生速度
+  var WATCH_SPEEDS = [0.125, 0.25, 0.5, 1, 2, 4, 8];   // 観戦モードの選べる速度（この配列でしか受け付けない）
   try {
     var saved = JSON.parse(localStorage.getItem("dbvs_settings") || "{}");
     if (saved.lang) settings.lang = saved.lang;
     if (typeof saved.vol === "number") settings.vol = Math.max(0, Math.min(3, saved.vol));
     else if (typeof saved.sound === "boolean") settings.vol = saved.sound ? 1 : 0;   // 旧設定からの移行
     if (typeof saved.effects === "boolean") settings.effects = saved.effects;
+    if (typeof saved.watchSpeed === "number" && WATCH_SPEEDS.indexOf(saved.watchSpeed) >= 0) settings.watchSpeed = saved.watchSpeed;
   } catch (e) {}
   function saveSettings() { try { localStorage.setItem("dbvs_settings", JSON.stringify(settings)); } catch (e) {} }
   // ソロの解放進捗（クリアした難易度の数 0〜5。永続。バッジ数でもある）
@@ -690,7 +731,30 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "infinity.next_title": "\nつぎは {min}れんしょうで {title}！",
       "result.defeated_n": "{n} たい たおした（{tag}）",
       "backup.fighter_joined": "{name} が なかまに なった！",
-      "backup.a_fighter": "せんし"
+      "backup.a_fighter": "せんし",
+      "watch.tournament": "ほぞんキャラ トーナメント",
+      "watch.tournament_desc": "かちぬきせんで さいきょうを きめる（みるだけ・そうさなし）",
+      "watch.league": "ほぞんキャラ そうあたりせん",
+      "watch.league_desc": "ぜんいんそうあたりで ナンバーワンを きめる（みるだけ）",
+      "watch.need_two": "このモードは ほぞんキャラが 2たい いじょう ひつようだよ",
+      "watch.title_tournament": "トーナメント",
+      "watch.title_league": "そうあたりせん",
+      "watch.next": "つぎのしあい",
+      "watch.round_n": "{n}かいせん",
+      "watch.round_quarter": "じゅんじゅんけっしょう",
+      "watch.round_semi": "じゅんけっしょう",
+      "watch.round_final": "けっしょう",
+      "watch.round_third": "3いけっていせん",
+      "watch.playoff": "どうりつ プレーオフ",
+      "watch.bye": "シード（ふせん）",
+      "watch.speed": "かんせんスピード",
+      "watch.quit": "かんせんを やめる",
+      "watch.quit_confirm": "かんせんを やめて もどる？",
+      "watch.standings": "じゅんい",
+      "watch.wins": "{n}しょう",
+      "watch.rank": "{n}い",
+      "watch.auto_third": "{name}が 3いに けってい！",
+      "watch.rematch": "もういちど"
     },
     en: {
       "skill.d.hit": "HIT",
@@ -931,7 +995,30 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "infinity.next_title": "\nNext: {min} wins for {title}!",
       "result.defeated_n": "Defeated {n} ({tag})",
       "backup.fighter_joined": "{name} joined your team!",
-      "backup.a_fighter": "A fighter"
+      "backup.a_fighter": "A fighter",
+      "watch.tournament": "Saved-Char Tournament",
+      "watch.tournament_desc": "Knockout to crown the champion (watch only, no controls)",
+      "watch.league": "Saved-Char Round Robin",
+      "watch.league_desc": "Everyone plays everyone to find No.1 (watch only)",
+      "watch.need_two": "You need at least 2 saved characters for this mode.",
+      "watch.title_tournament": "Tournament",
+      "watch.title_league": "Round Robin",
+      "watch.next": "Next match",
+      "watch.round_n": "Round {n}",
+      "watch.round_quarter": "Quarterfinal",
+      "watch.round_semi": "Semifinal",
+      "watch.round_final": "Final",
+      "watch.round_third": "3rd-place match",
+      "watch.playoff": "Tie Playoff",
+      "watch.bye": "Bye (seed)",
+      "watch.speed": "Watch speed",
+      "watch.quit": "Stop watching",
+      "watch.quit_confirm": "Stop watching and go back?",
+      "watch.standings": "Standings",
+      "watch.wins": "{n} W",
+      "watch.rank": "#{n}",
+      "watch.auto_third": "{name} takes 3rd place!",
+      "watch.rematch": "Once more"
     },
     ar: {
       "backup.a_fighter": "مقاتل",
@@ -1170,6 +1257,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "يعمل دون إنترنت",
       "title.soyogi": "تطوير التطبيق: «Soyogi» للاستشارة في الرعاية والدعم",
       "title.subtitle": "حوّل صورتك إلى مقاتل بكسل وقاتِل!<br>★ تُعالَج الصور <b>داخل جهازك فقط</b> ولا تُرسَل إلى أي مكان.",
+      "watch.auto_third": "{name} في المركز الثالث!",
+      "watch.bye": "تأهُّل مباشر",
+      "watch.league": "دوري الشخصيات المحفوظة",
+      "watch.league_desc": "الكل يواجه الكل حتى يظهر رقم واحد (للمشاهدة فقط)",
+      "watch.need_two": "هذا الوضع يحتاج إلى شخصيتين محفوظتين على الأقل.",
+      "watch.next": "المباراة التالية",
+      "watch.playoff": "مباراة فاصلة للتعادل",
+      "watch.quit": "إنهاء المشاهدة",
+      "watch.quit_confirm": "هل تريد إنهاء المشاهدة والعودة؟",
+      "watch.rank": "المركز {n}",
+      "watch.rematch": "مرة أخرى",
+      "watch.round_final": "النهائي",
+      "watch.round_n": "الجولة {n}",
+      "watch.round_quarter": "ربع النهائي",
+      "watch.round_semi": "نصف النهائي",
+      "watch.round_third": "مباراة المركز الثالث",
+      "watch.speed": "سرعة المشاهدة",
+      "watch.standings": "الترتيب",
+      "watch.title_league": "الدوري",
+      "watch.title_tournament": "البطولة",
+      "watch.tournament": "بطولة الشخصيات المحفوظة",
+      "watch.tournament_desc": "مواجهات إقصائية لاختيار الأقوى (للمشاهدة فقط)",
+      "watch.wins": "{n} فوز",
       "who.enemy": "العدو",
       "who.rival": "الخصم",
       "who.you": "أنت",
@@ -1465,6 +1575,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "অফলাইনে চলে",
       "title.soyogi": "অ্যাপ নির্মাতা: সেবা ও সহায়তা কেন্দ্র “Soyogi”",
       "title.subtitle": "ছবিকে পিক্সেল যোদ্ধা বানিয়ে লড়ো!<br>★ ছবি <b>শুধু তোমার ফোনেই</b> থাকে। বাইরে পাঠানো হয় না।",
+      "watch.auto_third": "{name} তৃতীয় স্থানে!",
+      "watch.bye": "লড়াই ছাড়াই পরের ধাপে",
+      "watch.league": "সেভ করা চরিত্রদের লিগ",
+      "watch.league_desc": "সবাই সবার সাথে লড়ে নাম্বার ওয়ান ঠিক হবে (শুধু দেখার জন্য)",
+      "watch.need_two": "এই মোডের জন্য অন্তত 2টি সেভ করা চরিত্র দরকার।",
+      "watch.next": "পরের ম্যাচ",
+      "watch.playoff": "সমান জয়ে প্লে-অফ",
+      "watch.quit": "দেখা শেষ করা",
+      "watch.quit_confirm": "দেখা শেষ করে ফিরে যাবে?",
+      "watch.rank": "{n} নম্বর স্থান",
+      "watch.rematch": "আবার",
+      "watch.round_final": "ফাইনাল",
+      "watch.round_n": "রাউন্ড {n}",
+      "watch.round_quarter": "কোয়ার্টার ফাইনাল",
+      "watch.round_semi": "সেমিফাইনাল",
+      "watch.round_third": "তৃতীয় স্থানের ম্যাচ",
+      "watch.speed": "দেখার গতি",
+      "watch.standings": "র‍্যাঙ্কিং",
+      "watch.title_league": "লিগ",
+      "watch.title_tournament": "টুর্নামেন্ট",
+      "watch.tournament": "সেভ করা চরিত্রদের টুর্নামেন্ট",
+      "watch.tournament_desc": "নকআউট লড়াইয়ে সবচেয়ে শক্তিশালী ঠিক হবে (শুধু দেখার জন্য)",
+      "watch.wins": "{n} জয়",
       "who.enemy": "শত্রু",
       "who.rival": "প্রতিপক্ষ",
       "who.you": "তুমি",
@@ -1760,6 +1893,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "Funktioniert offline",
       "title.soyogi": "App von „Soyogi“ · Beratung für Pflege und Unterstützung",
       "title.subtitle": "Mach aus einem Foto einen Pixel-Kämpfer und kämpfe!<br>★ Bilder werden <b>nur auf deinem Gerät</b> verarbeitet. Nichts wird gesendet.",
+      "watch.auto_third": "{name} belegt Platz 3!",
+      "watch.bye": "Freilos",
+      "watch.league": "Rundenturnier der Charaktere",
+      "watch.league_desc": "Alle kämpfen gegen alle, bis die Nummer 1 feststeht (nur zuschauen)",
+      "watch.need_two": "Für diesen Modus brauchst du mindestens 2 gespeicherte Charaktere.",
+      "watch.next": "Nächster Kampf",
+      "watch.playoff": "Stichkampf bei Gleichstand",
+      "watch.quit": "Zuschauen beenden",
+      "watch.quit_confirm": "Zuschauen beenden und zurückgehen?",
+      "watch.rank": "Platz {n}",
+      "watch.rematch": "Nochmal",
+      "watch.round_final": "Finale",
+      "watch.round_n": "Runde {n}",
+      "watch.round_quarter": "Viertelfinale",
+      "watch.round_semi": "Halbfinale",
+      "watch.round_third": "Spiel um Platz 3",
+      "watch.speed": "Zuschau-Tempo",
+      "watch.standings": "Rangliste",
+      "watch.title_league": "Rundenturnier",
+      "watch.title_tournament": "Turnier",
+      "watch.tournament": "Charakter-Turnier",
+      "watch.tournament_desc": "K.-o.-Kämpfe küren den stärksten Charakter (nur zuschauen)",
+      "watch.wins": "{n} Siege",
       "who.enemy": "FEIND",
       "who.rival": "GEGNER",
       "who.you": "DU",
@@ -2055,6 +2211,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "Funciona sin conexión",
       "title.soyogi": "App de “Soyogi” · consultas de cuidado y apoyo",
       "title.subtitle": "¡Convierte una foto en un luchador píxel y combate!<br>★ Las imágenes se procesan <b>solo en tu dispositivo</b>. No se envía nada.",
+      "watch.auto_third": "¡{name} queda en 3.er puesto!",
+      "watch.bye": "Pase directo",
+      "watch.league": "Liga de personajes",
+      "watch.league_desc": "Todos contra todos hasta decidir el número 1 (solo mirar)",
+      "watch.need_two": "Este modo necesita al menos 2 personajes guardados.",
+      "watch.next": "Siguiente combate",
+      "watch.playoff": "Desempate",
+      "watch.quit": "Dejar de mirar",
+      "watch.quit_confirm": "¿Dejar de mirar y volver?",
+      "watch.rank": "{n}.º",
+      "watch.rematch": "Otra vez",
+      "watch.round_final": "Final",
+      "watch.round_n": "Ronda {n}",
+      "watch.round_quarter": "Cuartos de final",
+      "watch.round_semi": "Semifinal",
+      "watch.round_third": "Puesto 3",
+      "watch.speed": "Velocidad",
+      "watch.standings": "Clasificación",
+      "watch.title_league": "Liga",
+      "watch.title_tournament": "Torneo",
+      "watch.tournament": "Torneo de personajes",
+      "watch.tournament_desc": "Combates eliminatorios para elegir al más fuerte (solo mirar)",
+      "watch.wins": "{n} victorias",
       "who.enemy": "ENEMIGO",
       "who.rival": "RIVAL",
       "who.you": "TÚ",
@@ -2350,6 +2529,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "Fonctionne hors ligne",
       "title.soyogi": "Appli de « Soyogi » · aide et soutien",
       "title.subtitle": "Transforme une photo en combattant pixel et bats-toi !<br>★ Les images sont traitées <b>uniquement sur ton appareil</b>. Rien n'est envoyé.",
+      "watch.auto_third": "{name} prend la 3e place !",
+      "watch.bye": "Exempté",
+      "watch.league": "Championnat des personnages",
+      "watch.league_desc": "Tous contre tous jusqu'au numéro 1 (spectateur)",
+      "watch.need_two": "Ce mode demande au moins 2 personnages sauvegardés.",
+      "watch.next": "Prochain combat",
+      "watch.playoff": "Match de départage",
+      "watch.quit": "Arrêter de regarder",
+      "watch.quit_confirm": "Arrêter de regarder et revenir ?",
+      "watch.rank": "{n}e",
+      "watch.rematch": "Encore",
+      "watch.round_final": "Finale",
+      "watch.round_n": "Tour {n}",
+      "watch.round_quarter": "Quarts de finale",
+      "watch.round_semi": "Demi-finale",
+      "watch.round_third": "Match pour la 3e place",
+      "watch.speed": "Vitesse",
+      "watch.standings": "Classement",
+      "watch.title_league": "Championnat",
+      "watch.title_tournament": "Tournoi",
+      "watch.tournament": "Tournoi des personnages",
+      "watch.tournament_desc": "Combats à élimination pour trouver le plus fort (spectateur)",
+      "watch.wins": "{n} victoires",
       "who.enemy": "ENNEMI",
       "who.rival": "RIVAL",
       "who.you": "TOI",
@@ -2645,6 +2847,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "ऑफ़लाइन चलता है",
       "title.soyogi": "ऐप डेवलपर: देखभाल और सहायता केंद्र “Soyogi”",
       "title.subtitle": "फोटो को पिक्सेल योद्धा बनाओ और लड़ो!<br>★ फोटो <b>सिर्फ़ तुम्हारे फ़ोन में</b> प्रोसेस होती है। बाहर नहीं भेजी जाती।",
+      "watch.auto_third": "{name} तीसरे स्थान पर!",
+      "watch.bye": "बिना मुक़ाबले आगे",
+      "watch.league": "सेव किरदारों की लीग",
+      "watch.league_desc": "सब आपस में लड़कर नंबर 1 तय होगा (सिर्फ़ देखने के लिए)",
+      "watch.need_two": "इस मोड के लिए कम से कम 2 सेव किए किरदार चाहिए।",
+      "watch.next": "अगला मुक़ाबला",
+      "watch.playoff": "बराबरी का फ़ैसला-मैच",
+      "watch.quit": "देखना बंद करें",
+      "watch.quit_confirm": "देखना बंद करके वापस जाएँ?",
+      "watch.rank": "{n}वाँ स्थान",
+      "watch.rematch": "एक बार फिर",
+      "watch.round_final": "फ़ाइनल",
+      "watch.round_n": "राउंड {n}",
+      "watch.round_quarter": "क्वार्टर फ़ाइनल",
+      "watch.round_semi": "सेमीफ़ाइनल",
+      "watch.round_third": "तीसरे स्थान का मैच",
+      "watch.speed": "देखने की रफ़्तार",
+      "watch.standings": "रैंकिंग",
+      "watch.title_league": "लीग",
+      "watch.title_tournament": "टूर्नामेंट",
+      "watch.tournament": "सेव किरदारों का टूर्नामेंट",
+      "watch.tournament_desc": "नॉकआउट मुक़ाबलों से सबसे मज़बूत तय होगा (सिर्फ़ देखने के लिए)",
+      "watch.wins": "{n} जीत",
       "who.enemy": "दुश्मन",
       "who.rival": "विरोधी",
       "who.you": "तुम",
@@ -2940,6 +3165,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "Bisa offline",
       "title.soyogi": "Aplikasi oleh “Soyogi” · layanan peduli & dukungan",
       "title.subtitle": "Ubah foto jadi petarung piksel dan bertarunglah!<br>★ Gambar diproses <b>hanya di perangkatmu</b>. Tidak dikirim ke mana pun.",
+      "watch.auto_third": "{name} juara 3!",
+      "watch.bye": "Lolos tanpa bertanding",
+      "watch.league": "Liga karakter tersimpan",
+      "watch.league_desc": "Semua saling bertanding sampai nomor 1 ditentukan (hanya menonton)",
+      "watch.need_two": "Mode ini butuh minimal 2 karakter tersimpan.",
+      "watch.next": "Pertandingan berikutnya",
+      "watch.playoff": "Playoff penentu seri",
+      "watch.quit": "Berhenti menonton",
+      "watch.quit_confirm": "Berhenti menonton dan kembali?",
+      "watch.rank": "Peringkat {n}",
+      "watch.rematch": "Sekali lagi",
+      "watch.round_final": "Final",
+      "watch.round_n": "Ronde {n}",
+      "watch.round_quarter": "Perempat final",
+      "watch.round_semi": "Semifinal",
+      "watch.round_third": "Perebutan juara 3",
+      "watch.speed": "Kecepatan menonton",
+      "watch.standings": "Klasemen",
+      "watch.title_league": "Liga",
+      "watch.title_tournament": "Turnamen",
+      "watch.tournament": "Turnamen karakter tersimpan",
+      "watch.tournament_desc": "Pertandingan gugur untuk mencari yang terkuat (hanya menonton)",
+      "watch.wins": "{n} kemenangan",
       "who.enemy": "MUSUH",
       "who.rival": "LAWAN",
       "who.you": "KAMU",
@@ -3235,6 +3483,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "Funziona offline",
       "title.soyogi": "App di “Soyogi” · sportello di cura e sostegno",
       "title.subtitle": "Trasforma una foto in un guerriero pixel e combatti!<br>★ Le immagini restano <b>solo sul tuo dispositivo</b>. Non viene inviato nulla.",
+      "watch.auto_third": "{name} conquista il 3º posto!",
+      "watch.bye": "Riposo (passa il turno)",
+      "watch.league": "Girone dei personaggi",
+      "watch.league_desc": "Tutti contro tutti finché esce il numero 1 (solo da guardare)",
+      "watch.need_two": "Questa modalità richiede almeno 2 personaggi salvati.",
+      "watch.next": "Prossimo incontro",
+      "watch.playoff": "Spareggio",
+      "watch.quit": "Smetti di guardare",
+      "watch.quit_confirm": "Smettere di guardare e tornare?",
+      "watch.rank": "{n}º",
+      "watch.rematch": "Ancora",
+      "watch.round_final": "Finale",
+      "watch.round_n": "Turno {n}",
+      "watch.round_quarter": "Quarti di finale",
+      "watch.round_semi": "Semifinale",
+      "watch.round_third": "Finale 3º posto",
+      "watch.speed": "Velocità",
+      "watch.standings": "Classifica",
+      "watch.title_league": "Girone",
+      "watch.title_tournament": "Torneo",
+      "watch.tournament": "Torneo dei personaggi",
+      "watch.tournament_desc": "Sfide a eliminazione per trovare il più forte (solo da guardare)",
+      "watch.wins": "{n} vittorie",
       "who.enemy": "NEMICO",
       "who.rival": "RIVALE",
       "who.you": "TU",
@@ -3530,6 +3801,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "오프라인 동작",
       "title.soyogi": "앱 개발: 돌봄·지원 상담소 'Soyogi'",
       "title.subtitle": "사진을 도트 전사로 바꿔서 싸우자!<br>★ 이미지는 <b>기기 안에서만</b> 처리돼. 밖으로 전송되지 않아.",
+      "watch.auto_third": "{name} 3위 확정!",
+      "watch.bye": "부전승",
+      "watch.league": "저장 캐릭터 리그전",
+      "watch.league_desc": "모두가 서로 겨뤄 넘버원을 정해요 (관전 전용)",
+      "watch.need_two": "이 모드는 저장된 캐릭터가 2명 이상 필요해요.",
+      "watch.next": "다음 경기",
+      "watch.playoff": "동률 플레이오프",
+      "watch.quit": "관전 그만두기",
+      "watch.quit_confirm": "관전을 그만두고 돌아갈까요?",
+      "watch.rank": "{n}위",
+      "watch.rematch": "한 번 더",
+      "watch.round_final": "결승",
+      "watch.round_n": "{n}회전",
+      "watch.round_quarter": "준준결승",
+      "watch.round_semi": "준결승",
+      "watch.round_third": "3위 결정전",
+      "watch.speed": "관전 속도",
+      "watch.standings": "순위",
+      "watch.title_league": "리그전",
+      "watch.title_tournament": "토너먼트",
+      "watch.tournament": "저장 캐릭터 토너먼트",
+      "watch.tournament_desc": "승자진출전으로 최강을 정해요 (관전 전용)",
+      "watch.wins": "{n}승",
       "who.enemy": "적",
       "who.rival": "상대",
       "who.you": "나",
@@ -3825,6 +4119,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "Funciona offline",
       "title.soyogi": "App de “Soyogi” · apoio e cuidado",
       "title.subtitle": "Transforme uma foto em um lutador de pixel e batalhe!<br>★ As imagens são processadas <b>só no seu aparelho</b>. Nada é enviado.",
+      "watch.auto_third": "{name} fica em 3º lugar!",
+      "watch.bye": "Folga (avança direto)",
+      "watch.league": "Liga dos personagens",
+      "watch.league_desc": "Todos contra todos até sair o número 1 (só assistir)",
+      "watch.need_two": "Este modo precisa de pelo menos 2 personagens salvos.",
+      "watch.next": "Próxima luta",
+      "watch.playoff": "Desempate",
+      "watch.quit": "Parar de assistir",
+      "watch.quit_confirm": "Parar de assistir e voltar?",
+      "watch.rank": "{n}º",
+      "watch.rematch": "Mais uma vez",
+      "watch.round_final": "Final",
+      "watch.round_n": "Rodada {n}",
+      "watch.round_quarter": "Quartas de final",
+      "watch.round_semi": "Semifinal",
+      "watch.round_third": "Disputa do 3º lugar",
+      "watch.speed": "Velocidade",
+      "watch.standings": "Classificação",
+      "watch.title_league": "Liga",
+      "watch.title_tournament": "Torneio",
+      "watch.tournament": "Torneio dos personagens",
+      "watch.tournament_desc": "Lutas eliminatórias para achar o mais forte (só assistir)",
+      "watch.wins": "{n} vitórias",
       "who.enemy": "INIMIGO",
       "who.rival": "RIVAL",
       "who.you": "VOCÊ",
@@ -4120,6 +4437,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "Работает офлайн",
       "title.soyogi": "Приложение «Soyogi» · помощь и поддержка",
       "title.subtitle": "Преврати фото в пиксельного бойца и сражайся!<br>★ Фото обрабатывается <b>только на твоём устройстве</b>. Ничего не отправляется.",
+      "watch.auto_third": "{name} занимает 3-е место!",
+      "watch.bye": "Проходит без боя",
+      "watch.league": "Круговой турнир персонажей",
+      "watch.league_desc": "Все против всех, пока не определится номер 1 (только смотреть)",
+      "watch.need_two": "Для этого режима нужно минимум 2 сохранённых персонажа.",
+      "watch.next": "Следующий бой",
+      "watch.playoff": "Дополнительный матч",
+      "watch.quit": "Закончить просмотр",
+      "watch.quit_confirm": "Закончить просмотр и вернуться?",
+      "watch.rank": "{n}-е место",
+      "watch.rematch": "Ещё раз",
+      "watch.round_final": "Финал",
+      "watch.round_n": "Раунд {n}",
+      "watch.round_quarter": "Четвертьфинал",
+      "watch.round_semi": "Полуфинал",
+      "watch.round_third": "Матч за 3-е место",
+      "watch.speed": "Скорость",
+      "watch.standings": "Таблица",
+      "watch.title_league": "Круговой турнир",
+      "watch.title_tournament": "Турнир",
+      "watch.tournament": "Турнир персонажей",
+      "watch.tournament_desc": "Бои навылет — узнаем, кто сильнее всех (только смотреть)",
+      "watch.wins": "Побед: {n}",
       "who.enemy": "ВРАГ",
       "who.rival": "СОПЕРНИК",
       "who.you": "ТЫ",
@@ -4415,6 +4755,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "title.badge3": "可离线游玩",
       "title.soyogi": "应用开发：护理与支援咨询处“Soyogi”",
       "title.subtitle": "把照片变成像素战士来对战吧！<br>★ 图片只在<b>设备内</b>处理，不会向外发送。",
+      "watch.auto_third": "{name} 获得第3名！",
+      "watch.bye": "轮空（直接晋级）",
+      "watch.league": "存档角色循环赛",
+      "watch.league_desc": "人人对战，决出第一名（只需观看）",
+      "watch.need_two": "这个模式需要至少2个已保存的角色。",
+      "watch.next": "下一场比赛",
+      "watch.playoff": "同分加赛",
+      "watch.quit": "结束观战",
+      "watch.quit_confirm": "结束观战并返回吗？",
+      "watch.rank": "第{n}名",
+      "watch.rematch": "再来一次",
+      "watch.round_final": "决赛",
+      "watch.round_n": "第{n}轮",
+      "watch.round_quarter": "四分之一决赛",
+      "watch.round_semi": "半决赛",
+      "watch.round_third": "季军赛",
+      "watch.speed": "观战速度",
+      "watch.standings": "排名",
+      "watch.title_league": "循环赛",
+      "watch.title_tournament": "锦标赛",
+      "watch.tournament": "存档角色锦标赛",
+      "watch.tournament_desc": "淘汰赛决出最强角色（只需观看）",
+      "watch.wins": "{n}胜",
       "who.enemy": "敌人",
       "who.rival": "对手",
       "who.you": "你",
@@ -4776,7 +5139,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var currentScreen = "title";
   function showScreen(name) {
     currentScreen = name; stopResultFx();
-    var ids = ["title", "difficulty", "setup", "saved", "qrhub", "qrshow", "qrscan", "battle", "mychar"];
+    var ids = ["title", "difficulty", "setup", "saved", "qrhub", "qrshow", "qrscan", "battle", "mychar", "watch"];
     for (var i = 0; i < ids.length; i++) {
       var el = $("screen-" + ids[i]);
       if (!el) continue;
@@ -4969,6 +5332,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var setupTarget = null;   // 'player'|'p1'|'p2'|'you'
   var setupBuf = { pixels: null, base: null, skills: null, passives: null, name: "" };
   var pending = {};         // built fighter data by key
+  var watch = null;         // 観戦モードの状態（通常時は null）。トーナメント/そうあたりせんの進行を持つ
+  var watchEntrants = [];   // 観戦の参加者 [{ data, name }]（idは配列の添字）
+  var BSPEED = 1;           // 観戦モードの倍速係数（通常プレイでは必ず 1）。タイマー/アニメを ÷BSPEED して速める
+  function bwait(fn, ms) { return setTimeout(fn, ms / BSPEED); }   // 観戦の倍速に追従する setTimeout
 
   function setupLabel() {
     if (setupTarget === "p1") return "1P";
@@ -5332,6 +5699,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
     list.appendChild(bigOption("⚔ " + t("mychar.pick_battle"), t("mychar.pick_battle_desc"), pickForSelfBattle));
     list.appendChild(bigOption("🔥 " + t("mychar.saved_run"), t("mychar.saved_run_desc"), pickForSavedRun));
+    list.appendChild(bigOption("🏆 " + t("watch.tournament"), t("watch.tournament_desc"), startTournament));
+    list.appendChild(bigOption("📊 " + t("watch.league"), t("watch.league_desc"), startLeague));
     showScreen("mychar");
   }
   function bigOption(title, desc, onclick) {
@@ -5465,7 +5834,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     updateStageInfo(); pushLogClear(); updateHud(); drawScene();
     pushLog(t("battle.start"));
     startBGM();
-    setTimeout(function () { battle.busy = false; nextTurn(); }, 700);
+    bwait(function () { battle.busy = false; nextTurn(); }, 700);
   }
   function updateStageInfo() {
     var el = $("stageinfo");
@@ -5539,9 +5908,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     for (var i = 0; i < res.log.length; i++) pushLog(res.log[i]);
     updateHud();
     if (res.dead) { endBattle(battle.fighters[1 - idx], f); return; }
-    if (!res.canAct) { drawScene(); battle.busy = true; setTimeout(function () { battle.busy = false; nextTurn(); }, 820); return; }
+    if (!res.canAct) { drawScene(); battle.busy = true; bwait(function () { battle.busy = false; nextTurn(); }, 820); return; }
     battle.busy = false;
-    if (f.isAI) { hideCommands(); $("turnlabel").textContent = t("battle.turn", {name: f.label}); $("turnlabel").style.color = "#ff9a5a"; setTimeout(function () { if (!battle.over) resolveAction(idx, aiChoose(f)); }, 720); }
+    if (f.isAI) { hideCommands(); $("turnlabel").textContent = t("battle.turn", {name: f.label}); $("turnlabel").style.color = "#ff9a5a"; bwait(function () { if (!battle.over) resolveAction(idx, aiChoose(f)); }, 720); }
     else showCommands(idx);
   }
   function aiChoose(f) {
@@ -5578,6 +5947,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function hideCommands() { $("commands").style.display = "none"; var sb = $("surrenderbtn"); if (sb) sb.style.display = "none"; var bp = $("battlepassives"); if (bp) bp.style.display = "none"; }
   function doSurrender() {
+    if (watch) return;   // 観戦モード中は降参できない（両者AIで人間の入力口が無い）
     if (!battle || battle.over || battle.active == null) return;
     var idx = battle.active, loser = battle.fighters[idx];
     if (loser.isAI) return;
@@ -5795,7 +6165,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       pushLog(t("battle.double_action", {name: actor.label}));
       if (actor.isAI) {
         battle.busy = true;
-        setTimeout(function () { if (!battle.over) { battle.busy = false; resolveAction(battle.active, aiChoose(actor)); } }, 650);
+        bwait(function () { if (!battle.over) { battle.busy = false; resolveAction(battle.active, aiChoose(actor)); } }, 650);
       } else {
         battle.busy = false; showCommands(battle.active);
       }
@@ -5806,7 +6176,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       actor.extraUsed = true;
       pushLog(t("battle.act_again", {name: actor.label}));
       battle.busy = true;
-      setTimeout(function () { if (!battle.over) { battle.busy = false; resolveAction(battle.active, aiChoose(actor)); } }, 650);
+      bwait(function () { if (!battle.over) { battle.busy = false; resolveAction(battle.active, aiChoose(actor)); } }, 650);
       return;
     }
     actor.extraUsed = false; actor.dblUsed = false;
@@ -5818,6 +6188,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     pushLog(t("battle.down", {name: loser.label}));
     sfx.down();
     playFade(loser.index, function () {
+      if (battle.kind === "watch") {   // 観戦：リザルトは出さず、勝者IDを観戦コントローラへ返す
+        var wid = (winner.index === 0) ? watch.current.idA : watch.current.idB;
+        watchMatchEnd(wid); return;
+      }
       if (battle.kind === "solo") {
         if (soloMode === "infinity") {
           if (winner.index === 0) { soloStage++; showSoloNext(); }   // 無限：勝ち続ける
@@ -5933,6 +6307,353 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     startResultFx(fxLevel);
   }
 
+  /* ============================================================
+     観戦モード（トーナメント / そうあたりせん）
+     ・保存キャラだけの CPU 同士バトルを見るだけのモード。
+     ・組み合わせ／順位計算はバトルの勝敗にしか依存しない純粋関数に分離
+       （下の __WATCH_PURE__ 区間・DOM/t()/Math.random を触らない＝機械検証対象）。
+     ============================================================ */
+  /*__WATCH_PURE_BEGIN__*/
+  // N 以上の最小の2べき（2/4/8/16…）。参加2〜9人なら 2/4/8/16 を返す。
+  function nextPow2(n) { var s = 2; while (s < n) s *= 2; return s; }
+  // 配列を rng(0〜1未満を返す関数) でフィッシャー・イェーツ・シャッフルした「新しい配列」を返す。
+  function shuffleArr(arr, rng) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var tmp = a[i]; a[i] = a[j]; a[j] = tmp; }
+    return a;
+  }
+  // トーナメント表を作る。entrant は参加者ID（0..N-1）。bye(シード=null)は各1回戦に最大1つだけ入れて
+  // 「bye 同士の対戦」を絶対に作らない（先頭 byes ペアに実キャラ1人＋bye、残りは実キャラ2人）。
+  // 返り値 { size, rounds }。rounds[0]=1回戦。各 match={a,b,winner,bye}。bye は winner を即確定。
+  function buildBracket(entrantIds, rng) {
+    var n = entrantIds.length, size = nextPow2(n), byes = size - n;
+    var reals = shuffleArr(entrantIds, rng), ri = 0, pairCount = size / 2;
+    var round0 = [];
+    for (var p = 0; p < pairCount; p++) {
+      if (p < byes) { var aB = reals[ri++]; round0.push({ a: aB, b: null, winner: aB, bye: true }); }   // 実キャラ vs シード（自動勝ち上がり）
+      else { var aR = reals[ri++], bR = reals[ri++]; round0.push({ a: aR, b: bR, winner: null, bye: false }); }
+    }
+    var rounds = [round0], count = pairCount;
+    while (count > 1) { count = count / 2; var rnd = []; for (var q = 0; q < count; q++) rnd.push({ a: null, b: null, winner: null, bye: false }); rounds.push(rnd); }
+    if (rounds.length > 1) {   // bye の勝者を次のラウンドへ配置（bye は1回戦だけに存在するのでここで確定）
+      for (var mi = 0; mi < round0.length; mi++) {
+        if (round0[mi].winner != null) { var dest = rounds[1][Math.floor(mi / 2)]; if (mi % 2 === 0) dest.a = round0[mi].winner; else dest.b = round0[mi].winner; }
+      }
+    }
+    return { size: size, rounds: rounds };
+  }
+  // 1試合の勝者を確定し、次ラウンドの対応スロットへ勝者を送る（bracket を書き換える純粋操作）。
+  function resolveBracketMatch(bracket, roundIdx, matchIdx, winnerId) {
+    var m = bracket.rounds[roundIdx][matchIdx]; m.winner = winnerId;
+    if (roundIdx + 1 < bracket.rounds.length) { var dest = bracket.rounds[roundIdx + 1][Math.floor(matchIdx / 2)]; if (matchIdx % 2 === 0) dest.a = winnerId; else dest.b = winnerId; }
+  }
+  // 次に行うべき「両者確定・未決着」の試合を上のラウンドから探す。無ければ null。
+  function pendingBracketMatch(bracket) {
+    for (var r = 0; r < bracket.rounds.length; r++) {
+      var ms = bracket.rounds[r];
+      for (var i = 0; i < ms.length; i++) { var m = ms[i]; if (m.winner == null && m.a != null && m.b != null) return { roundIdx: r, matchIdx: i }; }
+    }
+    return null;
+  }
+  // 準決勝（決勝の1つ前のラウンド）が全て決着済みか。size=2（決勝のみ）は準決勝が無いので false。
+  function semifinalsDone(bracket) {
+    var sr = bracket.rounds.length - 2; if (sr < 0) return false;
+    var ms = bracket.rounds[sr];
+    for (var i = 0; i < ms.length; i++) if (ms[i].winner == null) return false;
+    return true;
+  }
+  // 準決勝の「実キャラの敗者」ID一覧（bye の試合には敗者はいない）。3位決定戦の対象を決めるのに使う。
+  function bracketSemifinalLosers(bracket) {
+    var sr = bracket.rounds.length - 2, out = []; if (sr < 0) return out;
+    var ms = bracket.rounds[sr];
+    for (var i = 0; i < ms.length; i++) { var m = ms[i]; if (m.bye || m.winner == null || m.a == null || m.b == null) continue; out.push(m.winner === m.a ? m.b : m.a); }
+    return out;
+  }
+  // 総当たりの全ペア（i<j）を作り、rng でシャッフルして [ [a,b], ... ] を返す。
+  function roundRobinPairs(ids, rng) {
+    var pairs = [];
+    for (var i = 0; i < ids.length; i++) for (var j = i + 1; j < ids.length; j++) pairs.push([ids[i], ids[j]]);
+    return shuffleArr(pairs, rng);
+  }
+  // ids を wins(勝数マップ) の降順でグループ化。同数は id 昇順で安定。返り値は [[同率ids],...]（勝数の多い順）。
+  function groupByWins(ids, wins) {
+    var arr = ids.slice();
+    arr.sort(function (x, y) { var wx = wins[x] || 0, wy = wins[y] || 0; if (wy !== wx) return wy - wx; return x - y; });
+    var groups = [], cur = null, curW = null;
+    for (var i = 0; i < arr.length; i++) { var w = wins[arr[i]] || 0; if (cur === null || w !== curW) { cur = [arr[i]]; curW = w; groups.push(cur); } else cur.push(arr[i]); }
+    return groups;
+  }
+  /*__WATCH_PURE_END__*/
+
+  // ---- 観戦：ここから下は DOM / バトルエンジンに触れる（非純粋） ----
+  var watchAdvanceToken = 0;   // 進行タイマーの世代番号。常に最新の1本しか進行できない＝二重進行の構造的防止
+  function rngReal() { return Math.random(); }   // 本番の乱数（純粋関数へ引数で渡す）
+  function pairsToMatches(pairs) { var out = []; for (var i = 0; i < pairs.length; i++) out.push({ a: pairs[i][0], b: pairs[i][1], winner: null }); return out; }
+  function getWatchSpeed() { return (WATCH_SPEEDS.indexOf(settings.watchSpeed) >= 0) ? settings.watchSpeed : 1; }
+  function buildWatchEntrants() {
+    var saved = loadSaved(), out = [];
+    for (var i = 0; i < saved.length; i++) { var d = decodeFighter(saved[i]); if (d) out.push({ data: d, name: d.name || t("common.noname") }); }   // 欠番（null）はスキップ
+    return out;
+  }
+  function entrantName(id) { return (watchEntrants[id] && watchEntrants[id].name) || t("common.noname"); }
+
+  function startTournament() {
+    var entrants = buildWatchEntrants();
+    if (entrants.length < 2) { alert(t("watch.need_two")); return; }
+    watchEntrants = entrants;
+    var ids = []; for (var i = 0; i < entrants.length; i++) ids.push(i);
+    watch = { type: "tournament", current: null, phaseInfo: null, tourney: { bracket: buildBracket(ids, rngReal), third: null, thirdReady: false, thirdId: null } };
+    watchAdvanceToken++;   // 旧観戦の保留タイマーを無効化
+    $("resultoverlay").style.display = "none";   // 前のリザルトが残っていても閉じる
+    BSPEED = getWatchSpeed(); renderSpeedbar(); watchShowSpeedbar();
+    showScreen("watch"); renderWatchScreen();
+    watchScheduleAdvance(tournamentAdvance, 900);   // 表を少し見せてから開始
+  }
+  function startLeague() {
+    var entrants = buildWatchEntrants();
+    if (entrants.length < 2) { alert(t("watch.need_two")); return; }
+    watchEntrants = entrants;
+    var ids = []; for (var i = 0; i < entrants.length; i++) ids.push(i);
+    watch = { type: "league", current: null, phaseInfo: null, league: { ids: ids, matches: pairsToMatches(roundRobinPairs(ids, rngReal)), idx: 0, wins: {}, finalized: [], tasks: [], pf: null, phase: "base" } };
+    watchAdvanceToken++;   // 旧観戦の保留タイマーを無効化
+    $("resultoverlay").style.display = "none";   // 前のリザルトが残っていても閉じる
+    BSPEED = getWatchSpeed(); renderSpeedbar(); watchShowSpeedbar();
+    showScreen("watch"); renderWatchScreen();
+    watchScheduleAdvance(leagueAdvance, 900);
+  }
+  // 1試合を観戦バトルとして開始（両者AI）。勝者IDは endBattle の watch 分岐→watchMatchEnd 経由で onResult に渡る。
+  function playWatchMatch(idA, idB, onResult) {
+    if (!watch) return;
+    watch.current = { idA: idA, idB: idB, onResult: onResult };
+    var f0 = buildFighter(watchEntrants[idA].data, { label: entrantName(idA), index: 0, isAI: true });
+    var f1 = buildFighter(watchEntrants[idB].data, { label: entrantName(idB), index: 1, isAI: true });
+    watchShowSpeedbar();
+    beginBattle(f0, f1, { kind: "watch" });
+  }
+  function watchMatchEnd(winnerId) {
+    if (!watch || !watch.current) return;
+    var cb = watch.current.onResult; watch.current = null;
+    if (cb) cb(winnerId);
+  }
+  // 観戦進行タイマーの一元スケジューラ: 世代トークンが一致する最新の1本だけが発火できる
+  function watchScheduleAdvance(nextFn, ms) {
+    var token = ++watchAdvanceToken;
+    bwait(function () { if (watch && token === watchAdvanceToken) nextFn(); }, ms);
+  }
+  // 試合後：対戦表／順位表を 2200/BSPEED ms 見せてから次の進行へ。
+  function afterWatchMatchBoard(nextFn) {
+    if (!watch) return;
+    showScreen("watch"); renderWatchScreen(); watchShowSpeedbar();
+    watchScheduleAdvance(nextFn, 2200);
+  }
+
+  /* --- トーナメント進行 --- */
+  function tournamentAdvance() {
+    if (!watch) return;
+    var tr = watch.tourney, bracket = tr.bracket;
+    if (!tr.thirdReady && semifinalsDone(bracket)) {   // 準決勝が終わったら3位決定の段取り
+      tr.thirdReady = true;
+      var losers = bracketSemifinalLosers(bracket);
+      if (losers.length === 2) tr.third = { a: losers[0], b: losers[1], winner: null };   // 実キャラ2人→3位決定戦
+      else if (losers.length === 1) tr.thirdId = losers[0];   // 1人だけ→自動で3位
+    }
+    if (tr.third && tr.third.winner == null) {   // 3位決定戦は決勝より先
+      watch.phaseInfo = { type: "third", a: tr.third.a, b: tr.third.b };
+      playWatchMatch(tr.third.a, tr.third.b, function (wid) { tr.third.winner = wid; tr.thirdId = wid; afterWatchMatchBoard(tournamentAdvance); });
+      return;
+    }
+    var pm = pendingBracketMatch(bracket);
+    if (pm) {
+      var match = bracket.rounds[pm.roundIdx][pm.matchIdx];
+      watch.phaseInfo = { type: "round", players: bracket.size >> pm.roundIdx, a: match.a, b: match.b };
+      playWatchMatch(match.a, match.b, function (wid) { resolveBracketMatch(bracket, pm.roundIdx, pm.matchIdx, wid); afterWatchMatchBoard(tournamentAdvance); });
+      return;
+    }
+    tournamentFinish();
+  }
+  function tournamentFinish() {
+    var bracket = watch.tourney.bracket, fm = bracket.rounds[bracket.rounds.length - 1][0];
+    var first = fm.winner, second = (fm.winner === fm.a) ? fm.b : fm.a, third = watch.tourney.thirdId;
+    var lines = ["🥇 " + entrantName(first), "🥈 " + entrantName(second)];
+    if (third != null) lines.push("🥉 " + entrantName(third));
+    showWatchVictory(lines.join("\n"));
+  }
+
+  /* --- そうあたりせん進行（基本フェーズ→順位確定。1〜3位のタイはプレーオフで単独化） --- */
+  function leagueAdvance() {
+    if (!watch) return;
+    var lg = watch.league;
+    if (lg.phase === "base") {
+      if (lg.idx < lg.matches.length) {
+        var mm = lg.matches[lg.idx];
+        watch.phaseInfo = { type: "base", a: mm.a, b: mm.b };
+        playWatchMatch(mm.a, mm.b, function (wid) { mm.winner = wid; lg.wins[wid] = (lg.wins[wid] || 0) + 1; lg.idx++; afterWatchMatchBoard(leagueAdvance); });
+        return;
+      }
+      lg.tasks = [{ type: "place", groups: groupByWins(lg.ids, lg.wins), startRank: 1 }];   // 基本フェーズ終了→順位確定へ
+      lg.phase = "resolve"; leagueAdvance(); return;
+    }
+    if (lg.phase === "resolve") {
+      if (lg.pf) {   // プレーオフ（順位決定用の別枠。基本フェーズの勝数には加算しない）進行中
+        var pf = lg.pf;
+        if (pf.idx < pf.matches.length) {
+          var pm = pf.matches[pf.idx];
+          watch.phaseInfo = { type: "playoff", a: pm.a, b: pm.b };
+          playWatchMatch(pm.a, pm.b, function (wid) { pm.winner = wid; pf.wins[wid] = (pf.wins[wid] || 0) + 1; pf.idx++; afterWatchMatchBoard(leagueAdvance); });
+          return;
+        }
+        lg.tasks.push({ type: "place", groups: groupByWins(pf.members, pf.wins), startRank: pf.startRank });   // プレーオフの勝数で厳密順序
+        lg.pf = null; leagueAdvance(); return;
+      }
+      if (lg.tasks.length) {
+        var task = lg.tasks.pop();
+        if (task.type === "playoff") { lg.pf = { members: task.members, matches: pairsToMatches(roundRobinPairs(task.members, rngReal)), idx: 0, wins: {}, startRank: task.startRank }; leagueAdvance(); return; }
+        leagueProcessPlace(task); leagueAdvance(); return;
+      }
+      leagueFinish();
+    }
+  }
+  // 「並び済みグループ列を startRank から順位付け」。1〜3位に多人数グループが掛かったらプレーオフに回す。
+  function leagueProcessPlace(task) {
+    var lg = watch.league, groups = task.groups, r = task.startRank;
+    for (var gi = 0; gi < groups.length; gi++) {
+      var g = groups[gi];
+      if (r > 3) { for (var k = 0; k < g.length; k++) lg.finalized.push({ id: g[k], rank: r }); r += g.length; }   // 4位以下は同率許容（次の順位は人数分飛ぶ）
+      else if (g.length === 1) { lg.finalized.push({ id: g[0], rank: r }); r += 1; }
+      else {
+        var rest = groups.slice(gi + 1);
+        if (rest.length) lg.tasks.push({ type: "place", groups: rest, startRank: r + g.length });   // このグループの後ろは人数分ずらして継続
+        lg.tasks.push({ type: "playoff", members: g.slice(), startRank: r });   // stack(LIFO)なので後pushのプレーオフが先に処理される
+        return;
+      }
+    }
+  }
+  function leagueFinish() {
+    var lg = watch.league; lg.phase = "done";
+    var fin = lg.finalized.slice();
+    fin.sort(function (a, b) { if (a.rank !== b.rank) return a.rank - b.rank; return a.id - b.id; });
+    var medals = ["🥇", "🥈", "🥉"], lines = [];
+    for (var i = 0; i < fin.length; i++) {
+      var e = fin[i];
+      if (e.rank <= 3) lines.push(medals[e.rank - 1] + " " + entrantName(e.id));
+      else lines.push(t("watch.rank", {n: e.rank}) + " " + entrantName(e.id) + "（" + t("watch.wins", {n: (lg.wins[e.id] || 0)}) + "）");
+    }
+    showWatchVictory(lines.join("\n"));
+  }
+
+  /* --- 観戦の画面描画 --- */
+  function tourneyRoundName(players) {
+    if (players >= 16) return t("watch.round_n", {n: 1});
+    if (players === 8) return t("watch.round_quarter");
+    if (players === 4) return t("watch.round_semi");
+    if (players === 2) return t("watch.round_final");
+    return t("watch.round_n", {n: 1});
+  }
+  function watchSubText() {
+    var pi = watch && watch.phaseInfo; if (!pi) return "";
+    var label;
+    if (pi.type === "third") label = t("watch.round_third");
+    else if (pi.type === "round") label = tourneyRoundName(pi.players);
+    else if (pi.type === "playoff") label = t("watch.playoff");
+    else label = t("watch.next");
+    if (pi.a != null && pi.b != null) label += "  " + entrantName(pi.a) + " VS " + entrantName(pi.b);
+    return label;
+  }
+  function renderWatchScreen() {
+    if (!watch) return;
+    $("watch-quit").textContent = "✕ " + t("watch.quit");
+    if (watch.type === "tournament") { $("watch-title").textContent = "🏆 " + t("watch.title_tournament"); renderTournamentBoard(); }
+    else { $("watch-title").textContent = "📊 " + t("watch.title_league"); renderLeagueBoard(); }
+    if (watch) renderSpeedbar();
+  }
+  function makeMatchRow(m) {
+    var row = document.createElement("div"); row.className = "wmatch";
+    if (m.bye) {
+      var an = document.createElement("span"); an.className = "wname wwin"; an.textContent = entrantName(m.a); row.appendChild(an);
+      var bt = document.createElement("span"); bt.className = "wbye"; bt.textContent = t("watch.bye"); row.appendChild(bt);
+      return row;
+    }
+    var aWin = (m.winner != null && m.winner === m.a), bWin = (m.winner != null && m.winner === m.b);
+    var aSpan = document.createElement("span"); aSpan.className = "wname" + (aWin ? " wwin" : ""); aSpan.textContent = (aWin ? "○ " : "") + (m.a != null ? entrantName(m.a) : "…"); row.appendChild(aSpan);
+    var vs = document.createElement("span"); vs.className = "wvs"; vs.textContent = "VS"; row.appendChild(vs);
+    var bSpan = document.createElement("span"); bSpan.className = "wname" + (bWin ? " wwin" : ""); bSpan.textContent = (bWin ? "○ " : "") + (m.b != null ? entrantName(m.b) : "…"); row.appendChild(bSpan);
+    return row;
+  }
+  function makeRoundBlock(bracket, r) {
+    var div = document.createElement("div"); div.className = "wround";
+    var h = document.createElement("div"); h.className = "wround-name"; h.textContent = tourneyRoundName(bracket.size >> r); div.appendChild(h);
+    var ms = bracket.rounds[r];
+    for (var i = 0; i < ms.length; i++) div.appendChild(makeMatchRow(ms[i]));
+    return div;
+  }
+  function makeThirdBlock(tr) {
+    var div = document.createElement("div"); div.className = "wround";
+    var h = document.createElement("div"); h.className = "wround-name"; h.textContent = t("watch.round_third"); div.appendChild(h);
+    if (tr.third) div.appendChild(makeMatchRow(tr.third));
+    else if (tr.thirdId != null) { var row = document.createElement("div"); row.className = "wmatch"; var s = document.createElement("span"); s.className = "wname wwin"; s.textContent = t("watch.auto_third", {name: entrantName(tr.thirdId)}); row.appendChild(s); div.appendChild(row); }
+    return div;
+  }
+  function renderTournamentBoard() {
+    var board = $("watch-board"); board.innerHTML = "";
+    var tr = watch.tourney, bracket = tr.bracket;
+    $("watch-sub").textContent = watchSubText();
+    for (var r = 0; r < bracket.rounds.length; r++) {
+      board.appendChild(makeRoundBlock(bracket, r));
+      if (r === bracket.rounds.length - 2 && (tr.third || tr.thirdId != null)) board.appendChild(makeThirdBlock(tr));   // 準決勝の後に3位決定戦
+    }
+  }
+  function renderLeagueBoard() {
+    var board = $("watch-board"); board.innerHTML = "";
+    var lg = watch.league;
+    $("watch-sub").textContent = watchSubText();
+    var head = document.createElement("div"); head.className = "wround-name"; head.textContent = t("watch.standings"); board.appendChild(head);
+    var ids = lg.ids.slice();
+    ids.sort(function (x, y) { var wx = lg.wins[x] || 0, wy = lg.wins[y] || 0; if (wy !== wx) return wy - wx; return x - y; });
+    for (var i = 0; i < ids.length; i++) {
+      var row = document.createElement("div"); row.className = "wstand";
+      var nm = document.createElement("span"); nm.className = "wname"; nm.textContent = entrantName(ids[i]); row.appendChild(nm);
+      var w = document.createElement("span"); w.className = "wwins"; w.textContent = t("watch.wins", {n: (lg.wins[ids[i]] || 0)}); row.appendChild(w);
+      board.appendChild(row);
+    }
+  }
+
+  /* --- スピードバー（観戦中だけ表示。通常プレイでは絶対に出さない） --- */
+  function speedLabel(v) { return v === 0.125 ? "⅛" : v === 0.25 ? "¼" : v === 0.5 ? "½" : (v + "×"); }
+  function renderSpeedbar() {
+    var sb = $("speedbar"); if (!sb) return;
+    sb.innerHTML = "";
+    var lab = document.createElement("span"); lab.className = "spdlabel"; lab.textContent = t("watch.speed"); sb.appendChild(lab);
+    for (var i = 0; i < WATCH_SPEEDS.length; i++) {
+      (function (v) {
+        var b = document.createElement("button"); b.className = "spdbtn" + (v === BSPEED ? " on" : ""); b.textContent = speedLabel(v);
+        b.onclick = function () { sfx.select(); settings.watchSpeed = v; saveSettings(); BSPEED = v; renderSpeedbar(); };
+        sb.appendChild(b);
+      })(WATCH_SPEEDS[i]);
+    }
+  }
+  function watchShowSpeedbar() { var sb = $("speedbar"); if (sb) sb.style.display = "flex"; }
+  function watchHideSpeedbar() { var sb = $("speedbar"); if (sb) sb.style.display = "none"; }
+  function watchCleanup() {
+    watch = null; watchEntrants = []; BSPEED = 1; watchHideSpeedbar();
+    watchAdvanceToken++;   // 保留中の進行タイマーを無効化
+    if (battle && !battle.over) { battle.over = true; battle.busy = true; }   // 観戦中バトルを安全に終息（既存の over ガードで進行が止まる）
+  }
+  function showWatchVictory(subText) {
+    var againType = watch ? watch.type : "tournament";
+    watchHideSpeedbar();
+    var rw = $("resultwin"), rs = $("resultsub");
+    rw.textContent = "CONGRATULATIONS!"; rw.style.color = "#ffd24a";
+    rs.textContent = subText;
+    $("restartbtn").textContent = t("watch.rematch");
+    $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; if (againType === "tournament") startTournament(); else startLeague(); };
+    $("totitlebtn").style.display = "block"; $("totitlebtn").textContent = t("result.to_title");
+    $("totitlebtn").onclick = function () { $("resultoverlay").style.display = "none"; watchCleanup(); stopBGM(); showScreen("title"); };
+    sfx.grandFanfare();
+    $("resultoverlay").style.display = "flex";
+    startResultFx("grand");
+    setTimeout(function () { if ($("resultoverlay").style.display === "flex") startWinBGM(); }, 5600);   // 長いファンファーレの後にBGM開始（BSPEEDで割らない）
+  }
+
   /* ---------------- HUD / ログ ---------------- */
   function updateHud() {
     for (var i = 0; i < 2; i++) {
@@ -6004,7 +6725,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   // ---- エフェクト基盤（軽量・画像なし） ----
   function runFX(dur, draw, done) {
-    if (!settings.effects) { drawScene(); if (done) setTimeout(done, 90); return; }
+    dur = dur / BSPEED;   // 観戦倍速：全アニメの尺を一括で縮める（通常プレイは BSPEED=1 で不変）
+    if (!settings.effects) { drawScene(); if (done) setTimeout(done, 90 / BSPEED); return; }
     var start = performance.now();
     (function frame(now) {
       var t = (now - start) / dur; if (t > 1) t = 1;
@@ -6194,8 +6916,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function playFade(idx, done) {
     var f = battle.fighters[idx], tp = POS[idx], downLbl = t("fx.down");
-    if (!settings.effects) { f.alpha = 0; drawScene(); drawText(tp.x, tp.y - 46, downLbl, "#ff5a6a", 1, 18); if (done) setTimeout(done, 300); return; }
-    var dur = 1050, start = performance.now();
+    if (!settings.effects) { f.alpha = 0; drawScene(); drawText(tp.x, tp.y - 46, downLbl, "#ff5a6a", 1, 18); if (done) setTimeout(done, 300 / BSPEED); return; }
+    var dur = 1050 / BSPEED, start = performance.now();
     (function frame(now) {
       var t = (now - start) / dur; if (t > 1) t = 1;
       f.alpha = 1 - t; drawScene();
@@ -6306,7 +7028,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     else if (currentScreen === "qrhub") openQRHub();
     else if (currentScreen === "qrshow") openQRShow();
     else if (currentScreen === "qrscan") openQRScan();
+    else if (currentScreen === "watch") renderWatchScreen();
     if (currentScreen === "battle" && battle) { updateStageInfo(); if (!battle.busy && !battle.over && battle.active != null && !battle.fighters[battle.active].isAI) showCommands(battle.active); updateHud(); }
+    if (watch) renderSpeedbar();   // 観戦中はスピードバーのラベルも言語追従
   }
   function setModeBtn(id, icon, title, desc) {
     var b = $(id); b.innerHTML = "";
@@ -6427,6 +7151,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("qrscan-open").onclick = function () { $("qrfile").click(); };
     $("qrfile").onchange = function (e) { handleQRPhoto(e.target.files[0]); e.target.value = ""; };
     $("qrscan-back").onclick = function () { openQRHub(); };
+
+    // 観戦モード：やめる（✕→確認）
+    $("watch-quit").onclick = function () { sfx.select(); if (confirm(t("watch.quit_confirm"))) { watchCleanup(); openMyChar(); } };
 
     // リザルト
     $("totitlebtn").onclick = function () { $("resultoverlay").style.display = "none"; stopBGM(); showScreen("title"); };
