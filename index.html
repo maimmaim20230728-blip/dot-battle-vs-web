@@ -181,7 +181,7 @@
   #resultfx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
   #resultbox{text-align:center;padding:24px;max-width:380px;width:100%;position:relative;z-index:1;}
   #resultwin{font-size:28px;font-weight:bold;text-shadow:2px 2px 0 #000;margin-bottom:6px;}
-  #resultsub{color:#8aa0c0;font-size:13px;margin-bottom:22px;}
+  #resultsub{color:#8aa0c0;font-size:13px;margin-bottom:22px;white-space:pre-line;line-height:1.7;}
   #resultbox button{margin-top:8px;}
   #settingsbox{background:#0d1424;border:2px solid #38507e;border-radius:12px;padding:18px;max-width:360px;width:90%;}
   #set-title{text-align:center;font-size:20px;margin-bottom:14px;color:#ffd24a;}
@@ -1015,6 +1015,20 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function persistSaved(arr) { try { localStorage.setItem("dbvs_saved", JSON.stringify(arr.slice(0, 9))); } catch (e) {} }
   function getInfinityBest() { try { var v = parseInt(localStorage.getItem("dbvs_infinity_best"), 10); return (v > 0) ? v : 0; } catch (e) { return 0; } }   // 無限バトルの最高連勝
   function setInfinityBest(v) { try { localStorage.setItem("dbvs_infinity_best", String(v)); } catch (e) {} }
+  /* 無限バトルの称号：連勝数で4段階。30=エリートバトラー / 50=バトルマスター / 80=バトルレジェンド / 99=ゴッドバトラー(最高位)。
+     どの段階でもコングラチュレーション演出(grand)が出る。上から順に並べること（infTitleが上から探す）。 */
+  var INF_TITLES = [
+    { min: 99, icon: "🔱", ja: "ゴッドバトラー", en: "GOD BATTLER" },
+    { min: 80, icon: "🏆", ja: "バトルレジェンド", en: "BATTLE LEGEND" },
+    { min: 50, icon: "👑", ja: "バトルマスター", en: "BATTLE MASTER" },
+    { min: 30, icon: "🎖", ja: "エリートバトラー", en: "ELITE BATTLER" }
+  ];
+  var INF_TOP = INF_TITLES[0].min;   // 99＝最高位。これ以上の称号は無い
+  var INF_LATE_FROM = 50;            // この連勝数に達したら後半テーブルへ（50勝＝51戦目から）
+  var INF_SAVED_REGEN = 100;         // 後半の保存キャラだけに付く毎ターン回復
+  function infTitle(n) { for (var i = 0; i < INF_TITLES.length; i++) if (n >= INF_TITLES[i].min) return INF_TITLES[i]; return null; }   // 称号(無ければnull)
+  function infTitleText(t) { return t.icon + " " + L(t.ja, t.en); }
+  function infNextTitle(n) { for (var i = INF_TITLES.length - 1; i >= 0; i--) if (n < INF_TITLES[i].min) return INF_TITLES[i]; return null; }   // 次に狙える称号(最高位到達済みならnull)
 
   /* ---------------- データのバックアップ/復元（戦士・バッジ・設定を1コードに。端末/ブラウザ変更・再インストールでも引き継げる） ---------------- */
   function b64enc(s) { return btoa(unescape(encodeURIComponent(s))); }   // UTF-8安全なbase64
@@ -1242,7 +1256,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var s = ""; for (var i = 0; i < 7; i++) s += (i < soloProgress) ? "★" : "☆";
     b.textContent = s;
     var bm = $("battlemaster");
-    if (bm) { var best = getInfinityBest(); if (best >= 99) { bm.style.display = "block"; bm.textContent = "👑 " + L("バトルマスター", "BATTLE MASTER") + L("（さいこう " + best + "れんしょう）", " (best " + best + ")"); } else bm.style.display = "none"; }
+    if (bm) {
+      var best = getInfinityBest(), bt = infTitle(best);   // 最高連勝に応じた称号をタイトルに常時表示
+      if (bt) { bm.style.display = "block"; bm.textContent = infTitleText(bt) + L("（さいこう " + best + "れんしょう）", " (best " + best + ")"); }
+      else bm.style.display = "none";
+    }
   }
   /* ---------------- じぶんのキャラで（保存キャラ対戦 / 保存キャラ ランダム5連戦） ---------------- */
   function openMyChar() {
@@ -1311,11 +1329,23 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       var saved = loadSaved(), enemy = saved.length ? decodeFighter(saved[randInt(0, saved.length - 1)]) : null;
       if (!enemy) enemy = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: pickSkills(), passives: pickPassives() };   // 保険
       f1 = buildFighter(enemy, { label: (enemy.name || L("てき", "ENEMY")), index: 1, isAI: true });   // 既定HP999・難易度スケールなし
-    } else if (soloMode === "infinity") {   // 無限ハチャメチャ：10%で保存キャラ・90%でランダム難易度の敵
+    } else if (soloMode === "infinity") {
+      /* 無限ハチャメチャの出現テーブル。50連勝を境に前半・後半で変わる（soloStage=連勝数なので 戦目=soloStage+1）。
+         前半（1〜50戦目・soloStage 0〜49）  保存10% / やさしい〜むずかしい70% / げきむず以上20%   保存0体なら 80% / 20%
+         後半（51戦目〜・soloStage 50〜）    保存10% / やさしい〜むずかしい40% / げきむず以上50%   保存0体なら 50% / 50%
+         後半の保存キャラは毎ターン100回復つき（この枠だけ休憩にならないように）。 */
       var isav = loadSaved();
-      if (isav.length && roll(10)) { var ie = decodeFighter(isav[randInt(0, isav.length - 1)]); if (ie) f1 = buildFighter(ie, { label: (ie.name || L("てき", "ENEMY")), index: 1, isAI: true }); }
-      if (!f1) {   // ランダムな難易度の敵（易〜ムリゲーの生成をランダムに）
-        var rd = DIFFS[randInt(0, DIFFS.length - 1)], rsk, rpa;
+      var late = soloStage >= INF_LATE_FROM;                                  // 50連勝した時点＝51戦目から後半
+      var savedPct = isav.length ? 10 : 0;                                    // 保存キャラが1体も無ければ保存枠は消える
+      var easyPct = isav.length ? (late ? 40 : 70) : (late ? 50 : 80);        // やさしい〜むずかしい の取り分
+      var r = randInt(1, 100);
+      if (r <= savedPct) {                                                    // ① 保存キャラ
+        var ie = decodeFighter(isav[randInt(0, isav.length - 1)]);
+        if (ie) f1 = buildFighter(ie, { label: (ie.name || L("てき", "ENEMY")), index: 1, isAI: true, regen: late ? INF_SAVED_REGEN : 0 });
+      }
+      if (!f1) {   // ②③ ランダム難易度の敵（保存キャラの復号に失敗した時もここに落ちる）
+        var pool = (r <= savedPct + easyPct) ? DIFFS.slice(0, 3) : DIFFS.slice(3);   // 前=やさしい/ふつう/むずかしい 後=げきむず/ちょうむず/むずすぎ/ムリゲー
+        var rd = pool[randInt(0, pool.length - 1)], rsk, rpa;
         if (rd === "insane") { rsk = pick6skills(); rpa = pickPassivesN(6); }
         else if (rd === "extreme") { rsk = pick3phys3magic(); rpa = pickPassivesN(4); }
         else { rsk = pickSkills(); rpa = pickPassives(); }
@@ -1817,15 +1847,19 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     } else if (kind === "infinity") {
       var wins = soloStage, best = getInfinityBest(), newBest = wins > best;
       if (newBest) { setInfinityBest(wins); best = wins; }
-      var master = best >= 99, grand = wins >= 50;   // 50連勝以上でコングラチュレーション／99連勝以上でバトルマスター
+      var t = infTitle(wins), grand = !!t;   // 30連勝以上＝称号獲得＝コングラチュレーション演出
       fxLevel = grand ? "grand" : "win";
       (grand ? sfx.grandFanfare : sfx.fanfare)();
       setTimeout(function () { if ($("resultoverlay").style.display === "flex") startWinBGM(); }, grand ? 5600 : 3500);
       rw.textContent = grand ? "CONGRATULATIONS!" : L(wins + " れんしょう！", wins + " WINS!");
       rw.style.color = "#ffd24a";
       var sub = L("スコア " + wins + " ／ さいこう " + best, "Score " + wins + " / Best " + best);
-      if (master) sub += L("　👑 バトルマスター！", "  👑 BATTLE MASTER!");
-      else if (newBest) sub += L("　🎉 さいこうきろく！", "  🎉 NEW BEST!");
+      if (t) sub += "\n" + infTitleText(t) + L("！", "!");   // 今回の連勝で届いた称号
+      if (newBest) sub += L("\n🎉 さいこうきろく！", "\n🎉 NEW BEST!");
+      // 次の目標は「今回のスコア」ではなく「最高記録＝いま持っている位」で決める
+      // （最高42の人が0連勝で終わったとき、すでに持つエリートバトラーを勧めてしまわないように）
+      if (best >= INF_TOP) sub += L("\nさいこうい たっせい！ これより うえの しょうごうは ないよ！", "\nHighest rank reached! There is no title above this!");
+      else { var nx = infNextTitle(best); if (nx) sub += L("\nつぎは " + nx.min + "れんしょうで " + nx.ja + "！", "\nNext: " + nx.min + " wins for " + nx.en + "!"); }
       rs.textContent = sub;
       $("restartbtn").textContent = L("もういちど", "Play Again");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
