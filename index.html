@@ -5282,10 +5282,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         var btn = document.createElement("button");
         btn.className = "bigbtn diff-" + d;
         var cleared = idx < soloProgress;
-        var t = document.createElement("span"); t.className = "mtitle";
-        t.textContent = (cleared ? "★ " : "") + diffName(d) + (idx === soloProgress ? "  〔NEW〕" : "");
+        // ※ローカル変数名を mt に（旧: var t ＝ i18nの t() 関数を隠してしまい、
+        //   クリア済みバッジがあると t("diff.cleared") が TypeError → ひとりでボタンが死ぬ致命バグの修正）
+        var mt = document.createElement("span"); mt.className = "mtitle";
+        mt.textContent = (cleared ? "★ " : "") + diffName(d) + (idx === soloProgress ? "  〔NEW〕" : "");
         var ds = document.createElement("span"); ds.className = "mdesc"; ds.textContent = diffDesc(d) + (cleared ? "  " + t("diff.cleared") : "");
-        btn.appendChild(t); btn.appendChild(ds);
+        btn.appendChild(mt); btn.appendChild(ds);
         btn.onclick = function () { sfx.select(); soloDiff = d; startSetupFor("player"); };
         list.appendChild(btn);
       })(DIFFS[i], i);
