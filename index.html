@@ -11,6 +11,10 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#070a12">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<!-- Farcaster Mini App 埋め込み（タイムラインで画像＋ボタンのカードとして表示・タップで起動） -->
+<meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://maimmaim20230728-blip.github.io/dot-battle-vs-web/icons/farcaster-embed.png","button":{"title":"⚔ Battle / 対戦","action":{"type":"launch_miniapp","name":"Dot Battle VS","url":"https://maimmaim20230728-blip.github.io/dot-battle-vs-web/","splashImageUrl":"https://maimmaim20230728-blip.github.io/dot-battle-vs-web/icons/icon-512.png","splashBackgroundColor":"#070a12"}}}' />
+<!-- 旧クライアント/バリデータ互換のための fc:frame 併記（中身は同一） -->
+<meta name="fc:frame" content='{"version":"1","imageUrl":"https://maimmaim20230728-blip.github.io/dot-battle-vs-web/icons/farcaster-embed.png","button":{"title":"⚔ Battle / 対戦","action":{"type":"launch_frame","name":"Dot Battle VS","url":"https://maimmaim20230728-blip.github.io/dot-battle-vs-web/","splashImageUrl":"https://maimmaim20230728-blip.github.io/dot-battle-vs-web/icons/icon-512.png","splashBackgroundColor":"#070a12"}}}' />
 <title>ドットバトルVS / DOT BATTLE VS</title>
 <style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -7210,6 +7214,18 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       navigator.serviceWorker.register("service-worker.js").catch(function () {});
     });
   }
+</script>
+<!-- Farcaster Mini App: 埋め込み表示(iframe/webview)時のみ同梱SDKを遅延ロードし ready() を通知。
+     通常ブラウザ/PWAでは読み込まないので軽さを維持。外部オリジンへの通信はしない（CSP維持）。 -->
+<script>
+  (function () {
+    var inFarcaster = (window.self !== window.top) || !!window.ReactNativeWebView;
+    if (!inFarcaster) return;
+    var s = document.createElement("script");
+    s.src = "farcaster-sdk.js";
+    s.onload = function () { try { window.FCSDK && window.FCSDK.sdk.actions.ready(); } catch (e) {} };
+    document.head.appendChild(s);
+  })();
 </script>
 </body>
 </html>
