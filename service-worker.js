@@ -1,6 +1,6 @@
 /* ドットバトルVS Web — オフライン用 Service Worker (cache-first)
    更新を配信するときは CACHE の番号を必ず上げること（例: v1 -> v2）。 */
-var CACHE = "dbvs-web-v25";
+var CACHE = "dbvs-web-v26";
 var ASSETS = [
   "./",
   "./index.html",

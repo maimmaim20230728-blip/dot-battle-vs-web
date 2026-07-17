@@ -512,8 +512,28 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.barrier": "魔法 反射バリア・最大2枚(反射が計2層で★も半減反射)",
       "skill.d.down": "魔法 9%で戦闘不能",
       "skill.d.heal": "魔法 HP回復(攻+防)×1.5 ※1回",
-      "skill.d.speedup": "魔法 素早さ2倍・最大256(2〜7T)",
-      "skill.d.allup": "魔法 全能力2倍・最大256(2〜7T) ※1回",
+      "skill.d.speedup": "魔法 素早さ+70(4〜7T)・重ねがけ3回まで",
+      "skill.d.allup": "魔法 全能力+100・最大256(2〜7T) ※1回",
+      "skill.d.sleep": "魔法 必中で ねむり2〜5T・こうげきで かいじょ",
+      "skill.d.roulette": "魔法を ランダムに1つ はつどう",
+      "skill.d.minibarrier": "魔法1回むこう か 物理1発やわらげ(1回で消滅・4〜7T)",
+      "skill.d.counter": "物理を うけながし 50%かえす(かまえ)",
+      "skill.d.hicounter": "物理を うけながし 100%かえす(かまえ)",
+      "battle.asleep": "{name}は ねむっていて うごけない！",
+      "battle.sleep_now": "{name}は ねむりに おちた！",
+      "battle.sleep_wake": "{name}は めを さました！",
+      "battle.roulette": "マジックルーレット！ → {skill}",
+      "battle.mini_raise": "{name}は ミニバリアを はった！",
+      "battle.mini_block": "{name}の ミニバリアが まほうを けした！",
+      "battle.mini_pierce": "{name}の ミニバリアを つらぬいた！",
+      "battle.mini_cut": "{name}の ミニバリアが やわらげた！",
+      "battle.mini_expire": "{name}の ミニバリアが きえた",
+      "battle.brace": "{name}は カウンターの かまえ！",
+      "battle.counter": "{name}は こうげきを うけながした！",
+      "battle.cmd_wait": "ためちゅう",
+      "hud.slp": "眠",
+      "hud.mini": "盾",
+      "fx.mini": "ミニバリア",
       "who.you": "あなた",
       "setup.camera": "カメラ",
       "setup.photo": "がぞう",
@@ -777,8 +797,28 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.barrier": "MAG reflect, max2 (2 layers halve pierce)",
       "skill.d.down": "MAG 9% KO foe",
       "skill.d.heal": "MAG heal(atk+def)×1.5 *1",
-      "skill.d.speedup": "MAG speed×2 max256 (2-7T)",
-      "skill.d.allup": "MAG all×2 max256 (2-7T) *1",
+      "skill.d.speedup": "MAG SPD+70 (4-7T) stack up to 3",
+      "skill.d.allup": "MAG all+100 max256 (2-7T) *1",
+      "skill.d.sleep": "MAG sure sleep 2-5T (wakes if hit)",
+      "skill.d.roulette": "Cast a random magic",
+      "skill.d.minibarrier": "Null 1 magic or soften 1 phys (1-use, 4-7T)",
+      "skill.d.counter": "Parry phys, return 50% (stance)",
+      "skill.d.hicounter": "Parry phys, return 100% (stance)",
+      "battle.asleep": "{name} is asleep and can't move!",
+      "battle.sleep_now": "{name} fell asleep!",
+      "battle.sleep_wake": "{name} woke up!",
+      "battle.roulette": "Magic Roulette! → {skill}",
+      "battle.mini_raise": "{name} put up a mini barrier!",
+      "battle.mini_block": "{name}'s mini barrier nullified the magic!",
+      "battle.mini_pierce": "Pierced {name}'s mini barrier!",
+      "battle.mini_cut": "{name}'s mini barrier softened it!",
+      "battle.mini_expire": "{name}'s mini barrier faded",
+      "battle.brace": "{name} takes a counter stance!",
+      "battle.counter": "{name} parried the attack!",
+      "battle.cmd_wait": "Cooldown",
+      "hud.slp": "Zz",
+      "hud.mini": "M",
+      "fx.mini": "M.Barrier",
       "who.you": "YOU",
       "setup.camera": "Camera",
       "setup.photo": "Photo",
@@ -1236,7 +1276,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "تم الحفظ!",
       "setup.skills_head": "المهارات (4)",
       "setup.start_battle": "ابدأ المعركة ▶",
-      "skill.d.allup": "سحر: كل القدرات ×2 حتى 256 (2-7 أدوار) *مرة واحدة",
+      "skill.d.allup": "سحر: كل القدرات +100 حتى 256 (2-7 أدوار) *مرة واحدة",
       "skill.d.barrier": "سحر: حاجز عاكس، بحد أقصى 2 (طبقتان تعكسان ★ بنصف القوة)",
       "skill.d.bind": "سحر: تقييد 2-7 أدوار (20% شلل كل دور)",
       "skill.d.crit": "حاسم",
@@ -1249,7 +1289,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "بدني",
       "skill.d.pierce": " · يخترق الحاجز (50%)",
       "skill.d.poison": "سحر: سم 10-50 كل دور، مضاعف 20-100 (بحد أقصى ×2)",
-      "skill.d.speedup": "سحر: السرعة ×2 حتى 256 (2-7 أدوار)",
+      "skill.d.speedup": "سحر: السرعة +70 (4-7 أدوار) تتراكم حتى 3",
+      "skill.d.sleep": "سحر: نوم مؤكد 2-5 أدوار (يستيقظ عند الإصابة)",
+      "skill.d.roulette": "يطلق سحرًا عشوائيًا واحدًا",
+      "skill.d.minibarrier": "يُبطل سحرًا واحدًا أو يخفف ضربة واحدة (استخدام واحد، 4-7 أدوار)",
+      "skill.d.counter": "يصد البدني ويرد 50% (وضعية)",
+      "skill.d.hicounter": "يصد البدني ويرد 100% (وضعية)",
+      "battle.asleep": "{name} نائم ولا يستطيع الحركة!",
+      "battle.sleep_now": "{name} غطّ في النوم!",
+      "battle.sleep_wake": "{name} استيقظ!",
+      "battle.roulette": "روليت السحر! ← {skill}",
+      "battle.mini_raise": "{name} أقام حاجزًا صغيرًا!",
+      "battle.mini_block": "حاجز {name} الصغير أبطل السحر!",
+      "battle.mini_pierce": "اخترق حاجز {name} الصغير!",
+      "battle.mini_cut": "حاجز {name} الصغير خفف الضربة!",
+      "battle.mini_expire": "تلاشى حاجز {name} الصغير",
+      "battle.brace": "{name} اتخذ وضعية الهجوم المضاد!",
+      "battle.counter": "{name} صدّ الهجوم وردّه!",
+      "battle.cmd_wait": "تبريد",
+      "hud.slp": "نوم",
+      "hud.mini": "م",
+      "fx.mini": "حاجز صغير",
       "skill.d.sure": "لا يخطئ",
       "stage.label": "المرحلة ",
       "stage.saved_run": "5 معارك محفوظة",
@@ -1334,7 +1394,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "كل القدرات +20",
       "passive.10.name": "يصمد مرة واحدة بـ 1 HP",
       "passive.11.name": "يهجم أولًا بنسبة 20%",
-      "passive.12.name": "محصّن ضد السم والتقييد والإسقاط",
+      "passive.12.name": "محصّن ضد السم والتقييد والإسقاط والنوم",
+      "skill.30.name": "نوم",
+      "skill.31.name": "ليزر",
+      "skill.32.name": "روليت السحر",
+      "skill.33.name": "حاجز صغير",
+      "skill.34.name": "جاذبية",
+      "skill.35.name": "ضربة مزدوجة",
+      "skill.36.name": "هجوم مضاد",
+      "skill.37.name": "وابل ضربات",
+      "skill.38.name": "هجوم مضاد قوي",
+      "skill.39.name": "انفجار مشحون",
       "passive.13.name": "ينسخ تعزيزات الخصم لنفسه",
       "passive.14.name": "يمتص 20% من الضرر الموجَّه",
       "passive.15.name": "كل دور: قدرة عشوائية +50-200",
@@ -1342,6 +1412,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "إصابة وحاسم +20",
       "passive.18.name": "يعيد استخدام مهارة المرة الواحدة",
       "passive.19.name": "يعكس البدني والسحر بنسبة 20%",
+      "passive.20.name": "كل القدرات +10",
+      "passive.21.name": "إصابة وحاسم +10",
+      "passive.22.name": "كل القدرات والإصابة والحاسم +5",
+      "passive.23.name": "يعكس السحر بنسبة 10%",
+      "passive.24.name": "يعكس الهجمات البدنية بنسبة 10%",
+      "passive.25.name": "كل القدرات والإصابة والحاسم +10",
+      "passive.26.name": "يعكس البدني والسحر بنسبة 10%",
+      "passive.27.name": "مهارات المرة الواحدة تعود كل 5 أدوار",
+      "passive.28.name": "كل القدرات والإصابة والحاسم +20",
+      "passive.29.name": "يستعيد 30 HP كل دور ويمتص 20%",
       "inftitle.99.name": "بطل الأبطال",
       "inftitle.80.name": "أسطورة القتال",
       "inftitle.50.name": "سيّد القتال",
@@ -1555,7 +1635,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "সেভ হয়ে গেছে!",
       "setup.skills_head": "কৌশল (4টি)",
       "setup.start_battle": "লড়াই শুরু ▶",
-      "skill.d.allup": "ম্যাজিক সব×2 সর্বোচ্চ 256 (2-7 টার্ন) *1 বার",
+      "skill.d.allup": "ম্যাজিক সব+100 সর্বোচ্চ 256 (2-7 টার্ন) *1 বার",
       "skill.d.barrier": "ম্যাজিক প্রতিফলন ঢাল, সর্বোচ্চ 2 (2 স্তরে ★-ও অর্ধেক ফেরে)",
       "skill.d.bind": "ম্যাজিক বাঁধন 2-7 টার্ন (প্রতি টার্নে 20% আটক)",
       "skill.d.crit": "ক্রিট",
@@ -1568,7 +1648,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "ফিজিক্যাল",
       "skill.d.pierce": " · ঢাল ভেদ করে(50%)",
       "skill.d.poison": "ম্যাজিক বিষ 10-50/টার্ন, দ্বিগুণে 20-100 (সর্বোচ্চ 2)",
-      "skill.d.speedup": "ম্যাজিক গতি×2 সর্বোচ্চ 256 (2-7 টার্ন)",
+      "skill.d.speedup": "ম্যাজিক গতি+70 (4-7 টার্ন) সর্বোচ্চ 3 স্তর",
+      "skill.d.sleep": "ম্যাজিক নিশ্চিত ঘুম 2-5 টার্ন (আঘাতে জাগে)",
+      "skill.d.roulette": "এলোমেলো একটি ম্যাজিক চালায়",
+      "skill.d.minibarrier": "1টি ম্যাজিক বাতিল বা 1টি আঘাত কমায় (1 বার, 4-7 টার্ন)",
+      "skill.d.counter": "ফিজিক্যাল ঠেকিয়ে 50% ফেরত (স্ট্যান্স)",
+      "skill.d.hicounter": "ফিজিক্যাল ঠেকিয়ে 100% ফেরত (স্ট্যান্স)",
+      "battle.asleep": "{name} ঘুমিয়ে আছে, নড়তে পারছে না!",
+      "battle.sleep_now": "{name} ঘুমিয়ে পড়ল!",
+      "battle.sleep_wake": "{name} জেগে উঠল!",
+      "battle.roulette": "ম্যাজিক রুলেট! → {skill}",
+      "battle.mini_raise": "{name} মিনি ব্যারিয়ার তুলল!",
+      "battle.mini_block": "{name}-এর মিনি ব্যারিয়ার ম্যাজিক বাতিল করল!",
+      "battle.mini_pierce": "{name}-এর মিনি ব্যারিয়ার ভেদ হলো!",
+      "battle.mini_cut": "{name}-এর মিনি ব্যারিয়ার আঘাত কমাল!",
+      "battle.mini_expire": "{name}-এর মিনি ব্যারিয়ার মিলিয়ে গেল",
+      "battle.brace": "{name} কাউন্টারের স্ট্যান্স নিল!",
+      "battle.counter": "{name} আক্রমণ ঠেকিয়ে দিল!",
+      "battle.cmd_wait": "কুলডাউন",
+      "hud.slp": "ঘুম",
+      "hud.mini": "M",
+      "fx.mini": "মিনি ব্যারিয়ার",
       "skill.d.sure": "অব্যর্থ",
       "stage.label": "ধাপ ",
       "stage.saved_run": "সেভ 5 লড়াই",
@@ -1653,7 +1753,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "সব ক্ষমতা +20",
       "passive.10.name": "1 বার 1 HP-তে টিকে থাকে",
       "passive.11.name": "20% আগে আঘাত হানে",
-      "passive.12.name": "বিষ, বাঁধন ও ধপাসে অটুট",
+      "passive.12.name": "বিষ, বাঁধন, ধপাস ও ঘুমে অটুট",
+      "skill.30.name": "ঘুম",
+      "skill.31.name": "লেজার",
+      "skill.32.name": "ম্যাজিক রুলেট",
+      "skill.33.name": "মিনি ব্যারিয়ার",
+      "skill.34.name": "গ্র্যাভিটি",
+      "skill.35.name": "ডাবল স্ট্রাইক",
+      "skill.36.name": "কাউন্টার",
+      "skill.37.name": "এলোপাথাড়ি আঘাত",
+      "skill.38.name": "হাই কাউন্টার",
+      "skill.39.name": "চার্জ বার্স্ট",
       "passive.13.name": "প্রতিপক্ষের বাফ নিজেও পায়",
       "passive.14.name": "দেওয়া ড্যামেজের 20% শুষে নেয়",
       "passive.15.name": "প্রতি টার্নে 1 ক্ষমতা +50-200",
@@ -1661,6 +1771,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "নিশানা ও ক্রিট +20",
       "passive.18.name": "1-বারের কৌশল আরেকবার",
       "passive.19.name": "20% ফিজিক্যাল ও ম্যাজিক ফেরায়",
+      "passive.20.name": "সব ক্ষমতা +10",
+      "passive.21.name": "নিশানা ও ক্রিট +10",
+      "passive.22.name": "সব ক্ষমতা, নিশানা ও ক্রিট +5",
+      "passive.23.name": "10% ম্যাজিক ফিরিয়ে দেয়",
+      "passive.24.name": "10% ফিজিক্যাল ফিরিয়ে দেয়",
+      "passive.25.name": "সব ক্ষমতা, নিশানা ও ক্রিট +10",
+      "passive.26.name": "10% ফিজিক্যাল ও ম্যাজিক ফেরায়",
+      "passive.27.name": "1-বারের কৌশল প্রতি 5 টার্নে ফেরে",
+      "passive.28.name": "সব ক্ষমতা, নিশানা ও ক্রিট +20",
+      "passive.29.name": "প্রতি টার্নে 30 HP + 20% শোষণ",
       "inftitle.99.name": "সর্বকালের সেরা যোদ্ধা",
       "inftitle.80.name": "যুদ্ধ কিংবদন্তি",
       "inftitle.50.name": "ব্যাটল মাস্টার",
@@ -1874,7 +1994,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "Gespeichert!",
       "setup.skills_head": "Attacken (4)",
       "setup.start_battle": "Kampf starten ▶",
-      "skill.d.allup": "MAG alles×2 max. 256 (2-7R) *1",
+      "skill.d.allup": "MAG alles+100 max. 256 (2-7R) *1",
       "skill.d.barrier": "MAG Reflekt, max. 2 (2 Lagen halbieren ★)",
       "skill.d.bind": "MAG Fessel 2-7R (20%/Runde lahmgelegt)",
       "skill.d.crit": "KRIT",
@@ -1887,7 +2007,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "PHY",
       "skill.d.pierce": " · durchdringt(50%)",
       "skill.d.poison": "MAG Gift 10-50/R, doppelt: 20-100 (max. 2)",
-      "skill.d.speedup": "MAG Tempo×2 max. 256 (2-7R)",
+      "skill.d.speedup": "MAG Tempo+70 (4-7R), bis 3x stapelbar",
+      "skill.d.sleep": "MAG sicherer Schlaf 2-5R (erwacht bei Treffer)",
+      "skill.d.roulette": "Wirkt einen zufälligen Zauber",
+      "skill.d.minibarrier": "Nullt 1 Zauber oder dämpft 1 Hieb (1x, 4-7R)",
+      "skill.d.counter": "Pariert Hiebe, 50% zurück (Haltung)",
+      "skill.d.hicounter": "Pariert Hiebe, 100% zurück (Haltung)",
+      "battle.asleep": "{name} schläft und kann sich nicht rühren!",
+      "battle.sleep_now": "{name} ist eingeschlafen!",
+      "battle.sleep_wake": "{name} ist aufgewacht!",
+      "battle.roulette": "Magie-Roulette! → {skill}",
+      "battle.mini_raise": "{name} errichtet eine Mini-Barriere!",
+      "battle.mini_block": "{name}s Mini-Barriere löschte den Zauber!",
+      "battle.mini_pierce": "{name}s Mini-Barriere wurde durchbrochen!",
+      "battle.mini_cut": "{name}s Mini-Barriere dämpfte den Schlag!",
+      "battle.mini_expire": "{name}s Mini-Barriere verblasste",
+      "battle.brace": "{name} geht in Konter-Haltung!",
+      "battle.counter": "{name} parierte den Angriff!",
+      "battle.cmd_wait": "Aufladen",
+      "hud.slp": "Zz",
+      "hud.mini": "M",
+      "fx.mini": "Mini-Barriere",
       "skill.d.sure": "SICHER",
       "stage.label": "STUFE ",
       "stage.saved_run": "Speicher-Serie",
@@ -1972,7 +2112,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "Alle Werte +20",
       "passive.10.name": "Hält einmal mit 1 HP durch",
       "passive.11.name": "Schlägt zuerst zu (20%)",
-      "passive.12.name": "Immun gegen Gift, Fessel & K.O.",
+      "passive.12.name": "Immun gegen Gift, Fessel, K.O. & Schlaf",
+      "skill.30.name": "Schlaf",
+      "skill.31.name": "Laser",
+      "skill.32.name": "Magie-Roulette",
+      "skill.33.name": "Mini-Barriere",
+      "skill.34.name": "Gravitation",
+      "skill.35.name": "Doppelschlag",
+      "skill.36.name": "Konter",
+      "skill.37.name": "Wilde Salve",
+      "skill.38.name": "Super-Konter",
+      "skill.39.name": "Aufladeschlag",
       "passive.13.name": "Spiegelt Gegner-Buffs auf sich",
       "passive.14.name": "Saugt 20% des Schadens",
       "passive.15.name": "Jede Runde: 1 Wert +50–200",
@@ -1980,6 +2130,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "Treffer & Volltreffer +20",
       "passive.18.name": "Einmal-Attacke noch einmal",
       "passive.19.name": "Wirft Hiebe & Zauber zurück (20%)",
+      "passive.20.name": "Alle Werte +10",
+      "passive.21.name": "Treffer & Volltreffer +10",
+      "passive.22.name": "Alle Werte & Treffer/Volltreffer +5",
+      "passive.23.name": "Wirft Zauber zurück (10%)",
+      "passive.24.name": "Wirft Hiebe zurück (10%)",
+      "passive.25.name": "Alle Werte & Treffer/Volltreffer +10",
+      "passive.26.name": "Wirft Hiebe & Zauber zurück (10%)",
+      "passive.27.name": "Einmal-Attacken alle 5 Runden neu",
+      "passive.28.name": "Alle Werte & Treffer/Volltreffer +20",
+      "passive.29.name": "+30 HP je Runde & saugt 20%",
       "inftitle.99.name": "KAMPFGOTT",
       "inftitle.80.name": "KAMPFLEGENDE",
       "inftitle.50.name": "KAMPFMEISTER",
@@ -2193,7 +2353,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "¡Guardado!",
       "setup.skills_head": "Técnicas (4)",
       "setup.start_battle": "Empezar batalla ▶",
-      "skill.d.allup": "MAG todo×2 máx. 256 (2-7T) *1",
+      "skill.d.allup": "MAG todo+100 máx. 256 (2-7T) *1",
       "skill.d.barrier": "MAG espejo, máx. 2 (2 capas reducen ★ a la mitad)",
       "skill.d.bind": "MAG atadura 2-7T (20%/turno sin actuar)",
       "skill.d.crit": "CRÍT",
@@ -2206,7 +2366,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "FÍS",
       "skill.d.pierce": " · perfora(50%)",
       "skill.d.poison": "MAG veneno 10-50/T, x2: 20-100 (máx. 2)",
-      "skill.d.speedup": "MAG velocidad×2 máx. 256 (2-7T)",
+      "skill.d.speedup": "MAG velocidad+70 (4-7T), acumula hasta 3",
+      "skill.d.sleep": "MAG sueño seguro 2-5T (despierta al ser golpeado)",
+      "skill.d.roulette": "Lanza una magia al azar",
+      "skill.d.minibarrier": "Anula 1 magia o amortigua 1 golpe (1 uso, 4-7T)",
+      "skill.d.counter": "Desvía lo físico y devuelve 50% (postura)",
+      "skill.d.hicounter": "Desvía lo físico y devuelve 100% (postura)",
+      "battle.asleep": "¡{name} duerme y no puede moverse!",
+      "battle.sleep_now": "¡{name} se durmió!",
+      "battle.sleep_wake": "¡{name} despertó!",
+      "battle.roulette": "¡Ruleta mágica! → {skill}",
+      "battle.mini_raise": "¡{name} alzó una minibarrera!",
+      "battle.mini_block": "¡La minibarrera de {name} anuló la magia!",
+      "battle.mini_pierce": "¡Atravesó la minibarrera de {name}!",
+      "battle.mini_cut": "¡La minibarrera de {name} lo amortiguó!",
+      "battle.mini_expire": "La minibarrera de {name} se desvaneció",
+      "battle.brace": "¡{name} adopta postura de contraataque!",
+      "battle.counter": "¡{name} desvió el ataque!",
+      "battle.cmd_wait": "Recarga",
+      "hud.slp": "Zz",
+      "hud.mini": "M",
+      "fx.mini": "Minibarrera",
       "skill.d.sure": "SEGURO",
       "stage.label": "FASE ",
       "stage.saved_run": "Serie guardada",
@@ -2291,7 +2471,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "Todas las stats +20",
       "passive.10.name": "Aguanta una vez con 1 HP",
       "passive.11.name": "20% golpea primero",
-      "passive.12.name": "Inmune a veneno, atadura y K.O.",
+      "passive.12.name": "Inmune a veneno, atadura, K.O. y sueño",
+      "skill.30.name": "Sueño",
+      "skill.31.name": "Láser",
+      "skill.32.name": "Ruleta mágica",
+      "skill.33.name": "Minibarrera",
+      "skill.34.name": "Gravedad",
+      "skill.35.name": "Golpe doble",
+      "skill.36.name": "Contraataque",
+      "skill.37.name": "Ráfaga salvaje",
+      "skill.38.name": "Contraataque total",
+      "skill.39.name": "Estallido cargado",
       "passive.13.name": "Copia los buffs del rival",
       "passive.14.name": "Absorbe el 20% del daño hecho",
       "passive.15.name": "Cada turno: 1 stat +50–200",
@@ -2299,6 +2489,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "Precisión y crítico +20",
       "passive.18.name": "Reusa una técnica de un solo uso",
       "passive.19.name": "20% devuelve físico y magia",
+      "passive.20.name": "Todas las stats +10",
+      "passive.21.name": "Precisión y crítico +10",
+      "passive.22.name": "Stats, precisión y crítico +5",
+      "passive.23.name": "10% devuelve la magia",
+      "passive.24.name": "10% devuelve lo físico",
+      "passive.25.name": "Stats, precisión y crítico +10",
+      "passive.26.name": "10% devuelve físico y magia",
+      "passive.27.name": "Técnicas de un uso vuelven cada 5 turnos",
+      "passive.28.name": "Stats, precisión y crítico +20",
+      "passive.29.name": "Regenera 30 HP y absorbe el 20%",
       "inftitle.99.name": "DIOS DE LA BATALLA",
       "inftitle.80.name": "LEYENDA DEL COMBATE",
       "inftitle.50.name": "MAESTRO DEL COMBATE",
@@ -2512,7 +2712,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "Sauvegardé !",
       "setup.skills_head": "Techniques (4)",
       "setup.start_battle": "Lancer le combat ▶",
-      "skill.d.allup": "MAG tout×2 max 256 (2-7T) *1",
+      "skill.d.allup": "MAG tout+100 max 256 (2-7T) *1",
       "skill.d.barrier": "MAG miroir, max 2 (2 couches réduisent ★ de moitié)",
       "skill.d.bind": "MAG entrave 2-7T (20%/tour paralysé)",
       "skill.d.crit": "CRIT",
@@ -2525,7 +2725,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "PHY",
       "skill.d.pierce": " · perce(50%)",
       "skill.d.poison": "MAG poison 10-50/T, x2 : 20-100 (max 2)",
-      "skill.d.speedup": "MAG vitesse×2 max 256 (2-7T)",
+      "skill.d.speedup": "MAG vitesse+70 (4-7T), cumul jusqu'à 3",
+      "skill.d.sleep": "MAG sommeil sûr 2-5T (se réveille si touché)",
+      "skill.d.roulette": "Lance une magie au hasard",
+      "skill.d.minibarrier": "Annule 1 magie ou amortit 1 coup (1 usage, 4-7T)",
+      "skill.d.counter": "Pare le physique, renvoie 50% (garde)",
+      "skill.d.hicounter": "Pare le physique, renvoie 100% (garde)",
+      "battle.asleep": "{name} dort et ne peut pas bouger !",
+      "battle.sleep_now": "{name} s'est endormi !",
+      "battle.sleep_wake": "{name} s'est réveillé !",
+      "battle.roulette": "Roulette magique ! → {skill}",
+      "battle.mini_raise": "{name} dresse une mini-barrière !",
+      "battle.mini_block": "La mini-barrière de {name} a annulé la magie !",
+      "battle.mini_pierce": "A transpercé la mini-barrière de {name} !",
+      "battle.mini_cut": "La mini-barrière de {name} a amorti le coup !",
+      "battle.mini_expire": "La mini-barrière de {name} s'est dissipée",
+      "battle.brace": "{name} se met en garde de contre !",
+      "battle.counter": "{name} a paré l'attaque !",
+      "battle.cmd_wait": "Recharge",
+      "hud.slp": "Zz",
+      "hud.mini": "M",
+      "fx.mini": "Mini-barrière",
       "skill.d.sure": "SÛR",
       "stage.label": "ÉTAPE ",
       "stage.saved_run": "Série sauvée",
@@ -2610,7 +2830,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "Toutes les stats +20",
       "passive.10.name": "Tient une fois à 1 HP",
       "passive.11.name": "20% frappe en premier",
-      "passive.12.name": "Immunisé poison/entrave/K.O.",
+      "passive.12.name": "Immunisé poison/entrave/K.O./sommeil",
+      "skill.30.name": "Sommeil",
+      "skill.31.name": "Laser",
+      "skill.32.name": "Roulette magique",
+      "skill.33.name": "Mini-barrière",
+      "skill.34.name": "Gravité",
+      "skill.35.name": "Double frappe",
+      "skill.36.name": "Contre",
+      "skill.37.name": "Rafale sauvage",
+      "skill.38.name": "Contre total",
+      "skill.39.name": "Explosion chargée",
       "passive.13.name": "Copie les buffs du rival",
       "passive.14.name": "Absorbe 20% des dégâts infligés",
       "passive.15.name": "Chaque tour : 1 stat +50–200",
@@ -2618,6 +2848,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "Précision et critique +20",
       "passive.18.name": "Réutilise une technique unique",
       "passive.19.name": "20% renvoie physique et magie",
+      "passive.20.name": "Toutes les stats +10",
+      "passive.21.name": "Précision et critique +10",
+      "passive.22.name": "Stats, précision et critique +5",
+      "passive.23.name": "10% renvoie la magie",
+      "passive.24.name": "10% renvoie le physique",
+      "passive.25.name": "Stats, précision et critique +10",
+      "passive.26.name": "10% renvoie physique et magie",
+      "passive.27.name": "Techniques uniques reviennent tous les 5 tours",
+      "passive.28.name": "Stats, précision et critique +20",
+      "passive.29.name": "Régénère 30 HP et absorbe 20%",
       "inftitle.99.name": "DIEU DU COMBAT",
       "inftitle.80.name": "LÉGENDE DU COMBAT",
       "inftitle.50.name": "MAÎTRE DU COMBAT",
@@ -2831,7 +3071,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "सेव हो गया!",
       "setup.skills_head": "दांव (4)",
       "setup.start_battle": "बैटल शुरू ▶",
-      "skill.d.allup": "मैजिक सब×2 अधिकतम 256 (2-7 टर्न) *1 बार",
+      "skill.d.allup": "मैजिक सब+100 अधिकतम 256 (2-7 टर्न) *1 बार",
       "skill.d.barrier": "मैजिक पलटाव ढाल, अधिकतम 2 (2 परत ★ भी आधा लौटाती)",
       "skill.d.bind": "मैजिक बंधन 2-7 टर्न (हर टर्न 20% रुकावट)",
       "skill.d.crit": "क्रिट",
@@ -2844,7 +3084,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "फ़िज़िकल",
       "skill.d.pierce": " · ढाल भेदता(50%)",
       "skill.d.poison": "मैजिक ज़हर 10-50/टर्न, दुगना 20-100 (अधिकतम 2)",
-      "skill.d.speedup": "मैजिक रफ़्तार×2 अधिकतम 256 (2-7 टर्न)",
+      "skill.d.speedup": "मैजिक रफ़्तार+70 (4-7 टर्न), 3 तक जमा",
+      "skill.d.sleep": "मैजिक पक्की नींद 2-5 टर्न (चोट लगते ही जागे)",
+      "skill.d.roulette": "कोई एक जादू बेतरतीब चलाता",
+      "skill.d.minibarrier": "1 जादू रद्द या 1 वार हल्का (1 बार, 4-7 टर्न)",
+      "skill.d.counter": "फ़िज़िकल रोककर 50% लौटाए (मुद्रा)",
+      "skill.d.hicounter": "फ़िज़िकल रोककर 100% लौटाए (मुद्रा)",
+      "battle.asleep": "{name} सो रहा है, हिल नहीं सकता!",
+      "battle.sleep_now": "{name} सो गया!",
+      "battle.sleep_wake": "{name} जाग गया!",
+      "battle.roulette": "मैजिक रूलेट! → {skill}",
+      "battle.mini_raise": "{name} ने मिनी बैरियर लगाया!",
+      "battle.mini_block": "{name} के मिनी बैरियर ने जादू मिटा दिया!",
+      "battle.mini_pierce": "{name} का मिनी बैरियर भेद दिया!",
+      "battle.mini_cut": "{name} के मिनी बैरियर ने वार हल्का किया!",
+      "battle.mini_expire": "{name} का मिनी बैरियर मिट गया",
+      "battle.brace": "{name} ने काउंटर की मुद्रा ली!",
+      "battle.counter": "{name} ने हमला रोक लिया!",
+      "battle.cmd_wait": "कूलडाउन",
+      "hud.slp": "Zz",
+      "hud.mini": "M",
+      "fx.mini": "मिनी बैरियर",
       "skill.d.sure": "अचूक",
       "stage.label": "चरण ",
       "stage.saved_run": "सेव 5 मुक़ाबले",
@@ -2929,7 +3189,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "सारी ताकत +20",
       "passive.10.name": "1 बार 1 HP पर टिकता",
       "passive.11.name": "20% पर पहला वार",
-      "passive.12.name": "ज़हर-बंधन-धड़ाम बेअसर",
+      "passive.12.name": "ज़हर-बंधन-धड़ाम-नींद बेअसर",
+      "skill.30.name": "नींद",
+      "skill.31.name": "लेज़र",
+      "skill.32.name": "मैजिक रूलेट",
+      "skill.33.name": "मिनी बैरियर",
+      "skill.34.name": "ग्रैविटी",
+      "skill.35.name": "दोहरा वार",
+      "skill.36.name": "काउंटर",
+      "skill.37.name": "ताबड़तोड़ वार",
+      "skill.38.name": "हाई काउंटर",
+      "skill.39.name": "चार्ज बर्स्ट",
       "passive.13.name": "विरोधी का बफ़ खुद भी पाता",
       "passive.14.name": "दिए डैमेज का 20% सोखता",
       "passive.15.name": "हर टर्न 1 ताकत +50-200",
@@ -2937,6 +3207,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "सटीक और क्रिट +20",
       "passive.18.name": "1-बार वाला दांव फिर से",
       "passive.19.name": "20% पर फ़िज़िकल-जादू पलटाता",
+      "passive.20.name": "सारी ताकत +10",
+      "passive.21.name": "सटीक और क्रिट +10",
+      "passive.22.name": "सारी ताकत, सटीक और क्रिट +5",
+      "passive.23.name": "10% पर जादू पलटाता",
+      "passive.24.name": "10% पर फ़िज़िकल पलटाता",
+      "passive.25.name": "सारी ताकत, सटीक और क्रिट +10",
+      "passive.26.name": "10% पर फ़िज़िकल-जादू पलटाता",
+      "passive.27.name": "1-बार वाला दांव हर 5 टर्न में फिर से",
+      "passive.28.name": "सारी ताकत, सटीक और क्रिट +20",
+      "passive.29.name": "हर टर्न 30 HP + 20% सोखता",
       "inftitle.99.name": "महायोद्धा",
       "inftitle.80.name": "बैटल लीजेंड",
       "inftitle.50.name": "बैटल मास्टर",
@@ -3150,7 +3430,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "Tersimpan!",
       "setup.skills_head": "Jurus (4)",
       "setup.start_battle": "Mulai Bertarung ▶",
-      "skill.d.allup": "SIHIR semua×2 maks 256 (2-7 giliran) *1",
+      "skill.d.allup": "SIHIR semua+100 maks 256 (2-7 giliran) *1",
       "skill.d.barrier": "SIHIR perisai pantul, maks 2 (2 lapis, ★ pun separuh)",
       "skill.d.bind": "SIHIR ikat 2-7 giliran (20%/giliran diam)",
       "skill.d.crit": "KRITIS",
@@ -3163,7 +3443,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "FISIK",
       "skill.d.pierce": " · tembus perisai(50%)",
       "skill.d.poison": "SIHIR racun 10-50/giliran, x2: 20-100 (maks 2)",
-      "skill.d.speedup": "SIHIR kecepatan×2 maks 256 (2-7 giliran)",
+      "skill.d.speedup": "SIHIR kecepatan+70 (4-7 giliran), tumpuk maks 3",
+      "skill.d.sleep": "SIHIR tidur pasti 2-5 giliran (bangun jika kena)",
+      "skill.d.roulette": "Melancarkan satu sihir acak",
+      "skill.d.minibarrier": "Batalkan 1 sihir atau redam 1 pukulan (1x, 4-7 giliran)",
+      "skill.d.counter": "Menangkis fisik, balas 50% (kuda-kuda)",
+      "skill.d.hicounter": "Menangkis fisik, balas 100% (kuda-kuda)",
+      "battle.asleep": "{name} tertidur dan tak bisa bergerak!",
+      "battle.sleep_now": "{name} tertidur!",
+      "battle.sleep_wake": "{name} terbangun!",
+      "battle.roulette": "Roulette sihir! → {skill}",
+      "battle.mini_raise": "{name} memasang penghalang mini!",
+      "battle.mini_block": "Penghalang mini {name} membatalkan sihirnya!",
+      "battle.mini_pierce": "Menembus penghalang mini {name}!",
+      "battle.mini_cut": "Penghalang mini {name} meredamnya!",
+      "battle.mini_expire": "Penghalang mini {name} memudar",
+      "battle.brace": "{name} pasang kuda-kuda serangan balik!",
+      "battle.counter": "{name} menangkis serangan!",
+      "battle.cmd_wait": "Isi ulang",
+      "hud.slp": "Zz",
+      "hud.mini": "M",
+      "fx.mini": "Penghalang mini",
       "skill.d.sure": "PASTI",
       "stage.label": "TAHAP ",
       "stage.saved_run": "Seri tersimpan",
@@ -3248,7 +3548,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "Semua kemampuan +20",
       "passive.10.name": "Sekali bertahan di 1 HP",
       "passive.11.name": "20% menyerang duluan",
-      "passive.12.name": "Kebal racun, ikatan & tumbang",
+      "passive.12.name": "Kebal racun, ikatan, tumbang & tidur",
+      "skill.30.name": "Tidur",
+      "skill.31.name": "Laser",
+      "skill.32.name": "Roulette sihir",
+      "skill.33.name": "Penghalang mini",
+      "skill.34.name": "Gravitasi",
+      "skill.35.name": "Serangan ganda",
+      "skill.36.name": "Serangan balik",
+      "skill.37.name": "Rentetan liar",
+      "skill.38.name": "Serangan balik penuh",
+      "skill.39.name": "Ledakan penuh",
       "passive.13.name": "Meniru buff lawan untuk diri",
       "passive.14.name": "Menyerap 20% damage yang diberi",
       "passive.15.name": "Tiap giliran: 1 stat +50-200",
@@ -3256,6 +3566,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "Akurasi & kritis +20",
       "passive.18.name": "Jurus sekali-pakai bisa lagi",
       "passive.19.name": "20% memantulkan fisik & sihir",
+      "passive.20.name": "Semua kemampuan +10",
+      "passive.21.name": "Akurasi & kritis +10",
+      "passive.22.name": "Semua kemampuan & akurasi/kritis +5",
+      "passive.23.name": "10% memantulkan sihir",
+      "passive.24.name": "10% memantulkan fisik",
+      "passive.25.name": "Semua kemampuan & akurasi/kritis +10",
+      "passive.26.name": "10% memantulkan fisik & sihir",
+      "passive.27.name": "Jurus sekali-pakai pulih tiap 5 giliran",
+      "passive.28.name": "Semua kemampuan & akurasi/kritis +20",
+      "passive.29.name": "Pulih 30 HP tiap giliran & serap 20%",
       "inftitle.99.name": "DEWA PERTARUNGAN",
       "inftitle.80.name": "LEGENDA BATTLE",
       "inftitle.50.name": "MASTER BATTLE",
@@ -3469,7 +3789,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "Salvato!",
       "setup.skills_head": "Tecniche (4)",
       "setup.start_battle": "Inizia battaglia ▶",
-      "skill.d.allup": "MAG tutto×2 max 256 (2-7T) *1",
+      "skill.d.allup": "MAG tutto+100 max 256 (2-7T) *1",
       "skill.d.barrier": "MAG specchio, max 2 (2 strati dimezzano ★)",
       "skill.d.bind": "MAG vincolo 2-7T (20%/turno bloccato)",
       "skill.d.crit": "CRIT",
@@ -3482,7 +3802,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "FIS",
       "skill.d.pierce": " · perfora(50%)",
       "skill.d.poison": "MAG veleno 10-50/T, x2: 20-100 (max 2)",
-      "skill.d.speedup": "MAG velocità×2 max 256 (2-7T)",
+      "skill.d.speedup": "MAG velocità+70 (4-7T), cumulabile fino a 3",
+      "skill.d.sleep": "MAG sonno sicuro 2-5T (si sveglia se colpito)",
+      "skill.d.roulette": "Lancia una magia a caso",
+      "skill.d.minibarrier": "Annulla 1 magia o attutisce 1 colpo (1 uso, 4-7T)",
+      "skill.d.counter": "Para il fisico, restituisce 50% (guardia)",
+      "skill.d.hicounter": "Para il fisico, restituisce 100% (guardia)",
+      "battle.asleep": "{name} dorme e non può muoversi!",
+      "battle.sleep_now": "{name} si è addormentato!",
+      "battle.sleep_wake": "{name} si è svegliato!",
+      "battle.roulette": "Roulette magica! → {skill}",
+      "battle.mini_raise": "{name} alza una mini barriera!",
+      "battle.mini_block": "La mini barriera di {name} ha annullato la magia!",
+      "battle.mini_pierce": "Ha trapassato la mini barriera di {name}!",
+      "battle.mini_cut": "La mini barriera di {name} lo ha attutito!",
+      "battle.mini_expire": "La mini barriera di {name} è svanita",
+      "battle.brace": "{name} assume la guardia di contrattacco!",
+      "battle.counter": "{name} ha parato l'attacco!",
+      "battle.cmd_wait": "Ricarica",
+      "hud.slp": "Zz",
+      "hud.mini": "M",
+      "fx.mini": "Mini barriera",
       "skill.d.sure": "SICURO",
       "stage.label": "FASE ",
       "stage.saved_run": "Serie salvata",
@@ -3567,7 +3907,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "Tutti i valori +20",
       "passive.10.name": "Resiste una volta con 1 HP",
       "passive.11.name": "20% colpisce per primo",
-      "passive.12.name": "Immune a veleno, vincolo e K.O.",
+      "passive.12.name": "Immune a veleno, vincolo, K.O. e sonno",
+      "skill.30.name": "Sonno",
+      "skill.31.name": "Laser",
+      "skill.32.name": "Roulette magica",
+      "skill.33.name": "Mini barriera",
+      "skill.34.name": "Gravità",
+      "skill.35.name": "Doppio colpo",
+      "skill.36.name": "Contrattacco",
+      "skill.37.name": "Raffica selvaggia",
+      "skill.38.name": "Contrattacco totale",
+      "skill.39.name": "Scoppio caricato",
       "passive.13.name": "Copia i buff del rivale",
       "passive.14.name": "Assorbe il 20% dei danni fatti",
       "passive.15.name": "Ogni turno: 1 valore +50–200",
@@ -3575,6 +3925,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "Precisione e critico +20",
       "passive.18.name": "Riusa una tecnica monouso",
       "passive.19.name": "20% respinge fisico e magia",
+      "passive.20.name": "Tutti i valori +10",
+      "passive.21.name": "Precisione e critico +10",
+      "passive.22.name": "Valori, precisione e critico +5",
+      "passive.23.name": "10% respinge la magia",
+      "passive.24.name": "10% respinge il fisico",
+      "passive.25.name": "Valori, precisione e critico +10",
+      "passive.26.name": "10% respinge fisico e magia",
+      "passive.27.name": "Tecniche monouso tornano ogni 5 turni",
+      "passive.28.name": "Valori, precisione e critico +20",
+      "passive.29.name": "Rigenera 30 HP e assorbe il 20%",
       "inftitle.99.name": "DIO DELLA BATTAGLIA",
       "inftitle.80.name": "LEGGENDA DELLA BATTAGLIA",
       "inftitle.50.name": "MAESTRO DI BATTAGLIA",
@@ -3788,7 +4148,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "저장했어!",
       "setup.skills_head": "배운 기술(4개)",
       "setup.start_battle": "대전 스타트 ▶",
-      "skill.d.allup": "마법 전능력 2배·최대 256(2~7턴) ※1회",
+      "skill.d.allup": "마법 전능력 +100·최대 256(2~7턴) ※1회",
       "skill.d.barrier": "마법 반사 배리어·최대 2장(2장이면 ★도 절반 반사)",
       "skill.d.bind": "마법 바인드 2~7턴(매턴 20% 행동불가)",
       "skill.d.crit": "회심",
@@ -3801,7 +4161,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "물리",
       "skill.d.pierce": "·배리어 관통(50%)",
       "skill.d.poison": "마법 독 10~50/턴·2중이면 20~100(최대 2중)",
-      "skill.d.speedup": "마법 속도 2배·최대 256(2~7턴)",
+      "skill.d.speedup": "마법 속도+70(4~7턴)·최대 3중첩",
+      "skill.d.sleep": "마법 필중 수면 2~5턴 (공격받으면 해제)",
+      "skill.d.roulette": "마법 하나를 무작위 발동",
+      "skill.d.minibarrier": "마법 1회 무효 또는 물리 1발 경감 (1회용, 4~7턴)",
+      "skill.d.counter": "물리를 받아넘겨 50% 반격 (자세)",
+      "skill.d.hicounter": "물리를 받아넘겨 100% 반격 (자세)",
+      "battle.asleep": "{name}은(는) 잠들어 움직일 수 없다!",
+      "battle.sleep_now": "{name}은(는) 잠들었다!",
+      "battle.sleep_wake": "{name}은(는) 눈을 떴다!",
+      "battle.roulette": "매직 룰렛! → {skill}",
+      "battle.mini_raise": "{name}은(는) 미니 배리어를 쳤다!",
+      "battle.mini_block": "{name}의 미니 배리어가 마법을 지웠다!",
+      "battle.mini_pierce": "{name}의 미니 배리어를 꿰뚫었다!",
+      "battle.mini_cut": "{name}의 미니 배리어가 충격을 줄였다!",
+      "battle.mini_expire": "{name}의 미니 배리어가 사라졌다",
+      "battle.brace": "{name}은(는) 카운터 자세!",
+      "battle.counter": "{name}은(는) 공격을 받아넘겼다!",
+      "battle.cmd_wait": "대기 중",
+      "hud.slp": "잠",
+      "hud.mini": "막",
+      "fx.mini": "미니 배리어",
       "skill.d.sure": "필중",
       "stage.label": "스테이지 ",
       "stage.saved_run": "저장 5연전",
@@ -3886,7 +4266,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "모든 능력 +20",
       "passive.10.name": "1번만 HP 1로 버틴다",
       "passive.11.name": "20%로 선제공격",
-      "passive.12.name": "독·바인드·다운 무효",
+      "passive.12.name": "독·바인드·다운·슬립 무효",
+      "skill.30.name": "슬립",
+      "skill.31.name": "레이저",
+      "skill.32.name": "매직 룰렛",
+      "skill.33.name": "미니 배리어",
+      "skill.34.name": "그래비티",
+      "skill.35.name": "2연격",
+      "skill.36.name": "카운터",
+      "skill.37.name": "난격",
+      "skill.38.name": "하이 카운터",
+      "skill.39.name": "차지 버스트",
       "passive.13.name": "상대의 버프 발동 시 나에게도 같은 버프",
       "passive.14.name": "준 데미지의 20% 흡수",
       "passive.15.name": "매턴 랜덤 1능력 +50~200",
@@ -3894,6 +4284,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "명중·회심 +20",
       "passive.18.name": "1회용 기술을 한 번 더",
       "passive.19.name": "20%로 물리·마법을 튕겨낸다",
+      "passive.20.name": "모든 능력 +10",
+      "passive.21.name": "명중·회심 +10",
+      "passive.22.name": "모든 능력·명중·회심 +5",
+      "passive.23.name": "10%로 마법을 튕겨낸다",
+      "passive.24.name": "10%로 물리를 튕겨낸다",
+      "passive.25.name": "모든 능력·명중·회심 +10",
+      "passive.26.name": "10%로 물리·마법을 튕겨낸다",
+      "passive.27.name": "1회용 기술이 5턴마다 부활",
+      "passive.28.name": "모든 능력·명중·회심 +20",
+      "passive.29.name": "매턴 HP30 회복 + 20% 흡수",
       "inftitle.99.name": "갓 배틀러",
       "inftitle.80.name": "배틀 레전드",
       "inftitle.50.name": "배틀 마스터",
@@ -4107,7 +4507,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "Salvo!",
       "setup.skills_head": "Golpes (4)",
       "setup.start_battle": "Começar batalha ▶",
-      "skill.d.allup": "MAG tudo×2 máx. 256 (2-7T) *1",
+      "skill.d.allup": "MAG tudo+100 máx. 256 (2-7T) *1",
       "skill.d.barrier": "MAG espelho, máx. 2 (2 camadas reduzem ★ à metade)",
       "skill.d.bind": "MAG amarra 2-7T (20%/turno sem agir)",
       "skill.d.crit": "CRÍT",
@@ -4120,7 +4520,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "FÍS",
       "skill.d.pierce": " · perfura(50%)",
       "skill.d.poison": "MAG veneno 10-50/T, x2: 20-100 (máx. 2)",
-      "skill.d.speedup": "MAG velocidade×2 máx. 256 (2-7T)",
+      "skill.d.speedup": "MAG velocidade+70 (4-7T), acumula até 3",
+      "skill.d.sleep": "MAG sono certeiro 2-5T (acorda se atingido)",
+      "skill.d.roulette": "Lança uma magia aleatória",
+      "skill.d.minibarrier": "Anula 1 magia ou amortece 1 golpe (1 uso, 4-7T)",
+      "skill.d.counter": "Apara o físico e devolve 50% (postura)",
+      "skill.d.hicounter": "Apara o físico e devolve 100% (postura)",
+      "battle.asleep": "{name} está dormindo e não pode se mexer!",
+      "battle.sleep_now": "{name} adormeceu!",
+      "battle.sleep_wake": "{name} acordou!",
+      "battle.roulette": "Roleta mágica! → {skill}",
+      "battle.mini_raise": "{name} ergueu uma minibarreira!",
+      "battle.mini_block": "A minibarreira de {name} anulou a magia!",
+      "battle.mini_pierce": "Atravessou a minibarreira de {name}!",
+      "battle.mini_cut": "A minibarreira de {name} amorteceu!",
+      "battle.mini_expire": "A minibarreira de {name} sumiu",
+      "battle.brace": "{name} assume postura de contra-ataque!",
+      "battle.counter": "{name} aparou o ataque!",
+      "battle.cmd_wait": "Recarga",
+      "hud.slp": "Zz",
+      "hud.mini": "M",
+      "fx.mini": "Minibarreira",
       "skill.d.sure": "CERTEIRO",
       "stage.label": "FASE ",
       "stage.saved_run": "Série salva",
@@ -4205,7 +4625,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "Todos os atributos +20",
       "passive.10.name": "Aguenta uma vez com 1 HP",
       "passive.11.name": "20% ataca primeiro",
-      "passive.12.name": "Imune a veneno, amarra e nocaute",
+      "passive.12.name": "Imune a veneno, amarra, nocaute e sono",
+      "skill.30.name": "Sono",
+      "skill.31.name": "Laser",
+      "skill.32.name": "Roleta mágica",
+      "skill.33.name": "Minibarreira",
+      "skill.34.name": "Gravidade",
+      "skill.35.name": "Golpe duplo",
+      "skill.36.name": "Contra-ataque",
+      "skill.37.name": "Rajada selvagem",
+      "skill.38.name": "Contra-ataque total",
+      "skill.39.name": "Explosão carregada",
       "passive.13.name": "Copia os buffs do rival",
       "passive.14.name": "Absorve 20% do dano causado",
       "passive.15.name": "Por turno: 1 atributo +50–200",
@@ -4213,6 +4643,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "Precisão e crítico +20",
       "passive.18.name": "Reusa um golpe de uso único",
       "passive.19.name": "20% rebate físico e magia",
+      "passive.20.name": "Todos os atributos +10",
+      "passive.21.name": "Precisão e crítico +10",
+      "passive.22.name": "Atributos, precisão e crítico +5",
+      "passive.23.name": "10% rebate magia",
+      "passive.24.name": "10% rebate físico",
+      "passive.25.name": "Atributos, precisão e crítico +10",
+      "passive.26.name": "10% rebate físico e magia",
+      "passive.27.name": "Golpes de uso único voltam a cada 5 turnos",
+      "passive.28.name": "Atributos, precisão e crítico +20",
+      "passive.29.name": "Regenera 30 HP e absorve 20%",
       "inftitle.99.name": "DEUS DA BATALHA",
       "inftitle.80.name": "LENDA DA BATALHA",
       "inftitle.50.name": "MESTRE DA BATALHA",
@@ -4426,7 +4866,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "Сохранено!",
       "setup.skills_head": "Приёмы (4)",
       "setup.start_battle": "Начать бой ▶",
-      "skill.d.allup": "МАГ всё×2 до 256 (2-7х) *1",
+      "skill.d.allup": "МАГ всё+100 до 256 (2-7х) *1",
       "skill.d.barrier": "МАГ отражение, макс. 2 (2 слоя ослабляют ★)",
       "skill.d.bind": "МАГ оковы 2-7х (20%/ход пропуск)",
       "skill.d.crit": "КРИТ",
@@ -4439,7 +4879,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "ФИЗ",
       "skill.d.pierce": " · пробой(50%)",
       "skill.d.poison": "МАГ яд 10-50/ход, x2: 20-100 (макс. 2)",
-      "skill.d.speedup": "МАГ скорость×2 до 256 (2-7х)",
+      "skill.d.speedup": "МАГ скорость+70 (4-7х), до 3 слоёв",
+      "skill.d.sleep": "МАГ верный сон 2-5х (просыпается от удара)",
+      "skill.d.roulette": "Применяет случайную магию",
+      "skill.d.minibarrier": "Гасит 1 магию или смягчает 1 удар (1 раз, 4-7х)",
+      "skill.d.counter": "Парирует физатаку, возвращает 50% (стойка)",
+      "skill.d.hicounter": "Парирует физатаку, возвращает 100% (стойка)",
+      "battle.asleep": "{name} спит и не может двигаться!",
+      "battle.sleep_now": "{name} заснул!",
+      "battle.sleep_wake": "{name} проснулся!",
+      "battle.roulette": "Магическая рулетка! → {skill}",
+      "battle.mini_raise": "{name} ставит мини-барьер!",
+      "battle.mini_block": "Мини-барьер {name} погасил магию!",
+      "battle.mini_pierce": "Пробил мини-барьер {name}!",
+      "battle.mini_cut": "Мини-барьер {name} смягчил удар!",
+      "battle.mini_expire": "Мини-барьер {name} растаял",
+      "battle.brace": "{name} встаёт в стойку контрудара!",
+      "battle.counter": "{name} парировал атаку!",
+      "battle.cmd_wait": "Перезарядка",
+      "hud.slp": "Zz",
+      "hud.mini": "М",
+      "fx.mini": "Мини-барьер",
       "skill.d.sure": "НАВЕРНЯКА",
       "stage.label": "ЭТАП ",
       "stage.saved_run": "Серия сохранённых",
@@ -4524,7 +4984,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "Все параметры +20",
       "passive.10.name": "Один раз выживает с 1 HP",
       "passive.11.name": "20% бьёт первым",
-      "passive.12.name": "Иммунитет к яду, оковам и нокауту",
+      "passive.12.name": "Иммунитет к яду, оковам, нокауту и сну",
+      "skill.30.name": "Сон",
+      "skill.31.name": "Лазер",
+      "skill.32.name": "Магическая рулетка",
+      "skill.33.name": "Мини-барьер",
+      "skill.34.name": "Гравитация",
+      "skill.35.name": "Двойной удар",
+      "skill.36.name": "Контрудар",
+      "skill.37.name": "Шквал ударов",
+      "skill.38.name": "Полный контрудар",
+      "skill.39.name": "Заряженный удар",
       "passive.13.name": "Копирует баффы соперника себе",
       "passive.14.name": "Поглощает 20% нанесённого урона",
       "passive.15.name": "Каждый ход: 1 параметр +50–200",
@@ -4532,6 +5002,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "Точность и крит +20",
       "passive.18.name": "Одноразовый приём ещё раз",
       "passive.19.name": "20% отражает физическое и магию",
+      "passive.20.name": "Все параметры +10",
+      "passive.21.name": "Точность и крит +10",
+      "passive.22.name": "Параметры, точность и крит +5",
+      "passive.23.name": "10% отражает магию",
+      "passive.24.name": "10% отражает физическое",
+      "passive.25.name": "Параметры, точность и крит +10",
+      "passive.26.name": "10% отражает физическое и магию",
+      "passive.27.name": "Одноразовые приёмы возвращаются каждые 5 ходов",
+      "passive.28.name": "Параметры, точность и крит +20",
+      "passive.29.name": "+30 HP каждый ход и поглощает 20%",
       "inftitle.99.name": "БОГ БИТВЫ",
       "inftitle.80.name": "ЛЕГЕНДА БИТВ",
       "inftitle.50.name": "МАСТЕР БИТВ",
@@ -4745,7 +5225,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "setup.saved_done": "保存好了！",
       "setup.skills_head": "学会的招式（4个）",
       "setup.start_battle": "开始对战 ▶",
-      "skill.d.allup": "魔法 全能力×2・最高256(2～7回合) ※限1次",
+      "skill.d.allup": "魔法 全能力+100・最高256(2～7回合) ※限1次",
       "skill.d.barrier": "魔法 反射结界・最多2层(2层时★也减半反射)",
       "skill.d.bind": "魔法 束缚2～7回合(每回合20%无法行动)",
       "skill.d.crit": "暴击",
@@ -4758,7 +5238,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "skill.d.phys": "物理",
       "skill.d.pierce": "・穿透结界(50%)",
       "skill.d.poison": "魔法 中毒 10～50/回合・双重20～100(最多2层)",
-      "skill.d.speedup": "魔法 速度×2・最高256(2～7回合)",
+      "skill.d.speedup": "魔法 速度+70（4～7回合）最多叠3层",
+      "skill.d.sleep": "魔法 必中沉睡2～5回合（受击解除）",
+      "skill.d.roulette": "随机发动一个魔法",
+      "skill.d.minibarrier": "抵消1次魔法或减轻1次物理（一次性，4～7回合）",
+      "skill.d.counter": "卸开物理攻击并返还50%（架势）",
+      "skill.d.hicounter": "卸开物理攻击并返还100%（架势）",
+      "battle.asleep": "{name}睡着了，动弹不得！",
+      "battle.sleep_now": "{name}睡着了！",
+      "battle.sleep_wake": "{name}醒了！",
+      "battle.roulette": "魔法轮盘！→ {skill}",
+      "battle.mini_raise": "{name}张开了迷你屏障！",
+      "battle.mini_block": "{name}的迷你屏障抵消了魔法！",
+      "battle.mini_pierce": "击穿了{name}的迷你屏障！",
+      "battle.mini_cut": "{name}的迷你屏障减轻了伤害！",
+      "battle.mini_expire": "{name}的迷你屏障消失了",
+      "battle.brace": "{name}摆出反击架势！",
+      "battle.counter": "{name}卸开了攻击！",
+      "battle.cmd_wait": "冷却中",
+      "hud.slp": "眠",
+      "hud.mini": "盾",
+      "fx.mini": "迷你屏障",
       "skill.d.sure": "必中",
       "stage.label": "关卡 ",
       "stage.saved_run": "保存5连战",
@@ -4843,7 +5343,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.9.name": "全能力 +20",
       "passive.10.name": "1次以1HP撑住",
       "passive.11.name": "20%概率抢先攻击",
-      "passive.12.name": "免疫毒、束缚和击倒",
+      "passive.12.name": "免疫毒、束缚、击倒和沉睡",
+      "skill.30.name": "沉睡",
+      "skill.31.name": "激光",
+      "skill.32.name": "魔法轮盘",
+      "skill.33.name": "迷你屏障",
+      "skill.34.name": "重力",
+      "skill.35.name": "二连击",
+      "skill.36.name": "反击",
+      "skill.37.name": "乱击",
+      "skill.38.name": "完全反击",
+      "skill.39.name": "蓄力爆发",
       "passive.13.name": "对手发动增益时自己也获得",
       "passive.14.name": "吸收造成伤害的20%",
       "passive.15.name": "每回合随机1项能力 +50～200",
@@ -4851,6 +5361,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.17.name": "命中・暴击 +20",
       "passive.18.name": "限1次的招式能再用1次",
       "passive.19.name": "20%概率反弹物理和魔法",
+      "passive.20.name": "全能力 +10",
+      "passive.21.name": "命中・暴击 +10",
+      "passive.22.name": "全能力・命中・暴击 +5",
+      "passive.23.name": "10%概率反弹魔法",
+      "passive.24.name": "10%概率反弹物理",
+      "passive.25.name": "全能力・命中・暴击 +10",
+      "passive.26.name": "10%概率反弹物理和魔法",
+      "passive.27.name": "限1次的招式每5回合复活",
+      "passive.28.name": "全能力・命中・暴击 +20",
+      "passive.29.name": "每回合恢复30HP并吸收20%",
       "inftitle.99.name": "战神",
       "inftitle.80.name": "战斗传奇",
       "inftitle.50.name": "战斗大师",
@@ -4913,16 +5433,29 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     { ja: "魔剣", en: "Dark Blade", type: "phys", power: 1.6, hit: 60, crit: 60, pierce: true },
     { ja: "魔弾", en: "Dark Bullet", type: "phys", power: 1.6, hit: 100, crit: 20, pierce: true },
     { ja: "ルミナスアーツ", en: "Luminous Arts", type: "phys", multi: 5, power: 1.0, flat: 10, hit: 10, crit: 10, pierce: true },   // 5連撃：各 max(0,攻×1.0−防)+10・命中は表示10だが他物理と同じ+30基本で実質40基準(速度依存)・乱数広め。1発1秒で表示
-    { ja: "サンダーテンペスト", en: "Thunder Tempest", type: "magic", power: 1.1, flat: 70, color: "#8cff6a", pierce: true },
+    { ja: "サンダーテンペスト", en: "Thunder Tempest", type: "magic", power: 1.2, flat: 80, color: "#8cff6a", pierce: true },
     { ja: "絶対零度", en: "Absolute Zero", type: "magic", power: 1.2, flat: 100, color: "#bdf2ff", pierce: true },
     { ja: "サン・ファイア", en: "Sun Fire", type: "magic", power: 1.5, flat: 100, color: "#ff8a2c", pierce: true }
   ];
-  var ALL_SKILLS = PHYS_SKILLS.concat(MAGIC_SKILLS).concat(EXTRA_SKILLS);
-  var RARITY_S = [19, 21, 22, 23, 24, 25, 26, 27, 28, 29];   // S＝金：バリア/リカバリー/スピード/スペシャル＋レア6
-  var RARITY_A = [1, 3, 5, 7, 9, 11, 15, 16, 17, 18, 20];    // A＝銀：強めの物理＋妨害魔法
+  // 第2弾アクティブスキル（id 30〜39・末尾追加＝既存0〜29不変でQR/保存互換を維持・2026-07-17）
+  var NEW_SKILLS = [
+    { ja: "スリープ", en: "Sleep", type: "magic", special: "sleep", color: "#d8b4ff" },                                   // 30 必中で眠り(2〜5T)・攻撃で解除
+    { ja: "レーザー", en: "Laser", type: "magic", power: 1.1, flat: 50, color: "#ff4ad6" },                              // 31 通常攻撃魔法
+    { ja: "マジックルーレット", en: "Magic Roulette", type: "magic", special: "roulette", color: "#ffd24a" },            // 32 魔法をランダム発動
+    { ja: "ミニバリア", en: "Mini Barrier", type: "magic", special: "minibarrier", color: "#9cf0ff" },                   // 33 使い切りの無効壁(4〜7T)
+    { ja: "グラビティ", en: "Gravity", type: "magic", multi: 3, power: 1.0, flat: 20, color: "#8a6cff", pierce: true },  // 34 魔法版ルミナス=3連×貫通(Sレア)
+    { ja: "２連撃", en: "Double Strike", type: "phys", multi: 2, power: 1.0, flat: 5, hit: 10, crit: 10 },                // 35 物理2連撃
+    { ja: "カウンター", en: "Counter", type: "phys", special: "counter", color: "#ffd24a" },                             // 36 物理を受け流し50%返し
+    { ja: "乱れ撃ち", en: "Wild Barrage", type: "phys", multi: 4, power: 1.0, flat: 5, hit: 10, crit: 10 },              // 37 物理4連撃
+    { ja: "ハイカウンター", en: "High Counter", type: "phys", special: "hicounter", color: "#ff6a3c" },                  // 38 物理を受け流し100%返し
+    { ja: "チャージバースト", en: "Charge Burst", type: "phys", power: 2.0, hit: 100, crit: 30, pierce: true, special: "chargeburst" }  // 39 3T間隔・初手不可のCT技(Sレア貫通)
+  ];
+  var ALL_SKILLS = PHYS_SKILLS.concat(MAGIC_SKILLS).concat(EXTRA_SKILLS).concat(NEW_SKILLS);
+  var RARITY_S = [19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 34, 39];                 // S＝金：バリア/リカバリー/スピード/スペシャル＋レア6＋グラビティ/チャージバースト
+  var RARITY_A = [1, 3, 5, 7, 9, 11, 15, 16, 17, 18, 20, 31, 32, 33, 37, 38];      // A＝銀：強めの物理＋妨害魔法＋レーザー/ルーレット/ミニバリア/乱れ撃ち/ハイカウンター
   for (var si = 0; si < ALL_SKILLS.length; si++) { ALL_SKILLS[si].id = si; ALL_SKILLS[si].rarity = RARITY_S.indexOf(si) >= 0 ? "S" : (RARITY_A.indexOf(si) >= 0 ? "A" : "B"); }   // 残りはB＝黒
 
-  /* ---------------- パッシブスキル（持っているだけで発動・1人2つ・重複あり） ---------------- */
+  /* ---------------- パッシブスキル（持っているだけで発動・1人2つ・生成は重複なし／旧保存キャラは重複持ちありうる＝pcountでスタック加算） ---------------- */
   var PASSIVES = [
     { id: 0,  type: "atkup",   ja: "こうげき +30",             en: "ATK +30" },
     { id: 1,  type: "defup",   ja: "ぼうぎょ +30",             en: "DEF +30" },
@@ -4936,38 +5469,91 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     { id: 9,  type: "allplus", ja: "ぜんステータス +20",        en: "All stats +20" },
     { id: 10, type: "endure",  ja: "1かいだけ HP1で たえる",    en: "Endure once (HP1)" },
     { id: 11, type: "first",     ja: "20%で せんせい こうげき",     en: "20% first strike" },
-    { id: 12, type: "ailimmune", ja: "どく・バインド・ダウン むこう",  en: "Immune to poison/bind/down" },
+    { id: 12, type: "ailimmune", ja: "どく・バインド・ダウン・スリープ むこう",  en: "Immune to poison/bind/down/sleep" },
     { id: 13, type: "antibuff",  ja: "あいてのバフ発動で 自分にも同じバフ", en: "Mirror foe's buff onto self" },
     { id: 14, type: "leech",     ja: "あたえたダメージの20% きゅうしゅう", en: "Drain 20% of damage dealt" },
     { id: 15, type: "lucky",     ja: "まいターン ランダム1ステ +50〜200", en: "+50..200 to a random stat/turn" },
     { id: 16, type: "allplus30", ja: "ぜんパラメータ +30",            en: "All stats +30" },
     { id: 17, type: "hitcritup", ja: "めいちゅう・かいしん +20",       en: "HIT & CRIT +20" },
     { id: 18, type: "encore",    ja: "1かいかぎりの技を もう1かい",    en: "Reuse a once-only skill" },
-    { id: 19, type: "refboth",   ja: "20%で ぶつり・まほうを はねかえす", en: "20% reflect phys & magic" }
+    { id: 19, type: "refboth",   ja: "20%で ぶつり・まほうを はねかえす", en: "20% reflect phys & magic" },
+    // ㉑〜㉚ 拡張パッシブ（末尾追加＝id順を保持しQR/保存互換を守る・2026-07-17）
+    { id: 20, type: "allplus10",  ja: "ぜんステータス +10",                en: "All stats +10" },
+    { id: 21, type: "hitcritup10",ja: "めいちゅう・かいしん +10",           en: "HIT & CRIT +10" },
+    { id: 22, type: "omni5",      ja: "ぜんステと めいちゅう・かいしん +5",  en: "All stats & HIT/CRIT +5" },
+    { id: 23, type: "refmag10",   ja: "10%で まほうを はねかえす",          en: "10% reflect magic" },
+    { id: 24, type: "refphys10",  ja: "10%で ぶつりを はねかえす",          en: "10% reflect phys" },
+    { id: 25, type: "omni10",     ja: "ぜんステと めいちゅう・かいしん +10", en: "All stats & HIT/CRIT +10" },
+    { id: 26, type: "refboth10",  ja: "10%で ぶつり・まほうを はねかえす",   en: "10% reflect phys & magic" },
+    { id: 27, type: "encore5",    ja: "1かいかぎりの技が 5ターンごとに ふっかつ", en: "Once-only skills return every 5 turns" },
+    { id: 28, type: "omni20",     ja: "ぜんステと めいちゅう・かいしん +20", en: "All stats & HIT/CRIT +20" },
+    { id: 29, type: "regenleech", ja: "まいターンHP30かいふく＋20%きゅうしゅう", en: "Regen 30/turn & drain 20%" }
   ];
-  var PRARITY_S = [12, 15, 16, 18, 19];                     // S＝虹グラデ（12はダウン無効追加でS格上げ・2026-07-17）
-  var PRARITY_A = [5, 6, 7, 8, 9, 10, 13, 14, 17];          // A＝金（17命中会心+20はA）
+  var PRARITY_S = [12, 15, 16, 19, 27, 28, 29];                                   // S＝虹グラデ（⑱encoreをSから外し新㉗㉘㉙をSに・2026-07-17）
+  var PRARITY_A = [5, 6, 7, 8, 9, 10, 13, 14, 17, 18, 25, 26];                    // A＝金（⑱をAへ移動・新㉕㉖をAに）
   for (var pri = 0; pri < PASSIVES.length; pri++) { PASSIVES[pri].rarity = PRARITY_S.indexOf(PASSIVES[pri].id) >= 0 ? "S" : (PRARITY_A.indexOf(PASSIVES[pri].id) >= 0 ? "A" : "B"); }   // 残りB＝銀
   // パッシブ名：ja/enはデータ、他言語は I18N["passive.<id>.name"]（無ければ en）。名前はFX/ロジックでは未使用のため安全に多言語化できる
   function pname(p) { if (LANG === "ja") return p.ja; if (LANG === "en") return p.en; var v = I18N[LANG] && I18N[LANG]["passive." + p.id + ".name"]; return v || p.en; }
-  // 12種から2つ・重複ありで抽選（同じものが2つ付くことがある）
-  function pickPassivesN(n) { var out = []; for (var i = 0; i < n; i++) out.push(PASSIVES[Math.floor(Math.random() * PASSIVES.length)]); return out; }   // n個・重複あり
+  // 30種から2つ・重複なしで抽選（すべて異なるid＝非復元）。生成のみ重複なし・旧保存キャラの「同じパッシブ2個持ち」は許容しpcountのスタック加算も維持。
+  function pickPassivesN(n) {
+    var pool = PASSIVES.slice(), out = [], m = Math.min(n, pool.length);
+    for (var i = 0; i < m; i++) out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);   // プールから取り出して重複を排除
+    return out;
+  }
   function pickPassives() { return pickPassivesN(2); }
   // 指定タイプのパッシブを何個持っているか（0〜2）。重複は「加算スタック」で扱う。
   function pcount(f, type) { var n = 0, ps = f.passives || []; for (var i = 0; i < ps.length; i++) if (ps[i].type === type) n++; return n; }
-  // ⑲encore: 1度きりの技を (1+encore個数) 回まで使える。使い切ったか判定。
-  function onceSpent(f, skill) { return skill.once && (f.used[skill.id] || 0) > pcount(f, "encore"); }
+  // 経過ターン（ラウンド）を返す。㉗encore5のクールタイム判定に使う。battle未生成/非戦闘時は0。
+  function curTurn() { return (battle && typeof battle.round === "number") ? battle.round : 0; }
+  // ⑲㉗ once技の使用可否を一本化（true＝使い切り・選べない）。AI/コマンド表示/実行すべてこの1本を通す。
+  //   ⑲encore＝(1+encore個数)回まで使える。㉗encore5＝最後の使用から5ターン以上経過で復活（重複所持でもクールタイム短縮なし）。
+  function onceSpent(f, skill) {
+    if (!skill.once) return false;
+    if ((f.used[skill.id] || 0) <= pcount(f, "encore")) return false;   // ⑲ 従来の (1+encore) 回の残数内なら使える
+    if (pcount(f, "encore5") > 0) {                                     // ㉗ クールタイム5ターンで復活
+      var last = f.onceLastTurn && f.onceLastTurn[skill.id];
+      if (last != null && (curTurn() - last) >= 5) return false;
+    }
+    return true;
+  }
+  // ㊴チャージバースト: 初手(1ターン目=round1)は不可・使用後は3ターン間隔でのみ再使用可。UIのdimとAIの選択除外の両方で使う。
+  function burstBlocked(f, skill) {
+    if (!skill || skill.special !== "chargeburst") return false;
+    if (curTurn() < 2) return true;                                             // 初手（戦闘の1ターン目）は使えない
+    var last = f.lastBurstTurn;
+    if (last != null && (curTurn() - last) < 3) return true;                    // 使用後3ターン間隔（使用ターン+3で復活）
+    return false;
+  }
   // ⑳refboth: 物理/魔法どちらの反射判定にも加算（個別の refmag/refphys に上乗せ）。
   function refCount(f, kind) { return pcount(f, kind) + pcount(f, "refboth"); }
-  function refProcs(opp, kind) { var n = 0, st = refCount(opp, kind); for (var i = 0; i < st; i++) if (roll(20)) n++; return n; }   // 反射パッシブの発動レイヤー数（各stackを20%独立判定＝同時発動を数える）
+  // ㉔㉕㉗ 10%反射層：refmag10/refphys10 と refboth10（refbothの10%版）を kind 側に合算
+  function refCount10(f, kind) { return pcount(f, kind + "10") + pcount(f, "refboth10"); }
+  function refProcs(opp, kind) {   // 反射パッシブの発動レイヤー数（20%層と10%層をそれぞれ独立判定して合算＝同時発動を数える）
+    var n = 0, st20 = refCount(opp, kind), st10 = refCount10(opp, kind), i;
+    for (i = 0; i < st20; i++) if (roll(20)) n++;   // 20%層（refmag/refphys/refboth）
+    for (i = 0; i < st10; i++) if (roll(10)) n++;   // 10%層（refmag10/refphys10/refboth10）
+    return n;
+  }
 
   // 技名：ja/enはデータ（s.ja はFXの switch(skill.ja) の内部キーも兼ねる）、他言語は I18N["skill.<id>.name"]（無ければ en）
   function sname(s) { if (LANG === "ja") return s.ja; if (LANG === "en") return s.en; var v = I18N[LANG] && I18N[LANG]["skill." + s.id + ".name"]; return v || s.en; }
   function sdesc(s) {
     var hc = " " + t("skill.d.hit") + (s.hit >= 0 ? "+" : "") + s.hit + "% " + t("skill.d.crit") + s.crit + "%";
+    // 特殊アクティブ（sleep/roulette/minibarrier/counter/hicounter）は専用文言。chargeburstは通常物理式＋貫通表示で出す。
+    if (s.special === "sleep") return t("skill.d.sleep");
+    if (s.special === "roulette") return t("skill.d.roulette");
+    if (s.special === "minibarrier") return t("skill.d.minibarrier");
+    if (s.special === "counter") return t("skill.d.counter");
+    if (s.special === "hicounter") return t("skill.d.hicounter");
+    // 多段（ルミナス/グラビティ/2連撃/乱れ撃ち）は既訳キー＋発数(N×)で言語非依存に表示。魔法多段は必中・物理多段は命中会心。
+    if (s.multi) {
+      var head = (s.type === "phys") ? t("skill.d.phys") : t("skill.d.mag");
+      var tail = (s.type === "phys") ? hc : (" " + t("skill.d.sure"));
+      return head + " ×" + s.power + "+" + (s.flat || 0) + " (" + s.multi + "×)" + tail + (s.pierce ? t("skill.d.pierce") : "");
+    }
     if (s.formula === "atkspd") return t("skill.d.f_atkspd") + hc;
     if (s.formula === "atkdef") return t("skill.d.f_atkdef") + hc;
-    if (s.type === "phys") return t("skill.d.phys") + " ×" + s.power + hc;
+    if (s.type === "phys") return t("skill.d.phys") + " ×" + s.power + hc + (s.pierce ? t("skill.d.pierce") : "");   // 魔剣/魔弾/チャージバースト等の物理貫通も表示
     if (!s.special) return t("skill.d.mag") + " ×" + s.power + "+" + (s.flat || 0) + " " + t("skill.d.sure") + (s.pierce ? t("skill.d.pierce") : "");
     switch (s.special) {
       case "bind": return t("skill.d.bind");
@@ -4982,6 +5568,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   // 30種から完全ランダムに重複なしで抽選（レア度なし＝全スキル均等。低確率はプール30の自然な結果）。
   function pickDistinct(pool, n) { pool = pool.slice(); var out = []; for (var k = 0; k < n && pool.length; k++) { var j = Math.floor(Math.random() * pool.length); out.push(pool[j]); pool.splice(j, 1); } return out; }
+  // ダメージを一切与えられない技のid集合（バインド17/バリア19/リカバリー21/スピード22/スペシャル23/スリープ30/ミニバリア33/カウンター36/ハイカウンター38）。ダウン20・ルーレット32はダメージ源として扱う。
+  var ZERO_DMG_IDS = [17, 19, 21, 22, 23, 30, 33, 36, 38];
+  function isZeroDmg(s) { return ZERO_DMG_IDS.indexOf(s.id) >= 0; }
   function pickSkills() {
     var pool = ALL_SKILLS.slice(), out = [];
     // 最初の3つは完全ランダム
@@ -4993,6 +5582,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (allPhys) cand = pool.filter(function (s) { return s.type === "magic"; });
     else if (allMag) cand = pool.filter(function (s) { return s.type === "phys"; });
     out.push(cand[Math.floor(Math.random() * cand.length)]);
+    // ダメージ源ゼロ構成の保険：4つ全部がゼロダメ技なら、4つ目をダメージ可能技に差し替え（重複なし・全同系統禁止は維持）
+    if (out.every(isZeroDmg)) {
+      var dmgCand = pool.filter(function (s) { return !isZeroDmg(s); });   // out以外のダメージ可能技
+      if (allPhys) dmgCand = dmgCand.filter(function (s) { return s.type === "magic"; });   // 3つ物理なら別系統の魔法から
+      else if (allMag) dmgCand = dmgCand.filter(function (s) { return s.type === "phys"; });
+      if (dmgCand.length) out[3] = dmgCand[Math.floor(Math.random() * dmgCand.length)];
+    }
     return out;
   }
   // 新難易度の敵用：⑥むずすぎ=物理3+魔法3 / ⑦ムリゲー=ランダム6
@@ -5638,9 +6234,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       final: finalize(data.base),
       maxHp: opts.maxHp || 999, regen: opts.regen || 0, isAI: !!opts.isAI, doubleAct: opts.doubleAct || 0, extraUsed: false, dblUsed: false,
       hp: opts.maxHp || 999, alpha: 1,
-      buffs: { speedup: null, allup: null, barrier: null }, bind: null, poison: null, used: {}
+      buffs: { speedup: null, allup: null, barrier: null }, bind: null, poison: null, used: {}, onceLastTurn: {},
+      sleep: null, minibarrier: null, counter: null, lastBurstTurn: null   // 第2弾：眠り/ミニバリア/カウンター構え/チャージバースト最終使用ターン
     };
-    f.regen += 30 * pcount(f, "regen");   // ⑨ 毎ターンHP回復30（難易度regenに加算・重複で60）
+    f.regen += 30 * pcount(f, "regen") + 30 * pcount(f, "regenleech");   // ⑨ 毎ターンHP回復30（難易度regenに加算・重複で60）＋㉚regenleechも毎ターンHP30回復
     f.endure = pcount(f, "endure");       // ⑪ HP1で耐える 残り回数（重複で2回）
     if (pcount(f, "lucky") > 0) { f.luckyStat = ["atk", "def", "spd"][randInt(0, 2)]; f.luckyAmt = randInt(50, 200); } else { f.luckyStat = null; f.luckyAmt = 0; }   // ⑯ ラッキー：強化ステと量(50〜200)
     return f;
@@ -5816,22 +6413,31 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function mirrorBuff(applier, key) {
     if (!battle || !battle.fighters) return;
     var other = battle.fighters[1 - applier.index];
-    if (!other || pcount(other, "antibuff") <= 0 || !applier.buffs[key]) return;
+    if (!other || pcount(other, "antibuff") <= 0) return;
+    if (key === "speedup") {   // ㉒スピードは配列管理＝ミラーも「+70の独立スタック1つ」を新タイマーで付与（相手の残タイマーは複製しない）
+      if (!applier.buffs.speedup || !applier.buffs.speedup.length) return;
+      if (!other.buffs.speedup) other.buffs.speedup = [];
+      if (other.buffs.speedup.length >= 3) other.buffs.speedup.shift();
+      other.buffs.speedup.push(randInt(4, 7));
+      pushLog(t("passive.mirror", {name: other.label}));
+      return;
+    }
+    if (!applier.buffs[key]) return;
     other.buffs[key] = JSON.parse(JSON.stringify(applier.buffs[key]));
     pushLog(t("passive.mirror", {name: other.label}));
   }
   // ①〜③はフラット加算+30（旧:×1.2）。⑯ラッキーは f.luckyAmt(1〜256)。各256カンスト。
-  function effAtk(f) { var v = f.final.atk + 30 * pcount(f, "atkup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "atk" ? (f.luckyAmt || 0) : 0); if (f.buffs.allup) v *= 2; return Math.min(256, Math.floor(v)); }
-  function effDef(f) { var v = f.final.def + 30 * pcount(f, "defup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "def" ? (f.luckyAmt || 0) : 0); if (f.buffs.allup) v *= 2; return Math.min(256, Math.floor(v)); }
+  function effAtk(f) { var v = f.final.atk + 30 * pcount(f, "atkup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + 10 * pcount(f, "allplus10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20") + (f.luckyStat === "atk" ? (f.luckyAmt || 0) : 0); if (f.buffs.allup) v += 100; return Math.min(256, Math.floor(v)); }
+  function effDef(f) { var v = f.final.def + 30 * pcount(f, "defup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + 10 * pcount(f, "allplus10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20") + (f.luckyStat === "def" ? (f.luckyAmt || 0) : 0); if (f.buffs.allup) v += 100; return Math.min(256, Math.floor(v)); }
   function effSpd(f) {
-    var v = f.final.spd + 30 * pcount(f, "spdup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + (f.luckyStat === "spd" ? (f.luckyAmt || 0) : 0);
-    if (f.buffs.speedup) { var s = Math.min(2, f.buffs.speedup.stacks || 1); v = v * (2 * s) + 30 * s; }  // スピード：×2+30、重ね掛けで最大×4+60(2段)
-    if (f.buffs.allup) v *= 2;
+    var v = f.final.spd + 30 * pcount(f, "spdup") + 20 * pcount(f, "allplus") + 30 * pcount(f, "allplus30") + 10 * pcount(f, "allplus10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20") + (f.luckyStat === "spd" ? (f.luckyAmt || 0) : 0);
+    if (f.buffs.speedup && f.buffs.speedup.length) v += 70 * f.buffs.speedup.length;   // ㉒スピード：+70×有効スタック数（各独立タイマー・最大3＝+210）
+    if (f.buffs.allup) v += 100;
     return Math.min(256, Math.floor(v));
   }
   // ⑮leech: 相手にダメージを与えたとき、与えたダメージの20%を自分が回復(吸収)。攻撃側のパッシブで判定。
   function lifesteal(dealer, victim, dmg) {
-    if (!dealer || dealer === victim || dmg <= 0 || dealer.hp <= 0 || pcount(dealer, "leech") <= 0) return;
+    if (!dealer || dealer === victim || dmg <= 0 || dealer.hp <= 0 || (pcount(dealer, "leech") + pcount(dealer, "regenleech")) <= 0) return;   // ⑮leech または ㉚regenleech 所持で20%吸収
     var h = Math.floor(dmg * 0.2); if (h < 1) return;
     var b = dealer.hp; dealer.hp = Math.min(dealer.maxHp, dealer.hp + h);
     if (dealer.hp > b) pushLog(t("passive.leech", {name: dealer.label, n: (dealer.hp - b)}));
@@ -5855,6 +6461,16 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     return false;
   }
   function endureMsg(f) { return t("passive.endure", {name: f.label}); }
+  // ㉚スリープ：相手からの攻撃的アクション（ダメージ・毒/バインド/ダウン等の状態付与）が対象に適用されたら目を覚ます。自分対象の技(バリア/ミニバリア)では起きない。
+  function wakeOnHit(target) { if (target && target.sleep) { target.sleep = null; pushLog(t("battle.sleep_wake", {name: target.label})); } }
+  // ㉝ミニバリア×物理：受ける物理を1発だけ軽減（通常25%カット/貫通物理は10%カット）→使い切りで壁消滅。カウンター発動時はここに来ない＝未消費。
+  function miniPhysCut(target, skill, dmg) {
+    if (!target.minibarrier) return dmg;
+    target.minibarrier = null;                                   // 1発働いたら消滅
+    pushLog(t("battle.mini_cut", {name: target.label}));
+    var out = Math.floor(dmg * (skill.pierce ? 0.9 : 0.75));     // 通常物理→75%通過 / 貫通物理→90%通過
+    return out < 1 ? 1 : out;
+  }
 
   function beginBattle(f0, f1, opts) {
     battle = { fighters: [f0, f1], roundQueue: [], active: null, over: false, busy: true, round: 0, shake: 0, flash: 0, kind: opts.kind };
@@ -5911,18 +6527,26 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       f.poison.turns--; if (f.poison.turns <= 0) { f.poison = null; log.push(t("battle.poison_end", {name: f.label})); }
       if (f.hp <= 0) return { canAct: false, dead: true, log: log };
     }
-    expireBuff(f, "speedup", t("buff.speed"), log);
+    if (f.buffs.speedup && f.buffs.speedup.length) {   // ㉒スピード：各スタックが独立タイマー。経過で個別に切れ +210→+140→+70→0 と段階減衰
+      for (var sq = f.buffs.speedup.length - 1; sq >= 0; sq--) { if (--f.buffs.speedup[sq] <= 0) f.buffs.speedup.splice(sq, 1); }
+      if (!f.buffs.speedup.length) { f.buffs.speedup = null; log.push(t("battle.buff_expire", {name: f.label, label: t("buff.speed")})); }
+    }
     expireBuff(f, "allup", t("buff.powerup"), log);
     expireBuff(f, "barrier", t("buff.reflect"), log);
+    if (f.minibarrier) { f.minibarrier.turns--; if (f.minibarrier.turns <= 0) { f.minibarrier = null; log.push(t("battle.mini_expire", {name: f.label})); } }   // ㉝ミニバリアの持続(4〜7T)切れ
+    // バインドの時間経過は眠っていても必ず進める（睡眠中に拘束が凍結して合計が延びるのを防ぐ）。20%の行動不能判定は眠っていない時だけ意味を持つ。
+    var bindStuck = false;
     if (f.bind && f.bind.turns > 0) {
       f.bind.turns--;                              // 状態は2〜7Tで自然消滅
-      var stuck = roll(20);                        // そのターンに動けないかは20%
+      bindStuck = roll(20);                        // そのターンに動けないかは20%
       if (f.bind.turns <= 0) f.bind = null;
-      if (stuck) {
-        log.push(t("battle.bound", {name: f.label}));
-        return { canAct: false, dead: false, log: log };
-      }
     }
+    if (f.sleep) {   // ㉚スリープ：状態の時間経過は上で済ませ、行動だけスキップ。眠り自体は期限切れ(2〜5T)で自然に目を覚ます
+      f.sleep.turns--;
+      if (f.sleep.turns <= 0) { f.sleep = null; log.push(t("battle.sleep_wake", {name: f.label})); }
+      else { log.push(t("battle.asleep", {name: f.label})); return { canAct: false, dead: false, log: log }; }
+    }
+    if (bindStuck) { log.push(t("battle.bound", {name: f.label})); return { canAct: false, dead: false, log: log }; }   // 眠っていない時のバインド硬直
     return { canAct: true, dead: false, log: log };
   }
   function expireBuff(f, key, label, log) {
@@ -5944,7 +6568,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     else showCommands(idx);
   }
   function aiChoose(f) {
-    var usable = f.skills.filter(function (s) { return !onceSpent(f, s); });
+    // once使い切り・チャージバーストのCT/初手・ミニバリアは既に張っていたら選ばない
+    var usable = f.skills.filter(function (s) { return !onceSpent(f, s) && !burstBlocked(f, s) && !(s.special === "minibarrier" && f.minibarrier); });
+    if (!usable.length) usable = f.skills.filter(function (s) { return !onceSpent(f, s) && !burstBlocked(f, s); });   // 全部除外されたら重複回避だけ緩める
+    if (!usable.length) usable = f.skills.slice();                                                                    // それでも空なら安全側で全許可
     if (f.hp < f.maxHp * 0.35) { for (var i = 0; i < usable.length; i++) if (usable[i].special === "heal") { if (Math.random() < 0.7) return usable[i]; } }
     return usable[Math.floor(Math.random() * usable.length)];
   }
@@ -5957,11 +6584,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       (function (skill) {
         var btn = document.createElement("button");
         btn.className = "cmd " + (skill.type === "magic" ? "magic" : "phys");
-        var used = onceSpent(f, skill);
+        var used = onceSpent(f, skill), waiting = burstBlocked(f, skill), dim = used || waiting;   // once使い切り or チャージバーストのCT/初手はdim
         var nm = document.createElement("span"); nm.className = "cmdname rar-" + skill.rarity; nm.textContent = sname(skill);   // レア度で文字色
-        var ds = document.createElement("span"); ds.className = "cmddesc"; ds.textContent = used ? t("battle.cmd_used") : sdesc(skill);
+        var ds = document.createElement("span"); ds.className = "cmddesc"; ds.textContent = used ? t("battle.cmd_used") : (waiting ? t("battle.cmd_wait") : sdesc(skill));
         btn.appendChild(nm); btn.appendChild(ds);
-        if (used) { btn.disabled = true; btn.classList.add("used"); }
+        if (dim) { btn.disabled = true; btn.classList.add("used"); }
         btn.onclick = function () { resolveAction(idx, skill); };
         panel.appendChild(btn);
       })(f.skills[i]);
@@ -5990,19 +6617,50 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (battle.busy || battle.over || battle.active !== idx) return;
     battle.busy = true; hideCommands(); $("turnlabel").textContent = "";
     var f = battle.fighters[idx], opp = battle.fighters[1 - idx];
-    if (skill.once) f.used[skill.id] = (f.used[skill.id] || 0) + 1;
+    if (f.counter && f.counter.round < curTurn()) f.counter = null;   // ㊱㊳ 構え猶予はラウンド単位＝設置より後のラウンドの行動でのみ解除（同ラウンドの⑧2回行動では温存）
+    if (skill.once) { f.used[skill.id] = (f.used[skill.id] || 0) + 1; if (!f.onceLastTurn) f.onceLastTurn = {}; f.onceLastTurn[skill.id] = curTurn(); }   // ㉗ 最後の使用ターンを記録（再使用で更新）
+    if (skill.special === "chargeburst") f.lastBurstTurn = curTurn();   // ㊴ CT起点を記録（当たっても外れても消費）
     pushLog(t("battle.uses", {name: f.label, skill: sname(skill)}));
+    if (skill.special === "counter" || skill.special === "hicounter") { resolveStance(f, skill); return; }   // ㊱㊳ 構えるだけ（発動は相手の物理攻撃を受けたとき）
+    if (skill.special === "roulette") { resolveRoulette(f, opp, skill); return; }                            // ㉜ 魔法をランダム抽選して即発動
     if (skill.type === "phys") resolvePhysical(f, opp, skill); else resolveMagic(f, opp, skill);
+  }
+  // ㊱㊳ カウンター/ハイカウンターの構えを張る（自分の次の行動まで持続・相手の物理攻撃1回で発動）。
+  function resolveStance(f, skill) {
+    f.counter = { power: skill.special === "hicounter" ? 1.0 : 0.5, skill: skill, round: curTurn() };   // ㊱㊳ 設置ラウンドを記録（解除判定に使用）
+    pushLog(t("battle.brace", {name: f.label}));
+    sfx.buff();
+    playSelfFX(skill, f.index, sname(skill), afterAction);
+  }
+  // ㊱㊳ カウンター発動：相手(f)の物理攻撃を完全無効化し、その攻撃が与えるはずだった基準ダメージ(会心なし)のpower倍を返す。多段は全弾無効化して合計基準の倍率。
+  function resolveCounter(f, opp, skill) {
+    var power = opp.counter.power, cskill = opp.counter.skill, would;
+    if (skill.multi) {
+      var per = Math.floor(Math.max(0, effAtk(f) * skill.power - effDef(opp)) + (skill.flat || 0)); if (per < 1) per = 1;
+      would = per * skill.multi;                                                     // 多段＝各発基準ダメージ×発数の合計
+    } else {
+      var base = skill.formula === "atkspd" ? (effAtk(f) + effSpd(f))
+               : skill.formula === "atkdef" ? (effAtk(f) + effDef(f))
+               : (effAtk(f) * skill.power);
+      would = Math.max(1, Math.floor(base - effDef(opp)));                           // 会心なし・命中無視の基準ダメージ
+    }
+    var back = Math.max(1, Math.floor(would * power));
+    opp.counter = null;                                                              // 1回発動で構え解除
+    sfx.deflect(); pushLog(t("battle.counter", {name: opp.label}));
+    var en = applyDamage(f, back); pushLog(t("battle.dmg", {n: back})); if (en) pushLog(endureMsg(f)); lifesteal(opp, f, back);
+    sfx.hit();
+    playPhysFX(cskill, opp.index, f.index, back, false, afterAction);                // opp→f への物理FX（既存の汎用ヒット演出）
   }
   function barrierLayers(t) { return t.buffs.barrier ? Math.min(2, t.buffs.barrier.stacks || 1) : 0; }   // 魔法「バリア」の残り枚数(0〜2)
   function consumeBarrier(t, n) { if (!t.buffs.barrier) return; var s = (t.buffs.barrier.stacks || 1) - n; if (s > 0) t.buffs.barrier.stacks = s; else t.buffs.barrier = null; }
   function resolvePhysical(f, opp, skill) {
+    if (opp.counter && !opp.sleep) { resolveCounter(f, opp, skill); return; }    // ㊱㊳ 相手が構え中かつ眠っていない＝物理は受け流される（単発・多段・チャージバースト共通・ミニバリア未消費）。眠っている構え主は通常解決され被弾でwakeOnHitが起こす
     if (skill.multi) { resolveMultiHit(f, opp, skill); return; }   // ⑮ルミナスアーツ等の連撃は専用処理
     // 命中は通常式（30+自速−敵速+補正）＋④命中+20%×個数。物理は必中も必ず回避も無し＝下限5%・上限95%にクランプ。ダメージ基礎値は技の formula で分岐。
-    var hitRate = 30 + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + skill.hit + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");
+    var hitRate = 30 + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + skill.hit + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup") + 10 * pcount(f, "hitcritup10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20");
     hitRate = Math.max(5, Math.min(95, hitRate));
     if (!roll(hitRate)) { pushLog(t("battle.miss")); sfx.miss(); playMiss(opp.index, afterAction); return; }
-    var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup")), dmg;   // ⑤会心+20%×個数 ＋⑱命中会心+20
+    var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup") + 10 * pcount(f, "hitcritup10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20")), dmg;   // ⑤会心+20%×個数 ＋⑱命中会心+20
     var base = skill.formula === "atkspd" ? (effAtk(f) + effSpd(f))   // 体当たり/猪突猛進
              : skill.formula === "atkdef" ? (effAtk(f) + effDef(f))   // 背負い投げ/地獄車
              : (effAtk(f) * skill.power);
@@ -6031,7 +6689,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         playPhysFX(skill, opp.index, f.index, dmg, crit, afterAction); return;
       }
       sfx.shatter(); pushLog(t("battle.barrier_blocked", {name: opp.label}));
-      var enBB = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (enBB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+      dmg = miniPhysCut(opp, skill, dmg); dmgLog = crit ? t("battle.crit_dmg", {n: dmg}) : t("battle.dmg", {n: dmg});   // ㉝バリア貫通後に残った物理もミニバリアが1発だけ軽減
+      var enBB = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (enBB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg); wakeOnHit(opp);
       if (crit) sfx.crit(); else sfx.hit();
       playPhysFX(skill, f.index, opp.index, dmg, crit, afterAction); return;
     }
@@ -6056,21 +6715,62 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         playPhysFX(skill, opp.index, f.index, dmg, crit, afterAction); return;
       }
     }
+    dmg = miniPhysCut(opp, skill, dmg); dmgLog = crit ? t("battle.crit_dmg", {n: dmg}) : t("battle.dmg", {n: dmg});   // ㉝ミニバリアの物理カット（通常25%/貫通10%・1発で消滅）
     var en = applyDamage(opp, dmg, crit);
-    pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+    pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg); wakeOnHit(opp);
     if (crit) sfx.crit(); else sfx.hit();
     playPhysFX(skill, f.index, opp.index, dmg, crit, afterAction);
   }
   // 連撃（ルミナスアーツ）：skill.multi 回、1発ごとに命中/会心を判定。当たれば (攻×power−防)+flat、会心は防御無視×1.2+flat。外れたら演出なしで次へ。
+  // ①非貫通多段（2連撃35/乱れ撃ち37）×アクティブバリア：通常物理と同じバリア規則を攻撃全体で1回評価。貫通多段（ルミナス26）はこの関数を通さず従来の貫通テーブルのまま。
+  function resolveMultiHitBlocked(f, opp, skill, pB) {
+    var hits = skill.multi || 5;
+    if (refProcs(opp, "refphys") > 0) {   // パッシブ反射発動＝合計基準ダメージ(非会心・flat込み)×(1層1.2/2層以上1.5)を反射し本体は不発
+      var perBase = Math.max(0, effAtk(f) * skill.power - effDef(opp)) + (skill.flat || 0);
+      var total = Math.max(1, Math.floor(perBase * hits * (pB >= 2 ? 1.5 : 1.2)));
+      consumeBarrier(opp, pB);   // 反射で相互作用＝バリア全消費
+      sfx.deflect(); pushLog(t("battle.reflect_barrier", {name: opp.label}));
+      var enR = applyDamage(f, total); pushLog(t("battle.dmg", {n: total})); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, total);
+      sfx.hit();
+      playPhysFX(skill, opp.index, f.index, total, false, afterAction);   // opp→f への反射FX（本体不発）
+      return;
+    }
+    // 反射不発：各発独立命中でブロック（1枚=半減/2枚=ダメ1）。1発以上着弾でのみバリア全消費（全MISS＋反射不発なら消費しない）。
+    var i = 0, landed = false;
+    function one() {
+      if (battle.over || opp.hp <= 0 || i >= hits) {
+        if (landed && opp.buffs.barrier) consumeBarrier(opp, pB);   // 相互作用が起きた時だけ消費
+        afterAction(); return;
+      }
+      i++;
+      var hitRate = 30 + skill.hit + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup") + 10 * pcount(f, "hitcritup10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20");
+      hitRate = Math.max(5, Math.min(95, hitRate));
+      if (!roll(hitRate)) { pushLog(t("battle.hit_miss", {i: i})); runFX(450, function (tt) { drawScene(); drawText(POS[opp.index].x, POS[opp.index].y - 50, "MISS", "#9fb3c8", 1 - tt, 18); }, one); return; }   // 命中判定は各発独立
+      var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup") + 10 * pcount(f, "hitcritup10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20"));
+      var base = effAtk(f) * skill.power;
+      var dmg = Math.floor(((crit ? base * 1.2 : Math.max(0, base - effDef(opp))) + (skill.flat || 0)) * randF(0.8, 1.2)); if (dmg < 1) dmg = 1;
+      skill._luxAng = (i - 1) * 1.15;
+      dmg = (pB >= 2) ? 1 : Math.max(1, Math.floor(dmg * 0.5));   // ブロック：2枚ダメ1/1枚半減（単発通常物理と同じ）
+      landed = true;
+      sfx.shatter();
+      dmg = miniPhysCut(opp, skill, dmg);   // ㉝ミニバリア（バリアの後・1発で消滅）
+      var dmgLog = crit ? t("battle.hit_crit", {i: i, n: dmg}) : t("battle.hit_dmg", {i: i, n: dmg});
+      var en = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg); wakeOnHit(opp);
+      if (crit) sfx.crit(); else sfx.hit();
+      playPhysFX(skill, f.index, opp.index, dmg, crit, one);
+    }
+    one();
+  }
   function resolveMultiHit(f, opp, skill) {
+    if (!skill.pierce && barrierLayers(opp) >= 1) { resolveMultiHitBlocked(f, opp, skill, barrierLayers(opp)); return; }   // ①非貫通多段×アクティブバリアは通常物理規則で1回評価
     var hits = skill.multi || 5, i = 0, luxB = barrierLayers(opp);   // バリア枚数はこの攻撃中は固定。消費は攻撃終了時に1枚でも2枚でも全消滅
     function one() {
       if (battle.over || opp.hp <= 0 || i >= hits) { if (luxB >= 1 && opp.buffs.barrier) opp.buffs.barrier = null; afterAction(); return; }   // 5発1セット終了でバリア全消滅
       i++;
-      var hitRate = 30 + skill.hit + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup");   // 連撃も通常物理と同じ30+命中値。ルミナスは命中値10＝同速で実質40%。速いと全的中、遅いと数発外す
+      var hitRate = 30 + skill.hit + Math.floor(effSpd(f)) - Math.floor(effSpd(opp)) + 20 * pcount(f, "hitup") + 20 * pcount(f, "hitcritup") + 10 * pcount(f, "hitcritup10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20");   // 連撃も通常物理と同じ30+命中値。ルミナスは命中値10＝同速で実質40%。速いと全的中、遅いと数発外す
       hitRate = Math.max(5, Math.min(95, hitRate));   // 物理は必中も必ず回避も無し（下限5%・上限95%）
       if (!roll(hitRate)) { pushLog(t("battle.hit_miss", {i: i})); runFX(450, function (t) { drawScene(); drawText(POS[opp.index].x, POS[opp.index].y - 50, "MISS", "#9fb3c8", 1 - t, 18); }, one); return; }   // 外れたら短くMISS表示して次の一撃へ
-      var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup"));
+      var crit = roll(skill.crit + 20 * pcount(f, "critup") + 20 * pcount(f, "hitcritup") + 10 * pcount(f, "hitcritup10") + 5 * pcount(f, "omni5") + 10 * pcount(f, "omni10") + 20 * pcount(f, "omni20"));
       var base = effAtk(f) * skill.power;
       var dmg = Math.floor(((crit ? base * 1.2 : Math.max(0, base - effDef(opp))) + (skill.flat || 0)) * randF(0.8, 1.2)); if (dmg < 1) dmg = 1;   // 攻−防は0止め＝+10最低保証(防256でも約8〜12)・乱数は他より広め
       var dmgLog = crit ? t("battle.hit_crit", {i: i, n: dmg}) : t("battle.hit_dmg", {i: i, n: dmg});
@@ -6088,7 +6788,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
           playPhysFX(skill, opp.index, f.index, dmg, crit, one); return;
         }
         sfx.shatter();
-        var enLB = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (enLB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+        dmg = miniPhysCut(opp, skill, dmg); dmgLog = crit ? t("battle.hit_crit", {i: i, n: dmg}) : t("battle.hit_dmg", {i: i, n: dmg});   // ㉝ミニバリアは1発だけ軽減して消滅
+        var enLB = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (enLB) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg); wakeOnHit(opp);
         if (crit) sfx.crit(); else sfx.hit();
         playPhysFX(skill, f.index, opp.index, dmg, crit, one); return;
       }
@@ -6110,7 +6811,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
           playPhysFX(skill, opp.index, f.index, dmg, crit, one); return;
         }
       }
-      var en = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg);
+      dmg = miniPhysCut(opp, skill, dmg); dmgLog = crit ? t("battle.hit_crit", {i: i, n: dmg}) : t("battle.hit_dmg", {i: i, n: dmg});   // ㉝ミニバリアの物理カット（多段は最初の被弾で消費）
+      var en = applyDamage(opp, dmg, crit); pushLog(dmgLog); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, dmg); wakeOnHit(opp);
       if (crit) sfx.crit(); else sfx.hit();
       playPhysFX(skill, f.index, opp.index, dmg, crit, one);
     }
@@ -6118,12 +6820,26 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function resolveMagic(f, opp, skill) {
     var sp = skill.special;
-    if (sp === "barrier" || sp === "heal" || sp === "speedup" || sp === "allup") { applySelfMagic(f, skill); return; }
+    if (sp === "barrier" || sp === "heal" || sp === "speedup" || sp === "allup" || sp === "minibarrier") { applySelfMagic(f, skill); return; }   // ㉝ミニバリアも自己詠唱
+    if (skill.multi) { resolveMagicMulti(f, opp, skill); return; }   // ㉞グラビティ等の魔法連撃は専用処理（1発ごとに反射/バリア/ミニバリア判定）
     // 反射レイヤー数 ＝ アクティブ反射バリアの枚数 ＋ パッシブ反射の発動数（refmag/refbothを各20%で独立判定＝同時発動を数える）
     var activeLayers = opp.buffs.barrier ? (opp.buffs.barrier.stacks || 1) : 0;
     var passiveProcs = refProcs(opp, "refmag");
     var totalLayers = activeLayers + passiveProcs;
-    if (totalLayers === 0) { applyOffensiveMagic(f, opp, skill); return; }   // 反射レイヤー無し＝通常ヒット
+    if (totalLayers === 0) {   // 反射レイヤー無し
+      if (opp.minibarrier) {   // ㉝バリアもパッシブ反射も発動しなかった魔法にだけミニバリアが働く（使い切りで消滅）
+        opp.minibarrier = null;
+        if (skill.pierce) {   // 貫通魔法＝壁を破壊した上で75%が通る（既存バリアの50%より弱い）
+          var mdmg = Math.floor((Math.max(0, effAtk(f) * skill.power - effDef(opp)) + (skill.flat || 0)) * randF(0.95, 1.05) * 0.75); if (mdmg < 1) mdmg = 1;
+          pushLog(t("battle.mini_pierce", {name: opp.label}));
+          var enM = applyDamage(opp, mdmg); pushLog(t("battle.dmg", {n: mdmg})); if (enM) pushLog(endureMsg(opp)); lifesteal(f, opp, mdmg); wakeOnHit(opp);
+          playMagicFX(skill, f.index, opp.index, mdmg, afterAction, true); return;
+        }
+        pushLog(t("battle.mini_block", {name: opp.label}));   // 通常魔法＝完全無効＋壁消滅（ダメージも状態付与も無し）
+        sfx.shatter(); playMiniBlockFX(opp.index, afterAction); return;
+      }
+      applyOffensiveMagic(f, opp, skill); return;   // 通常ヒット
+    }
     if (skill.pierce) {
       if (activeLayers > 0) opp.buffs.barrier = null;   // ★はアクティブバリアを破壊
       pushLog(t("battle.pierce_barrier_a", {skill: sname(skill)}));   // 貫通＝破壊エフェクト（その都度）
@@ -6148,13 +6864,22 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       pushLog(t("battle.dmg", {n: dmg}));
       if (en) pushLog(endureMsg(target));
       lifesteal(f, target, dmg);
+      wakeOnHit(target);   // ㉚攻撃魔法を受けたら眠り解除（適用後に目覚め）
       playMagicFX(skill, f.index, target.index, dmg, afterAction, pierce); return;
+    }
+    if (sp === "sleep") {
+      if (pcount(target, "ailimmune") > 0) { pushLog(t("battle.no_effect_on", {name: target.label})); playMagicFX(skill, f.index, target.index, null, afterAction); return; }   // ⑫どく・バインド・ダウン・スリープ無効
+      if (target.sleep) { target.sleep = null; pushLog(t("battle.sleep_wake", {name: target.label})); playMagicFX(skill, f.index, target.index, null, afterAction); return; }   // 既に眠っている相手に眠り技＝状態付与魔法を受けて目覚める
+      target.sleep = { turns: randInt(2, 5) };   // 必中で眠り2〜5T
+      pushLog(t("battle.sleep_now", {name: target.label}));
+      playMagicFX(skill, f.index, target.index, null, afterAction); return;
     }
     if (sp === "bind") {
       if (pcount(target, "ailimmune") > 0) { pushLog(t("battle.no_effect_on", {name: target.label})); playMagicFX(skill, f.index, target.index, null, afterAction); return; }   // ⑬どく・バインド・ダウン無効
       // 魔法は必中で「バインド状態」を付与(2〜7T)。実際に動けなくなるかは毎ターン10%判定。
       target.bind = { turns: randInt(2, 7) };
       pushLog(t("battle.bound_now", {name: target.label}));
+      wakeOnHit(target);   // ㉚状態付与魔法を受けたら眠り解除（バインド適用後に目覚め）
       playMagicFX(skill, f.index, target.index, null, afterAction); return;
     }
     if (sp === "poison") {
@@ -6162,6 +6887,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       if (target.poison) target.poison.stacks = Math.min(2, (target.poison.stacks || 1) + 1); else target.poison = { stacks: 1 };   // 最大2重まで重ねがけ
       target.poison.turns = randInt(2, 7);   // ダメージは毎ターン抽選（1重10〜50/2重20〜100）
       pushLog((t("battle.poisoned", {name: target.label}) + (target.poison.stacks >= 2 ? t("battle.poison_x2") : "")));
+      wakeOnHit(target);   // ㉚状態付与魔法を受けたら眠り解除（ポイズン付与後に目覚め）
       playMagicFX(skill, f.index, target.index, null, afterAction); return;
     }
     if (sp === "down") {
@@ -6171,6 +6897,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         if (enD) pushLog(endureMsg(target));
         else pushLog(t("battle.down", {name: target.label}));
       } else pushLog(t("battle.no_effect"));
+      wakeOnHit(target);   // ㉚攻撃的な状態付与魔法を受けたら眠り解除
       playMagicFX(skill, f.index, target.index, null, afterAction); return;
     }
   }
@@ -6178,9 +6905,68 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var sp = skill.special, color = skill.color || "#fff";
     if (sp === "barrier") { if (f.buffs.barrier) f.buffs.barrier.stacks = Math.min(2, (f.buffs.barrier.stacks || 1) + 1); else f.buffs.barrier = { turns: randInt(4, 7), stacks: 1 }; f.buffs.barrier.turns = randInt(4, 7); mirrorBuff(f, "barrier"); pushLog((t("battle.barrier_raise", {name: f.label}) + (f.buffs.barrier.stacks >= 2 ? t("battle.barrier_x2") : ""))); sfx.buff(); playSelfFX(skill, f.index,t("fx.barrier"), afterAction); }
     else if (sp === "heal") { var amt = Math.floor((effAtk(f) + effDef(f)) * 1.5 + 50), before = f.hp; f.hp = Math.min(f.maxHp, f.hp + amt); pushLog(t("battle.healed", {name: f.label, n: (f.hp - before)})); sfx.heal(); playSelfFX(skill, f.index,t("fx.heal"), afterAction); }
-    else if (sp === "speedup") { if (f.buffs.speedup) f.buffs.speedup.stacks = Math.min(2, (f.buffs.speedup.stacks || 1) + 1); else f.buffs.speedup = { turns: 0, stacks: 1 }; f.buffs.speedup.turns = randInt(2, 7); mirrorBuff(f, "speedup"); pushLog(t("battle.speed_rose", {name: f.label})); sfx.buff(); playSelfFX(skill, f.index,t("fx.speed"), afterAction); }
+    else if (sp === "speedup") { if (!f.buffs.speedup) f.buffs.speedup = []; if (f.buffs.speedup.length >= 3) f.buffs.speedup.shift(); f.buffs.speedup.push(randInt(4, 7)); mirrorBuff(f, "speedup"); pushLog(t("battle.speed_rose", {name: f.label})); sfx.buff(); playSelfFX(skill, f.index,t("fx.speed"), afterAction); }   // ㉒+70の独立スタック(4〜7T)を追加・3スタック時は最古を上書き
     else if (sp === "allup") { f.buffs.allup = { turns: randInt(2, 7) }; mirrorBuff(f, "allup"); pushLog(t("battle.stats_rose", {name: f.label})); sfx.buff(); playSelfFX(skill, f.index,t("fx.powerup"), afterAction); }
+    else if (sp === "minibarrier") { f.minibarrier = { turns: randInt(4, 7) }; pushLog(t("battle.mini_raise", {name: f.label})); sfx.buff(); playSelfFX(skill, f.index, t("fx.mini"), afterAction); }   // ㉝1枚だけ・張り直しは持続リフレッシュ
     updateHud();   // スピード/スペシャルの上昇をHUDへ即時反映（色付け）
+  }
+  // ㉞グラビティ等の魔法連撃：skill.multi 回、各発必中で (攻×power−防)+flat。1発ごとにバリア/パッシブ反射/ミニバリアを判定（貫通はルミナスの魔法版）。
+  function resolveMagicMulti(f, opp, skill) {
+    var hits = skill.multi || 3, i = 0;
+    function one() {
+      if (battle.over || opp.hp <= 0 || i >= hits) { afterAction(); return; }
+      i++;
+      var activeLayers = opp.buffs.barrier ? (opp.buffs.barrier.stacks || 1) : 0;
+      var passiveProcs = refProcs(opp, "refmag");
+      var totalLayers = activeLayers + passiveProcs;
+      var raw = Math.floor((Math.max(0, effAtk(f) * skill.power - effDef(opp)) + (skill.flat || 0)) * randF(0.95, 1.05)); if (raw < 1) raw = 1;
+      if (totalLayers > 0) {
+        if (skill.pierce) {
+          if (activeLayers > 0) opp.buffs.barrier = null;   // ★はアクティブバリアを破壊
+          pushLog(t("battle.pierce_barrier_a", {skill: sname(skill)}));
+          if (totalLayers >= 2) {   // 計2レイヤー以上＝貫通しきれず50%反射
+            var rdmg = Math.floor(raw * 0.5); if (rdmg < 1) rdmg = 1;
+            sfx.deflect(); pushLog(t("battle.barrier_another"));
+            var enR = applyDamage(f, rdmg); pushLog(t("battle.hit_dmg", {i: i, n: rdmg})); if (enR) pushLog(endureMsg(f)); lifesteal(opp, f, rdmg);
+            sfx.hit(); playMagicFX(skill, f.index, f.index, rdmg, one, true); return;
+          }
+          var pdmg = Math.floor(raw * 0.5); if (pdmg < 1) pdmg = 1;   // 1レイヤーのみ＝貫通成功50%通過
+          var enP = applyDamage(opp, pdmg); pushLog(t("battle.hit_dmg", {i: i, n: pdmg})); if (enP) pushLog(endureMsg(opp)); lifesteal(f, opp, pdmg); wakeOnHit(opp);
+          sfx.hit(); playMagicFX(skill, f.index, opp.index, pdmg, one, true); return;
+        }
+        if (activeLayers > 0) { var nb = activeLayers - 1; if (nb > 0) opp.buffs.barrier.stacks = nb; else opp.buffs.barrier = null; }   // 非貫通＝100%反射・アクティブ1枚消費
+        sfx.deflect(); pushLog(t("battle.reflect_magic", {name: opp.label}));
+        var enR2 = applyDamage(f, raw); pushLog(t("battle.hit_dmg", {i: i, n: raw})); if (enR2) pushLog(endureMsg(f)); lifesteal(opp, f, raw);
+        sfx.hit(); playMagicFX(skill, f.index, f.index, raw, one); return;
+      }
+      if (opp.minibarrier) {   // 反射レイヤー無しの時だけミニバリアが働く（1発で消滅）
+        opp.minibarrier = null;
+        if (skill.pierce) {   // 貫通魔法＝壁破壊＋75%通過
+          var mdmg = Math.floor(raw * 0.75); if (mdmg < 1) mdmg = 1;
+          pushLog(t("battle.mini_pierce", {name: opp.label}));
+          var enM = applyDamage(opp, mdmg); pushLog(t("battle.hit_dmg", {i: i, n: mdmg})); if (enM) pushLog(endureMsg(opp)); lifesteal(f, opp, mdmg); wakeOnHit(opp);
+          sfx.hit(); playMagicFX(skill, f.index, opp.index, mdmg, one, true); return;
+        }
+        pushLog(t("battle.mini_block", {name: opp.label})); sfx.shatter(); playMiniBlockFX(opp.index, one); return;   // 通常魔法＝完全無効
+      }
+      var en = applyDamage(opp, raw); pushLog(t("battle.hit_dmg", {i: i, n: raw})); if (en) pushLog(endureMsg(opp)); lifesteal(f, opp, raw); wakeOnHit(opp);
+      sfx.hit(); playMagicFX(skill, f.index, opp.index, raw, one);
+    }
+    one();
+  }
+  // ㉜マジックルーレット：全「魔法」技（自分=ルーレットは除外）から S25%/A50%/B25% でレア度をロール→そのレア度から均等に1つ選び即発動。
+  function roulettePool() { return ALL_SKILLS.filter(function (s) { return s.type === "magic" && s.special !== "roulette"; }); }
+  function pickRouletteSkill() {
+    var pool = roulettePool(), r = Math.random() * 100, bucket = (r < 25) ? "S" : (r < 75 ? "A" : "B");   // 25 / 50 / 25
+    var byR = pool.filter(function (s) { return s.rarity === bucket; });
+    if (!byR.length) byR = pool;   // 安全：そのレア度が空ならプール全体から
+    return byR[Math.floor(Math.random() * byR.length)];
+  }
+  function resolveRoulette(f, opp, skill) {
+    var chosen = pickRouletteSkill();
+    pushLog(t("battle.roulette", {skill: sname(chosen)}));   // 「マジックルーレット！ → ○○」
+    // 選ばれた技を通常の発動処理でそのまま呼ぶ（FXも選ばれた技のもの）。once技(リカバリー/スペシャル)は消費なし・使用済みでも発動。
+    resolveMagic(f, opp, chosen);
   }
   function afterAction() {
     updateHud();
@@ -6190,7 +6976,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       endBattle(winner, loser); return;
     }
     var actor = battle.fighters[battle.active];
-    // ⑧ 2回行動: 10%×個数。1ターンに1回だけ。人間は「2かい こうどう はつどう！」が出てもう1つ特技を選べる／AIは自動。
+    // ⑧ 2回行動: 20%×個数。1ターンに1回だけ。人間は「2かい こうどう はつどう！」が出てもう1つ特技を選べる／AIは自動。
     if (!actor.dblUsed && pcount(actor, "double") > 0 && roll(20 * pcount(actor, "double"))) {
       actor.dblUsed = true;
       pushLog(t("battle.double_action", {name: actor.label}));
@@ -6710,8 +7496,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var s = [];
     if (f.poison) for (var pq = 0; pq < (f.poison.stacks || 1); pq++) s.push(t("hud.psn"));   // 最大2つ
     if (f.bind) s.push(t("hud.bnd"));
+    if (f.sleep) s.push(t("hud.slp"));   // ㉚眠り
     if (f.buffs.barrier) for (var bq = 0; bq < (f.buffs.barrier.stacks || 1); bq++) s.push(t("hud.rfl"));   // 最大2つ
-    if (f.buffs.speedup) s.push(t("hud.spd_up"));
+    if (f.minibarrier) s.push(t("hud.mini"));   // ㉝ミニバリア
+    if (f.buffs.speedup) for (var vq = 0; vq < f.buffs.speedup.length; vq++) s.push(t("hud.spd_up"));   // ㉒有効スタック数だけ速↑を表示（最大3）
     if (f.buffs.allup) s.push(t("hud.pwr_up"));
     if (f.regen > 0) s.push(t("hud.regen"));
     if (f.endure > 0) s.push(t("hud.end"));
@@ -6898,6 +7686,15 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         }
         dmgPop(tp.x, tp.y, t, dmg, crit);   // ダメージ数字は1秒かけてゆっくり表示
       }, done);
+      case "チャージバースト": return runFX(720, function (t) {   // ㊴溜め→大爆発の強物理
+        drawScene();
+        if (t < 0.4) { drawCharge(cp.x + dir * 20, cp.y, t / 0.4, "#ffd24a"); }
+        else { var g = (t - 0.4) / 0.6; battle.shake = 18 * cm * (1 - g); battle.flash = 0.5 * (1 - g); D.hitFlash = 1 - g; D.ox = dir * 20 * (1 - g);
+          pC(tp.x, tp.y, (crit ? 46 : 38) * (1 - g) + 8, "#ffd24a", (1 - g) * 0.55); pC(tp.x, tp.y, (crit ? 30 : 24) * (1 - g), "#fff", (1 - g) * 0.85);
+          for (var k = 0; k < 10; k++) { var a = k / 10 * Math.PI * 2; pL(tp.x, tp.y, tp.x + Math.cos(a) * (20 + g * 56), tp.y + Math.sin(a) * (20 + g * 56), 3, k % 2 ? "#fff" : "#ffb03c", 1 - g); }
+          pR(tp.x, tp.y, 14 + g * 52, 3, "#ffd24a", (1 - g) * 0.8); sparks(tp.x, tp.y, g, crit ? 14 : 10, "#ffe6a0", 66, 1); }
+        dmgPop(tp.x, tp.y, t, dmg, crit);
+      }, done);
       default: return runFX(440, function (t) { hit(t, 7, 0.16); drawScene(); sparks(tp.x, tp.y, t, 8, "#fff", 46, 1); dmgPop(tp.x, tp.y, t, dmg, crit); }, done);
     }
   }
@@ -7003,6 +7800,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       } else if (sp === "speedup") {                            // 流れる速度線
         for (var k = 0; k < 6; k++) { var y = p.y - 40 + k * 16, off = (t * 130 + k * 22) % 86; pL(p.x - 46 + off, y, p.x - 22 + off, y, 3, col, (1 - t) * 0.9); }
         pR(p.x, p.y, 18 + t * 30, 2, col, 1 - t);
+      } else if (sp === "minibarrier") {                        // ㉝小さめの六角バリア
+        var rotm = t * Math.PI;
+        for (var k = 0; k < 6; k++) { var a1 = rotm + k / 6 * Math.PI * 2, a2 = rotm + (k + 1) / 6 * Math.PI * 2; pL(p.x + Math.cos(a1) * 26, p.y + Math.sin(a1) * 26, p.x + Math.cos(a2) * 26, p.y + Math.sin(a2) * 26, 3, col, (1 - t) * 0.9); }
+        pR(p.x, p.y, 26, 2, col, (1 - t) * 0.5);
+      } else if (sp === "counter" || sp === "hicounter") {      // ㊱㊳ 構え：ガードのシェブロン
+        pR(p.x, p.y, 12 + t * 26, 3, col, 1 - t);
+        pL(p.x - 20, p.y + 16, p.x, p.y - 20, 4, col, (1 - t) * 0.9); pL(p.x + 20, p.y + 16, p.x, p.y - 20, 4, col, (1 - t) * 0.9);
       } else {                                                  // スペシャル: 虹色オーラ
         var cols = ["#ff5a6a", "#ffd24a", "#7cff9c", "#5ad6ff", "#c07bff"];
         for (var k = 0; k < 10; k++) { var a = k / 10 * Math.PI * 2 + t * 4, rr = (1 - t) * 10 + t * 52; pC(p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr, 3, cols[k % 5], 1 - t); }
@@ -7015,6 +7819,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function playMiss(targetIdx, done) {
     var tp = POS[targetIdx];
     runFX(360, function (t) { drawScene(); drawText(tp.x, tp.y - 50, "MISS", "#9fb3c8", 1 - t, 18); }, done);
+  }
+  // ㉝ミニバリアが魔法を完全無効化したときの小演出（水色の六角シールドが弾ける）。
+  function playMiniBlockFX(idx, done) {
+    var p = POS[idx];
+    runFX(560, function (t) {
+      drawScene();
+      var rot = t * Math.PI;
+      for (var k = 0; k < 6; k++) { var a1 = rot + k / 6 * Math.PI * 2, a2 = rot + (k + 1) / 6 * Math.PI * 2; pL(p.x + Math.cos(a1) * 28, p.y + Math.sin(a1) * 28, p.x + Math.cos(a2) * 28, p.y + Math.sin(a2) * 28, Math.max(1, 3 * (1 - t)), "#9cf0ff", (1 - t) * 0.95); }
+      pR(p.x, p.y, 22 + t * 18, 2, "#cffaff", (1 - t) * 0.85);
+      drawText(p.x, p.y - 52, "GUARD", "#9cf0ff", 1 - t, 15);
+    }, done);
   }
 
   /* ---------------- i18n（静的テキスト） ---------------- */
