@@ -131,6 +131,10 @@
   .saveddel{width:auto;background:#5a2230;border-color:#6e2c3e;font-size:16px;padding:9px 11px;}
   #saved-receive{margin-top:12px;background:#3a2a6e;border-color:#7a5cff;}
   #saved-empty{color:#9ab;font-size:13px;line-height:1.7;margin:24px 10px;}
+  /* 満杯時の「1体けして ほぞん」バナー */
+  #saved-makeroom{margin:10px 8px;padding:10px 12px;border:2px solid #ffd24a;border-radius:10px;background:#2a2410;color:#ffe9a8;font-size:13px;line-height:1.7;text-align:left;}
+  #saved-makeroom p{margin:0;}
+  #saved-makeroom button{display:block;width:100%;margin-top:8px;background:#3a3020;border-color:#ffd24a;color:#ffe9a8;}
   #setup-hint{font-size:11px;color:#7e93b5;text-align:center;margin:4px 0;}
 
   /* QR */
@@ -321,6 +325,10 @@
   <section id="screen-saved" class="screen">
     <h2 id="saved-title"></h2>
     <p id="saved-empty" style="display:none;"></p>
+    <div id="saved-makeroom" style="display:none;">
+      <p id="saved-makeroom-text"></p>
+      <button id="saved-makeroom-cancel"></button>
+    </div>
     <div id="savedlist"></div>
     <button id="saved-receive" class="giftbtn"></button>
     <button id="saved-back" class="backbtn"></button>
@@ -571,7 +579,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "common.copy": "コピー",
       "backup.add_do": "ついか する",
       "backup.restore_do": "ふっかつ する",
-      "saved.full": "ほぞんが いっぱいです（9体）。さくじょしてね",
+      "saved.full": "ほぞんが いっぱいです（20体）。さくじょしてね",
+      "saved.makeroom": "ほぞんが いっぱい（20体）。🗑で 1体 けすと、あたらしいキャラを ほぞんするよ。",
+      "saved.makeroom_cancel": "ほぞんを やめる",
       "setup.saved_done": "ほぞんした！",
       "saved.title": "ほぞんした キャラ",
       "saved.empty": "まだ ほぞんが ありません。キャラを つくって「ほぞん」を おそう",
@@ -702,7 +712,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "confirm.yes": "はい、まけます",
       "common.copied": "コピーした！",
       "backup.paste_code": "コードを はりつけてね。",
-      "saved.full2": "ほぞんが いっぱい（9体）。さくじょしてから もらってね。",
+      "saved.full2": "ほぞんが いっぱい（20体）。さくじょしてから もらってね。",
       "backup.invalid_fighter": "せんしコードが ただしくないみたい。もういちど かくにんしてね。",
       "backup.overwrite_confirm": "いまの データを バックアップで うわがきします。よろしい？",
       "backup.restored": "ふっかつ しました！がめんを ひらきなおすよ。",
@@ -858,7 +868,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "common.copy": "Copy",
       "backup.add_do": "Add",
       "backup.restore_do": "Restore",
-      "saved.full": "Save slots full (9). Delete one first.",
+      "saved.full": "Save slots full (20). Delete one first.",
+      "saved.makeroom": "Slots are full (20). Tap 🗑 to delete one and save your new fighter.",
+      "saved.makeroom_cancel": "Cancel saving",
       "setup.saved_done": "Saved!",
       "saved.title": "Saved Characters",
       "saved.empty": "No saved characters yet. Make one and tap Save.",
@@ -989,7 +1001,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "confirm.yes": "Yes, I give up",
       "common.copied": "Copied!",
       "backup.paste_code": "Please paste a code.",
-      "saved.full2": "Slots are full (9). Delete one first.",
+      "saved.full2": "Slots are full (20). Delete one first.",
       "backup.invalid_fighter": "That fighter code doesn't look valid. Please check it.",
       "backup.overwrite_confirm": "Overwrite current data with this backup?",
       "backup.restored": "Restored! Reloading…",
@@ -1247,8 +1259,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} هو الفائز!",
       "saved.delete_confirm": "أتريد حذف {name}؟",
       "saved.empty": "لا يوجد مقاتلون محفوظون بعد. أنشئ واحدًا واضغط «حفظ»",
-      "saved.full": "امتلأت خانات الحفظ (9). احذف واحدًا أولًا",
-      "saved.full2": "الخانات ممتلئة (9). احذف واحدًا قبل الاستقبال.",
+      "saved.full": "امتلأت خانات الحفظ (20). احذف واحدًا أولًا",
+      "saved.makeroom": "امتلأت الخانات (20). احذف واحدًا بـ 🗑 ليتم حفظ المقاتل الجديد.",
+      "saved.makeroom_cancel": "إلغاء الحفظ",
+      "saved.full2": "الخانات ممتلئة (20). احذف واحدًا قبل الاستقبال.",
       "saved.gift": "إهداء",
       "saved.receive_btn": "استقبال مقاتل (برمز)",
       "saved.thischar": "هذا المقاتل",
@@ -1608,8 +1622,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} জিতে গেল!",
       "saved.delete_confirm": "{name} মুছে ফেলবে?",
       "saved.empty": "এখনো কিছু সেভ নেই। যোদ্ধা বানিয়ে 'সেভ' চাপো",
-      "saved.full": "সেভ ভরে গেছে (9)। আগে একটা মুছো",
-      "saved.full2": "সেভ ভরে গেছে (9)। মুছে তারপর নাও।",
+      "saved.full": "সেভ ভরে গেছে (20)। আগে একটা মুছো",
+      "saved.makeroom": "সেভ ভরে গেছে (20)। 🗑 দিয়ে একটা মুছলে নতুন যোদ্ধা সেভ হবে।",
+      "saved.makeroom_cancel": "সেভ বাতিল করো",
+      "saved.full2": "সেভ ভরে গেছে (20)। মুছে তারপর নাও।",
       "saved.gift": "উপহার",
       "saved.receive_btn": "যোদ্ধা নাও (কোড দিয়ে)",
       "saved.thischar": "এই যোদ্ধা",
@@ -1969,8 +1985,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} GEWINNT!",
       "saved.delete_confirm": "{name} löschen?",
       "saved.empty": "Noch nichts gespeichert. Erstell einen Kämpfer und tippe »Speichern«",
-      "saved.full": "Speicher voll (9). Bitte lösch einen zuerst",
-      "saved.full2": "Speicher voll (9). Lösch einen, bevor du empfängst.",
+      "saved.full": "Speicher voll (20). Bitte lösch einen zuerst",
+      "saved.makeroom": "Speicher voll (20). Lösch einen mit 🗑, dann wird der neue Kämpfer gespeichert.",
+      "saved.makeroom_cancel": "Speichern abbrechen",
+      "saved.full2": "Speicher voll (20). Lösch einen, bevor du empfängst.",
       "saved.gift": "Verschenken",
       "saved.receive_btn": "Kämpfer erhalten (per Code)",
       "saved.thischar": "diesen Kämpfer",
@@ -2330,8 +2348,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "¡{name} GANA!",
       "saved.delete_confirm": "¿Borrar a {name}?",
       "saved.empty": "Aún no hay nada guardado. Crea uno y pulsa Guardar",
-      "saved.full": "Espacio lleno (9). Borra uno primero",
-      "saved.full2": "Espacio lleno (9). Borra uno antes de recibir.",
+      "saved.full": "Espacio lleno (20). Borra uno primero",
+      "saved.makeroom": "Espacio lleno (20). Borra uno con 🗑 para guardar al nuevo luchador.",
+      "saved.makeroom_cancel": "Cancelar guardado",
+      "saved.full2": "Espacio lleno (20). Borra uno antes de recibir.",
       "saved.gift": "Regalar",
       "saved.receive_btn": "Recibir un luchador (con código)",
       "saved.thischar": "este personaje",
@@ -2691,8 +2711,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} GAGNE !",
       "saved.delete_confirm": "Supprimer {name} ?",
       "saved.empty": "Rien de sauvegardé. Crée un perso et touche « Sauver »",
-      "saved.full": "Mémoire pleine (9). Supprime-en un d'abord",
-      "saved.full2": "Mémoire pleine (9). Supprime-en un avant de recevoir.",
+      "saved.full": "Mémoire pleine (20). Supprime-en un d'abord",
+      "saved.makeroom": "Mémoire pleine (20). Supprime-en un avec 🗑 pour garder le nouveau combattant.",
+      "saved.makeroom_cancel": "Annuler la sauvegarde",
+      "saved.full2": "Mémoire pleine (20). Supprime-en un avant de recevoir.",
       "saved.gift": "Offrir",
       "saved.receive_btn": "Recevoir un combattant (par code)",
       "saved.thischar": "ce perso",
@@ -3052,8 +3074,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} की जीत!",
       "saved.delete_confirm": "{name} को हटाएँ?",
       "saved.empty": "अभी कुछ सेव नहीं है। योद्धा बनाकर 'सेव' दबाओ",
-      "saved.full": "सेव फुल है (9)। पहले एक हटाओ",
-      "saved.full2": "सेव फुल है (9)। हटाकर फिर पाओ।",
+      "saved.full": "सेव फुल है (20)। पहले एक हटाओ",
+      "saved.makeroom": "सेव फुल है (20)। 🗑 से एक हटाओ, तो नया योद्धा सेव होगा।",
+      "saved.makeroom_cancel": "सेव रद्द करो",
+      "saved.full2": "सेव फुल है (20)। हटाकर फिर पाओ।",
       "saved.gift": "गिफ्ट",
       "saved.receive_btn": "योद्धा पाओ (कोड से)",
       "saved.thischar": "यह कैरेक्टर",
@@ -3413,8 +3437,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} MENANG!",
       "saved.delete_confirm": "Hapus {name}?",
       "saved.empty": "Belum ada yang tersimpan. Buat karakter lalu tekan Simpan",
-      "saved.full": "Slot penuh (9). Hapus satu dulu",
-      "saved.full2": "Slot penuh (9). Hapus dulu sebelum menerima.",
+      "saved.full": "Slot penuh (20). Hapus satu dulu",
+      "saved.makeroom": "Slot penuh (20). Hapus satu dengan 🗑 untuk menyimpan petarung baru.",
+      "saved.makeroom_cancel": "Batal menyimpan",
+      "saved.full2": "Slot penuh (20). Hapus dulu sebelum menerima.",
       "saved.gift": "Hadiahkan",
       "saved.receive_btn": "Terima petarung (dari kode)",
       "saved.thischar": "karakter ini",
@@ -3774,8 +3800,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} VINCE!",
       "saved.delete_confirm": "Eliminare {name}?",
       "saved.empty": "Ancora nessun salvataggio. Creane uno e premi Salva",
-      "saved.full": "Spazio pieno (9). Eliminane uno prima",
-      "saved.full2": "Spazio pieno (9). Elimina prima di ricevere.",
+      "saved.full": "Spazio pieno (20). Eliminane uno prima",
+      "saved.makeroom": "Spazio pieno (20). Eliminane uno con 🗑 per salvare il nuovo lottatore.",
+      "saved.makeroom_cancel": "Annulla salvataggio",
+      "saved.full2": "Spazio pieno (20). Elimina prima di ricevere.",
       "saved.gift": "Regala",
       "saved.receive_btn": "Ricevi un combattente (da codice)",
       "saved.thischar": "questo personaggio",
@@ -4135,8 +4163,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name}의 승리!",
       "saved.delete_confirm": "{name}을(를) 삭제할까?",
       "saved.empty": "아직 저장이 없어. 캐릭터를 만들고 '저장'을 눌러줘",
-      "saved.full": "저장이 가득 찼어(9개). 하나 지워줘",
-      "saved.full2": "저장이 가득(9개). 지운 다음에 받아줘.",
+      "saved.full": "저장이 가득 찼어(20개). 하나 지워줘",
+      "saved.makeroom": "저장이 가득 찼어(20개). 🗑로 하나 지우면 새 캐릭터가 저장돼.",
+      "saved.makeroom_cancel": "저장 그만두기",
+      "saved.full2": "저장이 가득(20개). 지운 다음에 받아줘.",
       "saved.gift": "선물",
       "saved.receive_btn": "전사 받기(코드로)",
       "saved.thischar": "이 캐릭터",
@@ -4496,8 +4526,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} VENCEU!",
       "saved.delete_confirm": "Apagar {name}?",
       "saved.empty": "Nada salvo ainda. Crie um e toque em Salvar",
-      "saved.full": "Espaço cheio (9). Apague um primeiro",
-      "saved.full2": "Espaço cheio (9). Apague um antes de receber.",
+      "saved.full": "Espaço cheio (20). Apague um primeiro",
+      "saved.makeroom": "Espaço cheio (20). Apague um com 🗑 para salvar o novo lutador.",
+      "saved.makeroom_cancel": "Cancelar salvamento",
+      "saved.full2": "Espaço cheio (20). Apague um antes de receber.",
       "saved.gift": "Presentear",
       "saved.receive_btn": "Receber um lutador (por código)",
       "saved.thischar": "este personagem",
@@ -4857,8 +4889,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name} ПОБЕЖДАЕТ!",
       "saved.delete_confirm": "Удалить {name}?",
       "saved.empty": "Пока пусто. Создай бойца и нажми «Сохранить»",
-      "saved.full": "Слоты заполнены (9). Сначала удали одного",
-      "saved.full2": "Слоты заполнены (9). Удали одного, потом получай.",
+      "saved.full": "Слоты заполнены (20). Сначала удали одного",
+      "saved.makeroom": "Слоты заполнены (20). Удали одного 🗑 — и новый боец сохранится.",
+      "saved.makeroom_cancel": "Отменить сохранение",
+      "saved.full2": "Слоты заполнены (20). Удали одного, потом получай.",
       "saved.gift": "Подарить",
       "saved.receive_btn": "Получить бойца (по коду)",
       "saved.thischar": "этого бойца",
@@ -5218,8 +5252,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.wins_name": "{name}获胜！",
       "saved.delete_confirm": "要删除{name}吗？",
       "saved.empty": "还没有保存。创建角色后点“保存”吧",
-      "saved.full": "保存已满（9个）。请先删除",
-      "saved.full2": "保存已满（9个）。删除后再接收吧。",
+      "saved.full": "保存已满（20个）。请先删除",
+      "saved.makeroom": "保存已满（20个）。用 🗑 删除一个，就能保存新角色。",
+      "saved.makeroom_cancel": "取消保存",
+      "saved.full2": "保存已满（20个）。删除后再接收吧。",
       "saved.gift": "赠送",
       "saved.receive_btn": "接收战士（用代码）",
       "saved.thischar": "这个角色",
@@ -6085,9 +6121,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     } else if (mode === "qr") { pending.you = data; pending.rival = null; openQRShow(); }
   }
 
-  /* ---------------- キャラのローカル保存（最大9体・localStorage dbvs_saved） ---------------- */
-  function loadSaved() { try { var a = JSON.parse(localStorage.getItem("dbvs_saved") || "[]"); return Array.isArray(a) ? a.slice(0, 9) : []; } catch (e) { return []; } }
-  function persistSaved(arr) { try { localStorage.setItem("dbvs_saved", JSON.stringify(arr.slice(0, 9))); } catch (e) {} }
+  /* ---------------- キャラのローカル保存（最大20体・localStorage dbvs_saved） ---------------- */
+  var MAX_SAVED = 20;   // 保存枠。9→20に増量(2026-07-18)。文言側の数字は saved.* に直書き＝変更時は全言語も更新。
+  var makeRoom = null;  // 満杯時の「1体けして ほぞん」フロー。{raw:エンコード済み新キャラ, from:"setup"|"receive"}。あきらめる選択肢つき。
+  function loadSaved() { try { var a = JSON.parse(localStorage.getItem("dbvs_saved") || "[]"); return Array.isArray(a) ? a.slice(0, MAX_SAVED) : []; } catch (e) { return []; } }
+  function persistSaved(arr) { try { localStorage.setItem("dbvs_saved", JSON.stringify(arr.slice(0, MAX_SAVED))); } catch (e) {} }
   function getInfinityBest() { try { var v = parseInt(localStorage.getItem("dbvs_infinity_best"), 10); return (v > 0) ? v : 0; } catch (e) { return 0; } }   // 無限バトルの最高連勝
   function setInfinityBest(v) { try { localStorage.setItem("dbvs_infinity_best", String(v)); } catch (e) {} }
   /* 無限バトルの称号：連勝数で4段階。30=エリートバトラー / 50=バトルマスター / 80=バトルレジェンド / 99=ゴッドバトラー(最高位)。
@@ -6109,7 +6147,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function b64enc(s) { return btoa(unescape(encodeURIComponent(s))); }   // UTF-8安全なbase64
   function b64dec(s) { return decodeURIComponent(escape(atob(s))); }
   function makeBackup() {
-    var payload = { v: 1, p: soloProgress, s: loadSaved(), c: settings, b: getInfinityBest() };   // バッジ進捗・保存戦士(最大9)・設定・無限最高記録
+    var payload = { v: 1, p: soloProgress, s: loadSaved(), c: settings, b: getInfinityBest() };   // バッジ進捗・保存戦士(最大20)・設定・無限最高記録
     return "DBVSB1." + b64enc(JSON.stringify(payload));
   }
   function applyBackup(code) {
@@ -6117,7 +6155,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     if (code.indexOf("DBVSB1.") !== 0) throw new Error("format");
     var obj = JSON.parse(b64dec(code.slice(7)));
     if (typeof obj.p === "number") localStorage.setItem("dbvs_progress", String(Math.max(0, Math.min(7, obj.p))));
-    if (Array.isArray(obj.s)) localStorage.setItem("dbvs_saved", JSON.stringify(obj.s.slice(0, 9)));
+    if (Array.isArray(obj.s)) localStorage.setItem("dbvs_saved", JSON.stringify(obj.s.slice(0, MAX_SAVED)));
     if (obj.c && typeof obj.c === "object") localStorage.setItem("dbvs_settings", JSON.stringify(obj.c));
     if (typeof obj.b === "number" && obj.b > 0) localStorage.setItem("dbvs_infinity_best", String(obj.b));
   }
@@ -6155,8 +6193,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function saveCurrentChar() {
     if (!setupBuf.pixels) return;
     var arr = loadSaved();
-    if (arr.length >= 9) { alert(t("saved.full")); return; }
-    arr.push(encodeFighter({ pixels: setupBuf.pixels, base: setupBuf.base, skills: setupBuf.skills, passives: setupBuf.passives, name: setupBuf.name || "" }));
+    var raw = encodeFighter({ pixels: setupBuf.pixels, base: setupBuf.base, skills: setupBuf.skills, passives: setupBuf.passives, name: setupBuf.name || "" });
+    if (arr.length >= MAX_SAVED) {   // 満杯→保存一覧を「1体けして ほぞん」モードで開く（やめる選択肢つき）
+      makeRoom = { raw: raw, from: "setup" };
+      sfx.select(); openSaved(); return;
+    }
+    arr.push(raw);
     persistSaved(arr); sfx.select();
     $("savebtn").textContent = "✓ " + t("setup.saved_done");
     setTimeout(function () { setSetupTexts(); }, 1200);
@@ -6168,11 +6210,19 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function openSaved() {
     var arr = loadSaved();
-    $("saved-title").textContent = "📁 " + t("saved.title") + "  (" + arr.length + "/9)";
+    $("saved-title").textContent = "📁 " + t("saved.title") + "  (" + arr.length + "/" + MAX_SAVED + ")";
     $("saved-empty").style.display = arr.length ? "none" : "block";
     $("saved-empty").textContent = t("saved.empty");
     $("saved-back").textContent = "‹ " + t("common.back");
     $("saved-receive").textContent = "🎁 " + t("saved.receive_btn");
+    // 満杯時の「1体けして ほぞん」モード：バナーを出し、操作を🗑（と やめる）に絞る
+    $("saved-makeroom").style.display = makeRoom ? "block" : "none";
+    $("saved-receive").style.display = makeRoom ? "none" : "";
+    if (makeRoom) {
+      $("saved-makeroom-text").textContent = t("saved.makeroom");
+      $("saved-makeroom-cancel").textContent = t("saved.makeroom_cancel");
+      $("saved-makeroom-cancel").onclick = function () { makeRoom = null; sfx.select(); openSaved(); };
+    }
     var list = $("savedlist"); list.innerHTML = "";
     for (var i = 0; i < arr.length; i++) {
       (function (data, idx, raw) {
@@ -6184,10 +6234,31 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         var st = document.createElement("div"); st.className = "savedstat"; st.textContent = t("stat.atk") + data.base.atk + "  " + t("stat.def") + data.base.def + "  " + t("stat.spd") + data.base.spd;
         info.appendChild(nm); info.appendChild(st);
         var btns = document.createElement("div"); btns.className = "savedbtns";
-        var use = document.createElement("button"); use.className = "saveduse"; use.textContent = "▶ " + t("saved.use"); use.onclick = function () { sfx.select(); useSaved(data); };
-        var gift = document.createElement("button"); gift.className = "savedgift"; gift.textContent = "🎁"; gift.setAttribute("aria-label", t("saved.gift")); gift.onclick = function () { sfx.select(); openBackup("gift", raw); };
-        var del = document.createElement("button"); del.className = "saveddel"; del.textContent = "🗑"; del.onclick = function () { if (confirm(t("saved.delete_confirm", {name: data.name || t("saved.thischar")}))) { var a2 = loadSaved(); a2.splice(idx, 1); persistSaved(a2); openSaved(); } };
-        btns.appendChild(use); btns.appendChild(gift); btns.appendChild(del);
+        var del = document.createElement("button"); del.className = "saveddel"; del.textContent = "🗑";
+        del.onclick = function () {
+          if (!confirm(t("saved.delete_confirm", {name: data.name || t("saved.thischar")}))) return;
+          var a2 = loadSaved(); a2.splice(idx, 1);
+          if (makeRoom) {   // 空きができた→保留中の新キャラをその場で保存（削除と保存を1操作で完結）
+            a2.push(makeRoom.raw);
+            var fr = makeRoom.from, nd = decodeFighter(makeRoom.raw);
+            makeRoom = null;
+            persistSaved(a2); sfx.select();
+            if (fr === "receive") {
+              alert(t("backup.fighter_joined", {name: (nd && nd.name) || t("backup.a_fighter")}));
+              openSaved();
+            } else {   // setup からの保存：通常保存と同じ「✓ほぞんしました」の流れで戻す
+              showScreen("setup");
+              $("savebtn").textContent = "✓ " + t("setup.saved_done");
+              setTimeout(function () { setSetupTexts(); }, 1200);
+            }
+          } else { persistSaved(a2); openSaved(); }
+        };
+        if (!makeRoom) {
+          var use = document.createElement("button"); use.className = "saveduse"; use.textContent = "▶ " + t("saved.use"); use.onclick = function () { sfx.select(); useSaved(data); };
+          var gift = document.createElement("button"); gift.className = "savedgift"; gift.textContent = "🎁"; gift.setAttribute("aria-label", t("saved.gift")); gift.onclick = function () { sfx.select(); openBackup("gift", raw); };
+          btns.appendChild(use); btns.appendChild(gift);
+        }
+        btns.appendChild(del);
         card.appendChild(cv); card.appendChild(info); card.appendChild(btns); list.appendChild(card);
       })(decodeFighter(arr[i]), i, arr[i]);
     }
@@ -8088,9 +8159,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       if (!clean) { alert(t("backup.paste_code")); return; }
       if (bkMode === "receive") {                                   // 戦士1体を追加（上書きしない）
         var arr = loadSaved();
-        if (arr.length >= 9) { alert(t("saved.full2")); return; }
         var d = decodeFighter(clean);
         if (!d || !d.pixels || !d.base) { alert(t("backup.invalid_fighter")); return; }
+        if (arr.length >= MAX_SAVED) {   // 満杯→保存一覧を「1体けして ほぞん」モードで開く（やめる選択肢つき）
+          makeRoom = { raw: clean, from: "receive" };
+          $("backupoverlay").style.display = "none";
+          sfx.select(); openSaved(); return;
+        }
         arr.push(clean); persistSaved(arr); sfx.select();
         $("backupoverlay").style.display = "none";
         alert(t("backup.fighter_joined", {name: d.name || t("backup.a_fighter")}));
@@ -8134,7 +8209,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("btnsaved").onclick = function () { sfx.select(); openSaved(); };
     $("savebtn").onclick = function () { saveCurrentChar(); };
     $("nameinput").oninput = function () { setupBuf.name = (this.value || "").slice(0, (LANG === "en") ? 12 : 8); };
-    $("saved-back").onclick = function () { showScreen("setup"); };
+    $("saved-back").onclick = function () { makeRoom = null; showScreen("setup"); };   // ‹もどる は「1体けして ほぞん」の中断も兼ねる
     $("saved-receive").onclick = function () { sfx.select(); openBackup("receive"); };
 
     // QR
