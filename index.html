@@ -5668,6 +5668,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     impact: function () { noise(0.1, 0.2); beep(220, 0.08, "square", 0.1); },
     beam: function () { sweep(1600, 250, 0.34, "sawtooth", 0.13); sweep(2400, 480, 0.28, "square", 0.05); noise(0.16, 0.06); },   // ㉛レーザーのビーム音（高→低の鋭いスイープ＋薄いノイズ）
     boom: function () { noise(0.30, 0.32); sweep(130, 35, 0.5, "sine", 0.22); beep(58, 0.46, "square", 0.14); sweep(240, 55, 0.34, "sawtooth", 0.08); },   // ㊴チャージバースト命中の大爆発音「ドカン」
+    ding: function () { beep(880, 0.5, "sine", 0.2); beep(1760, 0.35, "triangle", 0.06, 0.02); },   // ㉜ルーレットのレア度確定「ポーン」
+    rumble: function () { for (var ri = 0; ri < 4; ri++) { beep(46 + ri * 3, 0.3, "sawtooth", 0.16, ri * 0.28); beep(30, 0.3, "sine", 0.12, ri * 0.28); } noise(1.0, 0.05); },   // ㉞グラビティ「ゴゴゴゴ」の地鳴り
     shatter: function () { noise(0.07, 0.24); beep(2800, 0.30, "triangle", 0.10); beep(3600, 0.27, "triangle", 0.08, 0.01); beep(2100, 0.24, "triangle", 0.07, 0.02); [4200, 3000, 5000, 2500, 3800, 4600].forEach(function (fr, i) { beep(fr, 0.13, "sine", 0.06, 0.05 + i * 0.04); }); },   // 「パリーン！」ガラスが割れる音（高音のキラキラ降る破片）
     deflect: function () { noise(0.03, 0.12); beep(3400, 0.26, "square", 0.14); beep(5100, 0.22, "triangle", 0.10, 0.005); beep(6800, 0.15, "sine", 0.07, 0.01); beep(2400, 0.18, "square", 0.08); },   // 「キンッ！！」鋭い金属反射音
     miss: function () { beep(150, 0.12, "sine", 0.1); },
@@ -6980,6 +6982,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   }
   function resolveRoulette(f, opp, skill) {
     var chosen = pickRouletteSkill();   // ★抽選はアニメ開始前に確定（effects offでも同じ結果分布）
+    if (!settings.effects && settings.vol > 0) sfx.ding();   // エフェクトOFF時も確定音「ポーン」だけは鳴らす
     playRouletteFX(chosen.rarity, function () {   // 3秒回転→決定レア度(S/A/B)を大きく表示→選ばれた魔法の通常発動へ
       pushLog(t("battle.roulette", {skill: sname(chosen)}));   // 「マジックルーレット！ → ○○」
       // 選ばれた技を通常の発動処理でそのまま呼ぶ（FXも選ばれた技のもの）。once技(リカバリー/スペシャル)は消費なし・使用済みでも発動（現行方針を踏襲）。
@@ -7880,29 +7883,41 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       dmgPop(dst.x, dst.y, u, dmg, false);
     }, done);
   }
-  // ㉞グラビティ：上からグレー系の重い塊が降ってきて相手を下へ押し付ける（1発1.5秒）。ダメージ・連撃ロジックは不変。
+  // ㉞グラビティ：グレーのエネルギー場が上から相手を押し潰す（塊の落下ではなく重力場・1発1.5秒）。
+  // 音は「ゴゴゴゴ」という低い地鳴り(sfx.rumble)。ダメージ・連撃ロジックは不変。
   function playGravityFX(tp, D, dmg, done) {
-    var topY = tp.y - 150, landed = false;
+    if (settings.vol > 0) sfx.rumble();
     return runFX(1500, function (u) {
-      var fall = u < 0.5 ? (u / 0.5) : 1, slabY = topY + (tp.y - 8 - topY) * (fall * fall);   // 加速して落下
-      var g = u < 0.5 ? 0 : (u - 0.5) / 0.5;                                                    // 着地→押し付けの進行
-      if (u >= 0.5) {
-        if (!landed) { landed = true; if (settings.vol > 0) sfx.impact(); }
-        if (D) { D.oy = 14 * Math.sin(Math.min(1, g * 2) * Math.PI * 0.5) * (1 - g * 0.5); D.hitFlash = Math.max(0, 1 - g * 1.7); }   // 相手を少し下に押し潰す
-        battle.shake = 13 * (1 - g); battle.flash = 0.2 * (1 - g);
+      var press = Math.min(1, u * 1.25);                       // 押し潰しの進行
+      var rel = u > 0.85 ? (u - 0.85) / 0.15 : 0;              // 最後にすっと解放
+      var live = 1 - rel;
+      if (D) {
+        D.oy = 16 * press * live + Math.sin(u * 55) * 1.5 * live;   // 押し込み＋潰される小刻みな震え
+        D.hitFlash = Math.max(0, 0.5 * live * (0.6 + 0.4 * Math.sin(u * 30)));
       }
+      battle.shake = (4 + 3 * Math.sin(u * 40)) * live;        // 地鳴りの継続的な揺れ
       drawScene();
-      var alpha = u < 0.5 ? 0.9 : 0.9 * (1 - g);
-      bctx.globalAlpha = alpha;
-      bctx.fillStyle = "#3a3f4a"; bctx.fillRect(tp.x - 60, slabY - 18, 120, 22);   // 重い帯（濃いグレー）
-      bctx.fillStyle = "#565e6e"; bctx.fillRect(tp.x - 60, slabY - 18, 120, 6);    // 上面のハイライト
-      bctx.fillStyle = "#20242c"; bctx.fillRect(tp.x - 60, slabY + 2, 120, 3);     // 底の影
-      bctx.globalAlpha = 1;
-      for (var k = 0; k < 5; k++) { var lx = tp.x - 40 + k * 20; pL(lx, slabY - 30, lx, slabY - 20, 3, "#8a90a0", alpha * 0.8); }   // 落下の圧力線
-      if (u >= 0.5) {   // 着地の衝撃波
-        pR(tp.x, tp.y + 6, 10 + g * 46, 3, "#565e6e", (1 - g) * 0.85);
-        for (var d = 0; d < 8; d++) { var a = Math.PI + d / 7 * Math.PI; pC(tp.x + Math.cos(a) * g * 50, tp.y + 10, 3, "#4a505e", 1 - g); }
+      var top = tp.y - 170, bot = tp.y + 18;
+      var grd = bctx.createLinearGradient(0, top, 0, bot);     // 上から覆う半透明のエネルギーの場
+      grd.addColorStop(0, "rgba(90,96,110,0)");
+      grd.addColorStop(0.4, "#3a3f4a");
+      grd.addColorStop(1, "#20242c");
+      bctx.globalAlpha = 0.5 * live;
+      bctx.fillStyle = grd;
+      bctx.fillRect(tp.x - 52, top, 104, bot - top);
+      for (var w = 0; w < 4; w++) {                            // 下へ流れる圧力の波（エネルギーのうねり）
+        var ph = ((u * 2.2) + w / 4) % 1, wy = top + (bot - top) * ph;
+        bctx.globalAlpha = 0.35 * live * Math.sin(ph * Math.PI);
+        bctx.fillStyle = "#565e6e";
+        bctx.fillRect(tp.x - 52, wy, 104, 7);
       }
+      bctx.globalAlpha = 1;
+      for (var k = 0; k < 6; k++) {                            // 下向きに流れるエネルギー線
+        var lph = ((u * 3) + k / 6) % 1, lx = tp.x - 45 + k * 18, ly = top + (bot - top - 20) * lph;
+        pL(lx, ly, lx, ly + 16, 2, "#8a90a0", 0.6 * live * (1 - lph * 0.5));
+      }
+      pR(tp.x, tp.y, 26 + 4 * Math.sin(u * 25), 4, "#4a505e", 0.5 * press * live);   // 相手を包む暗い重力オーラ（脈動）
+      pR(tp.x, tp.y + 12, 12 + press * 30, 2.5, "#565e6e", 0.5 * press * live);      // 地面へ押し付けられる圧の輪
       dmgPop(tp.x, tp.y, u, dmg, false);
     }, done);
   }
@@ -7920,19 +7935,26 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       pC(p.x, p.y, 3 + 8 * pop, "#fff", pop);
     }, done);
   }
-  // ㉜マジックルーレット：3秒回して決定レア度(S金/A銀/B白)を大きく表示。結果は呼び出し前に確定済み＝表示だけ。i18nキーは使わずcanvasにS/A/B文字を直描き。
+  // ㉜マジックルーレット：3秒回して決定レア度を大きく表示。色はゲーム内のレア度文字色と同じ S虹グラデ/A金/B銀。
+  // 結果は呼び出し前に確定済み＝表示だけ。i18nキーは使わずcanvasにS/A/B文字を直描き。確定の瞬間に「ポーン」(sfx.ding)。
   function playRouletteFX(rarity, done) {
-    var cx = (POS[0].x + POS[1].x) / 2, cy = POS[0].y, R = 46, SPIN = 0.7;
-    var secCols = ["#ffd24a", "#cfd6e0", "#f2f2f2"];   // S金 / A銀 / B白（6分割で交互）
+    var cx = (POS[0].x + POS[1].x) / 2, cy = POS[0].y, R = 46, SPIN = 0.7, dinged = false;
+    function rainbow(x0, x1) {   // S用の虹グラデ（.rar-Sの虹色に合わせる）
+      var rg = bctx.createLinearGradient(x0, cy - R, x1, cy + R);
+      rg.addColorStop(0, "#ff5a5a"); rg.addColorStop(0.2, "#ffb14a"); rg.addColorStop(0.4, "#ffe23c");
+      rg.addColorStop(0.6, "#7ce04a"); rg.addColorStop(0.8, "#5ad6ff"); rg.addColorStop(1, "#b06cff");
+      return rg;
+    }
+    var secCols = [null, "#ffd24a", "#cfd6e0"];   // S虹(グラデは毎フレーム生成) / A金 / B銀（6分割で交互）
     var targetSec = rarity === "S" ? 0 : (rarity === "A" ? 1 : 2);
     var finalAng = -Math.PI / 2 - (targetSec + 0.5) / 6 * Math.PI * 2;   // 決定レア度の扇が上の指針に来る角度
-    var revCol = rarity === "S" ? "#ffd24a" : (rarity === "A" ? "#cfd6e0" : "#f2f2f2");
+    function revCol(span) { return rarity === "S" ? rainbow(cx - span, cx + span) : (rarity === "A" ? "#ffd24a" : "#cfd6e0"); }
     return runFX(3000, function (u) {
       drawScene(); bctx.save();
       var ang0 = (u < SPIN) ? (finalAng + (1 - (1 - Math.pow(1 - u / SPIN, 3))) * 6 * Math.PI * 2) : finalAng;   // 速く回って減速し決定角へ
       for (var s = 0; s < 6; s++) {   // 円盤（6分割の扇）
         var a1 = ang0 + s / 6 * Math.PI * 2, a2 = ang0 + (s + 1) / 6 * Math.PI * 2;
-        bctx.globalAlpha = 0.92; bctx.fillStyle = secCols[s % 3];
+        bctx.globalAlpha = 0.92; bctx.fillStyle = (s % 3 === 0) ? rainbow(cx - R, cx + R) : secCols[s % 3];
         bctx.beginPath(); bctx.moveTo(cx, cy); bctx.arc(cx, cy, R, a1, a2); bctx.closePath(); bctx.fill();
       }
       pR(cx, cy, R, 3, "#1b1030", 0.95);   // 外枠
@@ -7940,11 +7962,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       pC(cx, cy, 7, "#1b1030", 0.95); pC(cx, cy, 4, "#fff", 0.9);   // 軸
       bctx.globalAlpha = 1; bctx.fillStyle = "#fff"; bctx.strokeStyle = "#1b1030"; bctx.lineWidth = 2;   // 上部の指針（下向き三角）
       bctx.beginPath(); bctx.moveTo(cx, cy - R + 8); bctx.lineTo(cx - 7, cy - R - 6); bctx.lineTo(cx + 7, cy - R - 6); bctx.closePath(); bctx.fill(); bctx.stroke();
-      if (u >= SPIN) {   // 決定レア度を一瞬大きく表示
+      if (u >= SPIN) {   // 決定レア度を一瞬大きく表示（確定音つき）
+        if (!dinged) { dinged = true; if (settings.vol > 0) sfx.ding(); }
         var rv = (u - SPIN) / (1 - SPIN), pop = rv < 0.25 ? rv / 0.25 : 1, sz = 30 + 30 * pop;
-        pR(cx, cy, R + 6 + rv * 30, 3, revCol, (1 - rv) * 0.9);
-        pStar(cx, cy, (R + 10) * pop, 8, revCol, (1 - rv) * 0.5);
-        drawText(cx, cy + sz * 0.35, rarity, revCol, 1, sz);   // S / A / B（レア度色）
+        pR(cx, cy, R + 6 + rv * 30, 3, revCol(R + 6 + rv * 30), (1 - rv) * 0.9);
+        pStar(cx, cy, (R + 10) * pop, 8, revCol(R + 10), (1 - rv) * 0.5);
+        drawText(cx, cy + sz * 0.35, rarity, revCol(sz), 1, sz);   // S / A / B（レア度色＝S虹/A金/B銀）
       } else {
         drawText(cx, cy + 7, "?", "#fff", 0.85, 20);
       }
