@@ -479,8 +479,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   "use strict";
 
   /* ---------------- 設定 / settings (localStorage) ---------------- */
-  var settings = { lang: "ja", vol: 1, effects: true, watchSpeed: 1, vibrate: true };   // vol: 0(ミュート)〜2(標準の2倍) / watchSpeed: 観戦モードの再生速度 / vibrate: 被弾振動
+  var settings = { lang: "ja", vol: 1, effects: true, watchSpeed: 1, soloSpeed: 1, vibrate: true };   // vol: 0(ミュート)〜2(標準の2倍) / watchSpeed: 観戦モードの再生速度 / soloSpeed: ソロバトルの再生速度 / vibrate: 被弾振動
   var WATCH_SPEEDS = [0.125, 0.25, 0.5, 1, 2, 4, 8];   // 観戦モードの選べる速度（この配列でしか受け付けない）
+  var SOLO_SPEEDS = [0.5, 1, 2];   // ソロバトルの選べる速度・ヒロ指定の3段階のみ
   try {
     var saved = JSON.parse(localStorage.getItem("dbvs_settings") || "{}");
     if (saved.lang) settings.lang = saved.lang;
@@ -488,6 +489,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     else if (typeof saved.sound === "boolean") settings.vol = saved.sound ? 1 : 0;   // 旧設定からの移行
     if (typeof saved.effects === "boolean") settings.effects = saved.effects;
     if (typeof saved.watchSpeed === "number" && WATCH_SPEEDS.indexOf(saved.watchSpeed) >= 0) settings.watchSpeed = saved.watchSpeed;
+    if (typeof saved.soloSpeed === "number" && SOLO_SPEEDS.indexOf(saved.soloSpeed) >= 0) settings.soloSpeed = saved.soloSpeed;
     if (typeof saved.vibrate === "boolean") settings.vibrate = saved.vibrate;
   } catch (e) {}
   function saveSettings() { try { localStorage.setItem("dbvs_settings", JSON.stringify(settings)); } catch (e) {} }
@@ -787,6 +789,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.playoff": "どうりつ プレーオフ",
       "watch.bye": "シード（ふせん）",
       "watch.speed": "かんせんスピード",
+      "solo.speed": "バトルスピード",
       "watch.quit": "かんせんを やめる",
       "watch.quit_confirm": "かんせんを やめて もどる？",
       "watch.standings": "じゅんい",
@@ -1076,6 +1079,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.playoff": "Tie Playoff",
       "watch.bye": "Bye (seed)",
       "watch.speed": "Watch speed",
+      "solo.speed": "Battle Speed",
       "watch.quit": "Stop watching",
       "watch.quit_confirm": "Stop watching and go back?",
       "watch.standings": "Standings",
@@ -1363,6 +1367,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "نصف النهائي",
       "watch.round_third": "مباراة المركز الثالث",
       "watch.speed": "سرعة المشاهدة",
+      "solo.speed": "سرعة المعركة",
       "watch.standings": "الترتيب",
       "watch.title_league": "الدوري",
       "watch.title_tournament": "البطولة",
@@ -1726,6 +1731,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "সেমিফাইনাল",
       "watch.round_third": "তৃতীয় স্থানের ম্যাচ",
       "watch.speed": "দেখার গতি",
+      "solo.speed": "যুদ্ধের গতি",
       "watch.standings": "র‍্যাঙ্কিং",
       "watch.title_league": "লিগ",
       "watch.title_tournament": "টুর্নামেন্ট",
@@ -2089,6 +2095,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "Halbfinale",
       "watch.round_third": "Spiel um Platz 3",
       "watch.speed": "Zuschau-Tempo",
+      "solo.speed": "Kampftempo",
       "watch.standings": "Rangliste",
       "watch.title_league": "Rundenturnier",
       "watch.title_tournament": "Turnier",
@@ -2452,6 +2459,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "Semifinal",
       "watch.round_third": "Puesto 3",
       "watch.speed": "Velocidad",
+      "solo.speed": "Velocidad de batalla",
       "watch.standings": "Clasificación",
       "watch.title_league": "Liga",
       "watch.title_tournament": "Torneo",
@@ -2815,6 +2823,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "Demi-finale",
       "watch.round_third": "Match pour la 3e place",
       "watch.speed": "Vitesse",
+      "solo.speed": "Vitesse de combat",
       "watch.standings": "Classement",
       "watch.title_league": "Championnat",
       "watch.title_tournament": "Tournoi",
@@ -3178,6 +3187,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "सेमीफ़ाइनल",
       "watch.round_third": "तीसरे स्थान का मैच",
       "watch.speed": "देखने की रफ़्तार",
+      "solo.speed": "युद्ध की गति",
       "watch.standings": "रैंकिंग",
       "watch.title_league": "लीग",
       "watch.title_tournament": "टूर्नामेंट",
@@ -3541,6 +3551,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "Semifinal",
       "watch.round_third": "Perebutan juara 3",
       "watch.speed": "Kecepatan menonton",
+      "solo.speed": "Kecepatan pertarungan",
       "watch.standings": "Klasemen",
       "watch.title_league": "Liga",
       "watch.title_tournament": "Turnamen",
@@ -3904,6 +3915,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "Semifinale",
       "watch.round_third": "Finale 3º posto",
       "watch.speed": "Velocità",
+      "solo.speed": "Velocità di battaglia",
       "watch.standings": "Classifica",
       "watch.title_league": "Girone",
       "watch.title_tournament": "Torneo",
@@ -4267,6 +4279,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "준결승",
       "watch.round_third": "3위 결정전",
       "watch.speed": "관전 속도",
+      "solo.speed": "배틀 속도",
       "watch.standings": "순위",
       "watch.title_league": "리그전",
       "watch.title_tournament": "토너먼트",
@@ -4630,6 +4643,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "Semifinal",
       "watch.round_third": "Disputa do 3º lugar",
       "watch.speed": "Velocidade",
+      "solo.speed": "Velocidade de batalha",
       "watch.standings": "Classificação",
       "watch.title_league": "Liga",
       "watch.title_tournament": "Torneio",
@@ -4993,6 +5007,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "Полуфинал",
       "watch.round_third": "Матч за 3-е место",
       "watch.speed": "Скорость",
+      "solo.speed": "Скорость боя",
       "watch.standings": "Таблица",
       "watch.title_league": "Круговой турнир",
       "watch.title_tournament": "Турнир",
@@ -5356,6 +5371,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.round_semi": "半决赛",
       "watch.round_third": "季军赛",
       "watch.speed": "观战速度",
+      "solo.speed": "战斗速度",
       "watch.standings": "排名",
       "watch.title_league": "循环赛",
       "watch.title_tournament": "锦标赛",
@@ -5831,6 +5847,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       if (!el) continue;
       if (ids[i] === name) el.classList.add("active"); else el.classList.remove("active");
     }
+    if (name !== "battle" && !watch) { watchHideSpeedbar(); BSPEED = 1; }   // battle以外へ抜けたらソロのスピードバーを片付けて等速に戻す（観戦はwatch側が自前管理するので触らない）
     if (name === "title") { updateSoloBadges(); startTitleBGM(); }
     else if (name === "battle") { /* バトルのBGMはbeginBattleで管理 */ }
     else startMenuBGM();   // 選択系画面（むずかしさ/せってい/ほぞん/QR）にも静かなメニュー曲＝無音をなくす
@@ -6580,6 +6597,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function beginBattle(f0, f1, opts) {
     battle = { fighters: [f0, f1], roundQueue: [], active: null, over: false, busy: true, round: 0, shake: 0, flash: 0, kind: opts.kind };
     showScreen("battle");
+    if (opts.kind === "solo") { BSPEED = getSoloSpeed(); renderSpeedbar(); watchShowSpeedbar(); }   // ソロバトルは保存済みの倍速を適用してスピードバー表示（self/qr/hotseatは出さず1固定）
     $("name0").textContent = f0.label; $("name1").textContent = f1.label;
     $("name0").style.color = "#5ad6ff"; $("name1").style.color = "#ff9a5a";
     updateStageInfo(); pushLogClear(); updateHud(); drawScene();
@@ -7299,6 +7317,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function rngReal() { return Math.random(); }   // 本番の乱数（純粋関数へ引数で渡す）
   function pairsToMatches(pairs) { var out = []; for (var i = 0; i < pairs.length; i++) out.push({ a: pairs[i][0], b: pairs[i][1], winner: null }); return out; }
   function getWatchSpeed() { return (WATCH_SPEEDS.indexOf(settings.watchSpeed) >= 0) ? settings.watchSpeed : 1; }
+  function getSoloSpeed() { return (SOLO_SPEEDS.indexOf(settings.soloSpeed) >= 0) ? settings.soloSpeed : 1; }
   function buildWatchEntrants() {
     var saved = loadSaved(), out = [];
     for (var i = 0; i < saved.length; i++) { var d = decodeFighter(saved[i]); if (d) out.push({ data: d, name: d.name || t("common.noname") }); }   // 欠番（null）はスキップ
@@ -7526,18 +7545,20 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
   }
 
-  /* --- スピードバー（観戦中だけ表示。通常プレイでは絶対に出さない） --- */
+  /* --- スピードバー（観戦モードとソロバトルで表示。self/qr/hotseat では出さない） --- */
   function speedLabel(v) { return v === 0.125 ? "⅛" : v === 0.25 ? "¼" : v === 0.5 ? "½" : (v + "×"); }
   function renderSpeedbar() {
     var sb = $("speedbar"); if (!sb) return;
     sb.innerHTML = "";
-    var lab = document.createElement("span"); lab.className = "spdlabel"; lab.textContent = t("watch.speed"); sb.appendChild(lab);
-    for (var i = 0; i < WATCH_SPEEDS.length; i++) {
+    var solo = !watch && battle && battle.kind === "solo";   // 観戦中はwatch非null。ソロバトルだけ solo=true
+    var speeds = solo ? SOLO_SPEEDS : WATCH_SPEEDS;
+    var lab = document.createElement("span"); lab.className = "spdlabel"; lab.textContent = solo ? t("solo.speed") : t("watch.speed"); sb.appendChild(lab);
+    for (var i = 0; i < speeds.length; i++) {
       (function (v) {
         var b = document.createElement("button"); b.className = "spdbtn" + (v === BSPEED ? " on" : ""); b.textContent = speedLabel(v);
-        b.onclick = function () { sfx.select(); settings.watchSpeed = v; saveSettings(); BSPEED = v; renderSpeedbar(); };
+        b.onclick = function () { sfx.select(); if (solo) settings.soloSpeed = v; else settings.watchSpeed = v; saveSettings(); BSPEED = v; renderSpeedbar(); };
         sb.appendChild(b);
-      })(WATCH_SPEEDS[i]);
+      })(speeds[i]);
     }
   }
   function watchShowSpeedbar() { var sb = $("speedbar"); if (sb) sb.style.display = "flex"; }
