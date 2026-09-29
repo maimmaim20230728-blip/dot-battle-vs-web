@@ -188,6 +188,25 @@
   .ask-box{background:#0d1424;border:2px solid #6e2c3e;border-radius:12px;padding:20px;max-width:340px;width:90%;text-align:center;}
   .ask-msg{font-size:16px;line-height:1.6;color:#ffe0e6;margin-bottom:18px;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;}   /* 分かち書きの空白で折る */
   .ask-box button{margin-top:8px;} .ask-box .ask-yes{background:#5a2230;border-color:#ff5a6a;}
+  /* はじめての あそびかた（app.js openGuide・2026-09-30）。初回に必ず出す・最後の「▶ あそぶ」でだけ閉じる（✕ は置かない）。
+     #frame の中いっぱい（下の ⚙/🌐 のバーより上）・ほかの窓より上・確かめの窓（ask-ov 120）より下。
+     本文だけスクロールし、下の「まえへ/つぎへ」は地の色の帯に置く（長いページでも本文が透けない・最後の行が帯に隠れない） */
+  .overlay.guide-ov{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;z-index:110;background:#070a12;}
+  .guide-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 24px;}
+  .guide-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+  .guide-title{margin:0;font-size:15px;font-weight:bold;color:#ffd24a;letter-spacing:1px;}
+  .guide-step{margin:0;font-size:15px;font-weight:bold;color:#9fc0ea;white-space:nowrap;unicode-bidi:isolate;}   /* 「1 / 8」は右から左の言葉でも左から（dir=ltr） */
+  .guide-lang{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:14px 0 0;}
+  .guide-lang-lbl{font-size:14px;color:#9fc0ea;}
+  .guide-lang select{min-height:44px;font-size:16px;font-family:inherit;font-weight:bold;color:#e6eefc;background:#13203a;border:2px solid #3a567f;border-radius:9px;padding:4px 10px;}
+  .guide-h{font-size:20px;line-height:1.45;margin:16px 0 12px;color:#5ad6ff;word-break:keep-all;overflow-wrap:anywhere;}
+  .guide-p{font-size:16px;line-height:1.85;margin:0;color:#e6eefc;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;}
+  .guide-dots{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:22px 0 0;}
+  .guide-dot{width:10px;height:10px;border-radius:50%;background:#243a63;}
+  .guide-dot.on{background:#ffd24a;}
+  .guide-row{flex:none;display:flex;gap:10px;padding:10px 12px calc(12px + env(safe-area-inset-bottom));background:#070a12;border-top:1px solid #1c2942;}
+  .guide-row button{flex:1 1 0;min-width:0;min-height:56px;font-size:17px;padding:10px 8px;}
+  #guide-again{width:auto;padding:7px 14px;font-size:14px;background:#13203a;border:2px solid #3a567f;box-shadow:none;}
 
   /* オーバーレイ */
   .overlay{display:none;position:absolute;inset:0;background:rgba(3,5,10,.93);z-index:100;align-items:center;justify-content:center;}
@@ -430,6 +449,7 @@
     <div class="setrow"><span class="lab" id="set-vibrate-label"></span><button id="toggle-vibrate" class="toggle"></button></div>
     <div class="setrow col"><span class="lab" id="set-data-label"></span>
       <div class="databtns"><button id="bk-export-btn" class="minib accent"></button><button id="bk-import-btn" class="minib"></button></div></div>
+    <div class="setrow"><span class="lab" id="set-guide-label"></span><button id="guide-again" class="minib"></button></div>
     <button id="set-close" class="primary"></button>
   </div>
 </div>
@@ -805,7 +825,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.wins": "{n}しょう",
       "watch.rank": "{n}い",
       "watch.auto_third": "{name}が 3いに けってい！",
-      "watch.rematch": "もういちど"
+      "watch.rematch": "もういちど",
+      "guide.title": "あそびかた",
+      "guide.prev": "◀ まえへ",
+      "guide.start": "▶ あそぶ",
+      "guide.again": "もういちど みる",
+      "guide.h1": "ドットバトルVSへ ようこそ",
+      "guide.h2": "まず キャラを つくろう",
+      "guide.h3": "たたかいかた",
+      "guide.h4": "5れんしょうで クリア",
+      "guide.h5": "ふたりで あそぶ（1だい・2だい）",
+      "guide.h6": "キャラを ほぞんする",
+      "guide.h7": "データは この たんまつの 中だけ",
+      "guide.h8": "おと・ことば・この あそびかた",
+      "guide.b1": "しゃしんや がぞうを 16×16の ドット戦士に かえて、とくぎで たたかう ゲームだよ。\nがぞうは この たんまつの 中だけで けいさんして、どこにも おくらない。\nことばは この上の「ことば / Language」で えらべるよ。あとからでも 下の 🌐 で かえられる。",
+      "guide.b2": "タイトルの「🗡 ひとりで（5れんせん）」を おして、「やさしい」を えらぼう。\n「📷 カメラ」で しゃしんを とるか、「🖼 がぞう」で えらぶと、ドット戦士が できるよ。\nしゃしんの あか・みどり・あおの おおさで「こうげき」「ぼうぎょ」「すばやさ」が きまる。とくぎ4つと ちから2つは ランダム。\nきに いらなければ「↺ とりなおす」。きまったら「これで たたかう ▶」。",
+      "guide.b3": "じぶんの ばんに なったら、4つの とくぎから 1つを おそう。ボタンの 中に、とくぎの せつめいも 出ているよ。\nあいての HPを 0に したら かち。\nやめたい ときは「🏳 こうさん」（まけに なる）。\nひとりで たたかう ときは、上の「バトルスピード」で はやさを かえられる。",
+      "guide.b4": "ひとりで あそぶと、ランダムな てきと 5かい つづけて たたかう。HPは 1せんごとに もとに もどるよ。\n5れんしょうで クリア。★の バッジが もらえて、つぎの むずかしさが ひらく（ぜんぶで 7つ）。\n7つ ぜんぶ クリアすると「♾ 無限ハチャメチャバトル」が あらわれる。まけるまで つづく やりこみモードだよ。",
+      "guide.b5": "「🤝 ふたりで（1だい）」は、1Pと 2Pが じゅんばんに キャラを つくって（「1P かくてい ▶」→「たいせん スタート ▶」）、1だいを かわりばんこに つかって たたかう。\n「📱 2だいで（QRたいせん）」は、2人とも キャラを つくって「つぎへ ▶」。出てきた QRを あいてに みせて、「📷 あいての QRを よみとる」で あいての QRを うつそう。\n2人とも よみとれたら「▶ たたかう スタート」。じぶんの たんまつで あいての キャラと たたかうよ（たんまつどうしの つうしんは しない）。",
+      "guide.b6": "キャラづくりの「💾 このキャラを ほぞん」で 20たいまで のこせる。「📁 ほぞんした キャラから」で よびだして「▶ つかう」。\nタイトルの「🎴 じぶんの キャラで」では、「⚔ えらんで たいせん」「🔥 ほぞんキャラ ５れんせん」と、みるだけの「🏆 ほぞんキャラ トーナメント」「📊 ほぞんキャラ そうあたりせん」（2たい いじょう）が あそべるよ。",
+      "guide.b7": "キャラ・バッジ・せっていは この たんまつの 中だけに のこり、どこにも おくられないよ。\nたんまつを かえるときは、⚙ の「バックアップ」で 出る コードを「コピー」して、あたらしい たんまつの ⚙ の「ふっかつ」に はりつけて「ふっかつ する」。\nキャラ 1たいだけ ともだちに わたすなら、ほぞん いちらんの 🎁。もらう ときは「🎁 せんしを もらう（コードから）」に はりつけて「ついか する」。",
+      "guide.b8": "下の ⚙ の「せってい」で、「おと」の おおきさ（いちばん ひだりで「ミュート」）と、「エフェクト」「しんどう」の「オン」「オフ」を かえられるよ。\nことばは 下の 🌐 で えらべる。\nこの あそびかたは「せってい」の「あそびかた」の「もういちど みる」で、いつでも 見なおせるよ。"
     },
     en: {
       "skill.d.hit": "HIT",
@@ -1098,7 +1138,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "watch.wins": "{n} W",
       "watch.rank": "#{n}",
       "watch.auto_third": "{name} takes 3rd place!",
-      "watch.rematch": "Once more"
+      "watch.rematch": "Once more",
+      "guide.title": "How to play",
+      "guide.prev": "◀ Back",
+      "guide.start": "▶ Let's play!",
+      "guide.again": "Show again",
+      "guide.h1": "Welcome to DOT BATTLE VS",
+      "guide.h2": "First, make a fighter",
+      "guide.h3": "How to battle",
+      "guide.h4": "Win 5 in a row to clear",
+      "guide.h5": "Play with a friend (1 or 2 devices)",
+      "guide.h6": "Save your fighters",
+      "guide.h7": "Your data stays on this device",
+      "guide.h8": "Sound, language and this guide",
+      "guide.b1": "Turn a photo or image into a 16×16 pixel fighter and battle with skills.\nImages are processed only on this device and never sent anywhere.\nChoose your language above with “Language / ことば”. You can change it later with 🌐 at the bottom.",
+      "guide.b2": "On the title screen, tap “🗡 Solo (5 in a row)” and choose “EASY”.\nTake a photo with “📷 Camera” or pick one with “🖼 Photo”, and your pixel fighter appears.\nHow much red, green and blue the picture has decides “ATK”, “DEF” and “SPD”. The 4 skills and 2 passives are random.\nIf you don’t like it, tap “↺ Retake”. When you’re happy, tap “Fight! ▶”.",
+      "guide.b3": "On your turn, tap one of your 4 skills. Each button also shows what the skill does.\nBring your rival’s HP to 0 to win.\nTo stop, tap “🏳 Give Up” (it counts as a loss).\nIn solo battles, change the pace with “Battle Speed” at the top.",
+      "guide.b4": "In solo play you fight 5 random enemies in a row. Your HP is full again before each battle.\nWin all 5 to clear: you get a ★ badge and the next difficulty opens (7 in all).\nClear all 7 and “♾ Endless Chaos Battle” appears. It goes on until you lose.",
+      "guide.b5": "“🤝 2 Players (1 device)”: 1P and 2P make fighters in turn (“Confirm 1P ▶”, then “Start Battle ▶”) and take turns on one device.\n“📱 2 Devices (QR)”: you both make a fighter and tap “Next ▶”. Show your QR to your friend, then scan theirs with “📷 Scan friend's QR”.\nWhen you have both scanned, tap “▶ Start Battle”. You battle your friend’s fighter on your own device (the devices don’t connect to each other).",
+      "guide.b6": "Tap “💾 Save this character” while making a fighter to keep up to 20. Call them up with “📁 Saved characters” and tap “▶ Use”.\n“🎴 Your characters” on the title screen has “⚔ Pick & Battle” and “🔥 Saved 5-in-a-row”, plus the watch-only “🏆 Saved-Char Tournament” and “📊 Saved-Char Round Robin” (2 or more saved).",
+      "guide.b7": "Fighters, badges and settings stay only on this device and are never sent anywhere.\nTo move to another device, tap “Backup” under ⚙ and “Copy” the code. On the new device, paste it into “Restore” under ⚙ and tap “Restore”.\nTo give one fighter to a friend, tap 🎁 in the saved list. Your friend pastes the code into “🎁 Receive a fighter (from a code)” and taps “Add”.",
+      "guide.b8": "In “Settings” (⚙ at the bottom), set the “Sound” volume (far left is “Mute”) and switch “Effects” and “Vibration” “ON” or “OFF”.\nChoose the language with 🌐 at the bottom.\nYou can see this guide again at any time: “Settings”, then “How to play”, then “Show again”."
     },
     ar: {
       "backup.a_fighter": "مقاتل",
@@ -1464,7 +1524,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "يستعيد 30 HP كل دور ويمتص 20%",
       "inftitle.80.name": "أسطورة القتال",
       "inftitle.50.name": "سيّد القتال",
-      "inftitle.30.name": "مقاتل النخبة"
+      "inftitle.30.name": "مقاتل النخبة",
+      "guide.title": "طريقة اللعب",
+      "guide.prev": "◀ السابق",
+      "guide.start": "▶ لنلعب!",
+      "guide.again": "عرض مرة أخرى",
+      "guide.h1": "مرحبًا بك في DOT BATTLE VS",
+      "guide.h2": "أولًا، اصنع مقاتلك",
+      "guide.h3": "طريقة القتال",
+      "guide.h4": "5 انتصارات متتالية لاجتياز المستوى",
+      "guide.h5": "العب مع صديق (جهاز واحد أو جهازان)",
+      "guide.h6": "احفظ مقاتليك",
+      "guide.h7": "بياناتك تبقى في هذا الجهاز",
+      "guide.h8": "الصوت واللغة وهذا الدليل",
+      "guide.b1": "حوّل صورة إلى مقاتل بكسل بحجم 16×16 وقاتِل بالمهارات.\nتُعالَج الصور داخل هذا الجهاز فقط ولا تُرسَل إلى أي مكان.\nاختر اللغة من «اللغة / Language» في الأعلى. ويمكنك تغييرها لاحقًا من 🌐 في الأسفل.",
+      "guide.b2": "في شاشة البداية اضغط «🗡 لاعب واحد (5 معارك)» ثم اختر «سهل».\nالتقط صورة بـ«📷 كاميرا» أو اختر واحدة بـ«🖼 صورة» فيظهر مقاتلك.\nكمية الأحمر والأخضر والأزرق في الصورة تحدد «هجوم» و«دفاع» و«سرعة». أما المهارات الأربع والقدرتان فعشوائية.\nإن لم يعجبك فاضغط «↺ إعادة التصوير». وحين يعجبك اضغط «قاتل بهذا ▶».",
+      "guide.b3": "في دورك اضغط مهارة من مهاراتك الأربع. ويظهر شرح كل مهارة داخل زرها.\nأوصل نقاط HP لخصمك إلى 0 لتفوز.\nللتوقف اضغط «🏳 استسلام» (وتُحسب خسارة).\nفي معارك اللاعب الواحد غيّر السرعة من «سرعة المعركة» في الأعلى.",
+      "guide.b4": "في اللعب الفردي تقاتل 5 أعداء عشوائيين على التوالي، وتعود HP كاملة قبل كل معركة.\nاربح الخمس لتجتاز المستوى: تحصل على شارة ★ ويُفتح مستوى الصعوبة التالي (7 مستويات).\nإذا اجتزت المستويات السبعة تظهر «♾ معركة الفوضى اللانهائية»، وتستمر حتى تخسر.",
+      "guide.b5": "«🤝 لاعبان (جهاز واحد)»: يصنع 1P ثم 2P مقاتليهما («تأكيد 1P ▶» ثم «ابدأ المعركة ▶») ويتناوبان على جهاز واحد.\n«📱 جهازان (QR)»: يصنع كل منكما مقاتلًا ويضغط «التالي ▶». اعرض رمز QR الخاص بك على صديقك، ثم امسح رمزه بـ«📷 امسح QR صديقك».\nبعد أن يمسح كلاكما الرمز اضغط «▶ ابدأ القتال». تقاتل مقاتل صديقك على جهازك أنت (لا يتصل الجهازان ببعضهما).",
+      "guide.b6": "اضغط «💾 حفظ هذا المقاتل» أثناء الصنع لتحفظ حتى 20 مقاتلًا. استدعهم بـ«📁 من المحفوظين» ثم اضغط «▶ استخدام».\nفي شاشة البداية يقدّم «🎴 بشخصياتك أنت» خيارَي «⚔ اختر وقاتل» و«🔥 5 معارك بالمحفوظين»، ومعهما للمشاهدة فقط «🏆 بطولة الشخصيات المحفوظة» و«📊 دوري الشخصيات المحفوظة» (مع مقاتلَين محفوظَين أو أكثر).",
+      "guide.b7": "المقاتلون والشارات والإعدادات تبقى في هذا الجهاز فقط ولا تُرسَل إلى أي مكان.\nللانتقال إلى جهاز آخر: من ⚙ اضغط «نسخ احتياطي» ثم «نسخ» لنسخ الرمز. وفي الجهاز الجديد الصقه في «استعادة» من ⚙ ثم اضغط «استعادة».\nلإهداء مقاتل واحد لصديق اضغط 🎁 في قائمة المحفوظين. ويلصق صديقك الرمز في «🎁 استقبال مقاتل (برمز)» ثم يضغط «إضافة».",
+      "guide.b8": "من «الإعدادات» (⚙ في الأسفل) اضبط مستوى «الصوت» (أقصى اليسار «كتم»)، واجعل «المؤثرات» و«الاهتزاز» على «تشغيل» أو «إيقاف».\nاختر اللغة من 🌐 في الأسفل.\nيمكنك رؤية هذا الدليل مجددًا في أي وقت: «الإعدادات» ثم «طريقة اللعب» ثم «عرض مرة أخرى»."
     },
     bn: {
       "backup.a_fighter": "একজন যোদ্ধা",
@@ -1830,7 +1910,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "প্রতি টার্নে 30 HP + 20% শোষণ",
       "inftitle.80.name": "যুদ্ধ কিংবদন্তি",
       "inftitle.50.name": "ব্যাটল মাস্টার",
-      "inftitle.30.name": "এলিট যোদ্ধা"
+      "inftitle.30.name": "এলিট যোদ্ধা",
+      "guide.title": "কীভাবে খেলবে",
+      "guide.prev": "◀ আগের",
+      "guide.start": "▶ খেলা শুরু!",
+      "guide.again": "আবার দেখো",
+      "guide.h1": "DOT BATTLE VS-এ স্বাগতম",
+      "guide.h2": "প্রথমে যোদ্ধা বানাও",
+      "guide.h3": "কীভাবে লড়বে",
+      "guide.h4": "টানা 5টি জিতলে পার",
+      "guide.h5": "বন্ধুর সাথে খেলো (1টি বা 2টি ফোনে)",
+      "guide.h6": "যোদ্ধা সেভ করো",
+      "guide.h7": "তোমার ডেটা এই ফোনেই থাকে",
+      "guide.h8": "শব্দ, ভাষা আর এই নির্দেশিকা",
+      "guide.b1": "ছবিকে 16×16 পিক্সেল যোদ্ধা বানিয়ে কৌশল দিয়ে লড়ার খেলা।\nছবি শুধু এই ফোনের ভেতরেই হিসাব হয়, কোথাও পাঠানো হয় না।\nওপরের “ভাষা / Language” থেকে ভাষা বেছে নাও। পরে নিচের 🌐 দিয়েও বদলাতে পারবে।",
+      "guide.b2": "শুরুর পর্দায় “🗡 একা (5টি লড়াই)” চাপো, তারপর “সহজ” বেছে নাও।\n“📷 ক্যামেরা” দিয়ে ছবি তোলো বা “🖼 ছবি” দিয়ে বেছে নাও, তাহলেই পিক্সেল যোদ্ধা তৈরি।\nছবিতে লাল, সবুজ আর নীল কতটা আছে তা দিয়ে “আক্রমণ”, “রক্ষণ” আর “গতি” ঠিক হয়। 4টি কৌশল আর 2টি ক্ষমতা এলোমেলোভাবে আসে।\nপছন্দ না হলে “↺ আবার তোলো”। পছন্দ হলে “এটা দিয়ে লড়ো ▶”।",
+      "guide.b3": "তোমার পালা এলে 4টি কৌশলের একটি চাপো। প্রতিটি বোতামের ভেতরেই কৌশলের ব্যাখ্যা লেখা থাকে।\nপ্রতিপক্ষের HP 0 করলে তুমি জিতবে।\nথামতে চাইলে “🏳 হার মানি” চাপো (হার হিসেবে ধরা হবে)।\nএকা লড়াইয়ের সময় ওপরের “যুদ্ধের গতি” দিয়ে গতি বদলাতে পারো।",
+      "guide.b4": "একা খেললে পরপর 5 জন এলোমেলো শত্রুর সাথে লড়তে হয়। প্রতিটি লড়াইয়ের আগে HP আবার পুরো হয়ে যায়।\n5টিই জিতলে পার: ★ ব্যাজ পাবে আর পরের কঠিনতা খুলবে (মোট 7টি)।\n7টিই পার হলে “♾ অন্তহীন হুলুস্থুল ব্যাটল” আসে, হারা পর্যন্ত চলতেই থাকে।",
+      "guide.b5": "“🤝 দুজনে (1টি ফোনে)”: 1P আর 2P পালা করে যোদ্ধা বানায় (“1P চূড়ান্ত ▶”, তারপর “লড়াই শুরু ▶”), তারপর একটি ফোনে পালা করে লড়ে।\n“📱 2টি ফোনে (QR লড়াই)”: দুজনেই যোদ্ধা বানিয়ে “পরবর্তী ▶” চাপো। নিজের QR বন্ধুকে দেখাও, আর “📷 বন্ধুর QR পড়ো” দিয়ে বন্ধুরটা পড়ো।\nদুজনেরই পড়া হলে “▶ লড়াই শুরু” চাপো। নিজের ফোনেই বন্ধুর যোদ্ধার সাথে লড়বে (ফোন দুটো একে অপরের সাথে যোগাযোগ করে না)।",
+      "guide.b6": "বানানোর সময় “💾 এই যোদ্ধাকে সেভ করো” চাপলে 20 জন পর্যন্ত রাখা যায়। “📁 সেভ করা থেকে” দিয়ে ডেকে “▶ ব্যবহার” চাপো।\nশুরুর পর্দার “🎴 নিজের যোদ্ধা দিয়ে”-তে আছে “⚔ বেছে নিয়ে লড়ো” আর “🔥 সেভ যোদ্ধা 5 লড়াই”, আর শুধু দেখার জন্য “🏆 সেভ করা চরিত্রদের টুর্নামেন্ট” ও “📊 সেভ করা চরিত্রদের লিগ” (2 জন বা বেশি সেভ থাকলে)।",
+      "guide.b7": "যোদ্ধা, ব্যাজ আর সেটিংস শুধু এই ফোনে থাকে, কোথাও পাঠানো হয় না।\nঅন্য ফোনে নিতে ⚙-এর “ব্যাকআপ” চেপে কোডটা “কপি” করো। নতুন ফোনে ⚙-এর “ফিরিয়ে আনো”-তে কোডটা বসিয়ে আবার “ফিরিয়ে আনো” চাপো।\nএকজন যোদ্ধা বন্ধুকে দিতে সেভের তালিকায় 🎁 চাপো। বন্ধু কোডটা “🎁 যোদ্ধা নাও (কোড দিয়ে)”-তে বসিয়ে “যোগ করো” চাপবে।",
+      "guide.b8": "“সেটিংস” (নিচের ⚙)-এ “শব্দ”-এর মাত্রা ঠিক করো (একদম বাঁয়ে “মিউট”), আর “এফেক্ট” ও “কম্পন” “চালু” বা “বন্ধ” করো।\nভাষা বাছো নিচের 🌐 দিয়ে।\nএই নির্দেশিকা যেকোনো সময় আবার দেখা যায়: “সেটিংস”, তারপর “কীভাবে খেলবে”, তারপর “আবার দেখো”।"
     },
     de: {
       "backup.a_fighter": "Ein Kämpfer",
@@ -2196,7 +2296,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "+30 HP je Runde & saugt 20%",
       "inftitle.80.name": "KAMPFLEGENDE",
       "inftitle.50.name": "KAMPFMEISTER",
-      "inftitle.30.name": "ELITEKÄMPFER"
+      "inftitle.30.name": "ELITEKÄMPFER",
+      "guide.title": "So wird gespielt",
+      "guide.prev": "◀ Zurück",
+      "guide.start": "▶ Los geht’s!",
+      "guide.again": "Nochmal ansehen",
+      "guide.h1": "Willkommen bei DOT BATTLE VS",
+      "guide.h2": "Zuerst einen Kämpfer bauen",
+      "guide.h3": "So kämpfst du",
+      "guide.h4": "5 Siege in Folge",
+      "guide.h5": "Mit Freunden spielen (1 oder 2 Geräte)",
+      "guide.h6": "Kämpfer speichern",
+      "guide.h7": "Deine Daten bleiben auf dem Gerät",
+      "guide.h8": "Ton, Sprache und diese Anleitung",
+      "guide.b1": "Mach aus einem Foto oder Bild einen 16×16-Pixel-Kämpfer und kämpfe mit Attacken.\nBilder werden nur auf diesem Gerät verarbeitet und nirgendwohin gesendet.\nDie Sprache wählst du oben bei „Sprache / Language“. Später geht das auch mit 🌐 unten.",
+      "guide.b2": "Tippe auf dem Titelbildschirm auf „🗡 Allein (5 Kämpfe)“ und wähle „LEICHT“.\nMach mit „📷 Kamera“ ein Foto oder wähle eins mit „🖼 Bild“. Schon entsteht dein Pixel-Kämpfer.\nWie viel Rot, Grün und Blau im Bild ist, bestimmt „ANGRIFF“, „ABWEHR“ und „TEMPO“. Die 4 Attacken und 2 Kräfte sind Zufall.\nGefällt er dir nicht, tippe auf „↺ Neu aufnehmen“. Passt alles, tippe auf „Kämpfen! ▶“.",
+      "guide.b3": "Wenn du dran bist, tippe eine deiner 4 Attacken an. Jeder Knopf zeigt auch, was die Attacke macht.\nBringst du die HP des Gegners auf 0, gewinnst du.\nZum Aufhören tippe auf „🏳 Aufgeben“ (das zählt als Niederlage).\nIn Einzelkämpfen stellst du oben bei „Kampftempo“ die Geschwindigkeit ein.",
+      "guide.b4": "Allein kämpfst du nacheinander gegen 5 zufällige Gegner. Vor jedem Kampf sind deine HP wieder voll.\nGewinnst du alle 5, hast du es geschafft: Du bekommst ein ★-Abzeichen und die nächste Stufe öffnet sich (insgesamt 7).\nSchaffst du alle 7, erscheint „♾ Endlos-Chaos-Kampf“. Er geht weiter, bis du verlierst.",
+      "guide.b5": "„🤝 Zu zweit (1 Gerät)“: 1P und 2P bauen nacheinander einen Kämpfer („1P bestätigen ▶“, dann „Kampf starten ▶“) und wechseln sich an einem Gerät ab.\n„📱 2 Geräte (QR)“: Ihr baut beide einen Kämpfer und tippt auf „Weiter ▶“. Zeig deinen QR-Code, dann scanne den deines Freundes mit „📷 QR des Freundes scannen“.\nHabt ihr beide gescannt, tippe auf „▶ Kampf starten“. Du kämpfst auf deinem eigenen Gerät gegen den Kämpfer deines Freundes (die Geräte verbinden sich nicht miteinander).",
+      "guide.b6": "Mit „💾 Diesen Kämpfer speichern“ behältst du bis zu 20 Kämpfer. Hol sie mit „📁 Aus gespeicherten“ und tippe auf „▶ Nehmen“.\nUnter „🎴 Deine Kämpfer“ auf dem Titelbildschirm gibt es „⚔ Wählen & kämpfen“ und „🔥 5er-Serie (gespeichert)“, dazu zum Zuschauen „🏆 Charakter-Turnier“ und „📊 Rundenturnier der Charaktere“ (ab 2 gespeicherten).",
+      "guide.b7": "Kämpfer, Abzeichen und Einstellungen bleiben nur auf diesem Gerät und werden nirgendwohin gesendet.\nFür ein neues Gerät tippe unter ⚙ auf „Backup“ und dann auf „Kopieren“. Auf dem neuen Gerät fügst du den Code unter ⚙ bei „Wiederherstellen“ ein und tippst auf „Wiederherstellen“.\nUm einem Freund einen Kämpfer zu schenken, tippe in der Speicherliste auf 🎁. Dein Freund fügt den Code bei „🎁 Kämpfer erhalten (per Code)“ ein und tippt auf „Hinzufügen“.",
+      "guide.b8": "In den „Einstellungen“ (⚙ unten) stellst du bei „Ton“ die Lautstärke ein (ganz links „Stumm“) und schaltest „Effekte“ und „Vibration“ auf „AN“ oder „AUS“.\nDie Sprache wählst du mit 🌐 unten.\nDiese Anleitung siehst du jederzeit wieder: „Einstellungen“, dann „So wird gespielt“, dann „Nochmal ansehen“."
     },
     es: {
       "backup.a_fighter": "Un luchador",
@@ -2562,7 +2682,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "Regenera 30 HP y absorbe el 20%",
       "inftitle.80.name": "LEYENDA DEL COMBATE",
       "inftitle.50.name": "MAESTRO DEL COMBATE",
-      "inftitle.30.name": "LUCHADOR DE ÉLITE"
+      "inftitle.30.name": "LUCHADOR DE ÉLITE",
+      "guide.title": "Cómo se juega",
+      "guide.prev": "◀ Anterior",
+      "guide.start": "▶ ¡A jugar!",
+      "guide.again": "Ver otra vez",
+      "guide.h1": "Te damos la bienvenida a DOT BATTLE VS",
+      "guide.h2": "Primero, crea tu luchador",
+      "guide.h3": "Cómo combatir",
+      "guide.h4": "5 victorias seguidas",
+      "guide.h5": "Jugar con un amigo (1 o 2 dispositivos)",
+      "guide.h6": "Guarda tus luchadores",
+      "guide.h7": "Tus datos se quedan en este dispositivo",
+      "guide.h8": "Sonido, idioma y esta guía",
+      "guide.b1": "Convierte una foto o imagen en un luchador píxel de 16×16 y combate con técnicas.\nLas imágenes se procesan solo en este dispositivo y no se envían a ningún sitio.\nElige el idioma arriba en «Idioma / Language». Luego también puedes cambiarlo con 🌐 abajo.",
+      "guide.b2": "En la pantalla de inicio toca «🗡 Solo (5 seguidos)» y elige «FÁCIL».\nHaz una foto con «📷 Cámara» o elige una con «🖼 Foto» y aparecerá tu luchador píxel.\nLa cantidad de rojo, verde y azul de la imagen decide «ATAQUE», «DEFENSA» y «VELOCIDAD». Las 4 técnicas y los 2 poderes salen al azar.\nSi no te gusta, toca «↺ Repetir foto». Si te gusta, toca «¡A luchar! ▶».",
+      "guide.b3": "En tu turno, toca una de tus 4 técnicas. Cada botón muestra también lo que hace la técnica.\nSi dejas los HP del rival en 0, ganas.\nPara parar, toca «🏳 Rendirse» (cuenta como derrota).\nEn los combates en solitario puedes cambiar el ritmo arriba con «Velocidad de batalla».",
+      "guide.b4": "En solitario luchas contra 5 enemigos al azar, uno tras otro. Tus HP se recuperan del todo antes de cada combate.\nSi ganas los 5, lo superas: consigues una insignia ★ y se abre la siguiente dificultad (7 en total).\nSi superas las 7, aparece «♾ Batalla Caótica Infinita», que sigue hasta que pierdas.",
+      "guide.b5": "«🤝 2 jugadores (1 dispositivo)»: 1P y 2P crean su luchador por turnos («Confirmar 1P ▶» y luego «Empezar batalla ▶») y se turnan en un mismo dispositivo.\n«📱 2 dispositivos (QR)»: los dos crean un luchador y tocan «Siguiente ▶». Enseña tu QR a tu amigo y escanea el suyo con «📷 Escanear QR del amigo».\nCuando los dos terminen de escanear, toca «▶ Empezar batalla». Luchas contra el luchador de tu amigo en tu propio dispositivo (los dispositivos no se conectan entre sí).",
+      "guide.b6": "Toca «💾 Guardar este personaje» al crearlo para guardar hasta 20. Recupéralos con «📁 De los guardados» y toca «▶ Usar».\nEn la pantalla de inicio, «🎴 Tus personajes» ofrece «⚔ Elegir y luchar» y «🔥 5 seguidos (guardados)», y además, solo para mirar, «🏆 Torneo de personajes» y «📊 Liga de personajes» (con 2 o más guardados).",
+      "guide.b7": "Luchadores, insignias y ajustes se quedan solo en este dispositivo y no se envían a ningún sitio.\nPara pasar a otro dispositivo, toca «Copia» en ⚙ y luego «Copiar» para copiar el código. En el nuevo dispositivo, pégalo en «Restaurar» de ⚙ y toca «Restaurar».\nPara regalar un luchador a un amigo, toca 🎁 en la lista de guardados. Tu amigo pega el código en «🎁 Recibir un luchador (con código)» y toca «Añadir».",
+      "guide.b8": "En «Ajustes» (⚙ abajo) ajusta el volumen de «Sonido» (del todo a la izquierda es «Silencio») y pon «Efectos» y «Vibración» en «SÍ» o «NO».\nElige el idioma con 🌐 abajo.\nPuedes volver a ver esta guía cuando quieras: «Ajustes», luego «Cómo se juega» y luego «Ver otra vez»."
     },
     fr: {
       "backup.a_fighter": "Un combattant",
@@ -2928,7 +3068,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "Régénère 30 HP et absorbe 20%",
       "inftitle.80.name": "LÉGENDE DU COMBAT",
       "inftitle.50.name": "MAÎTRE DU COMBAT",
-      "inftitle.30.name": "COMBATTANT D'ÉLITE"
+      "inftitle.30.name": "COMBATTANT D'ÉLITE",
+      "guide.title": "Comment jouer",
+      "guide.prev": "◀ Précédent",
+      "guide.start": "▶ C’est parti !",
+      "guide.again": "Revoir",
+      "guide.h1": "Bienvenue dans DOT BATTLE VS",
+      "guide.h2": "D’abord, crée ton combattant",
+      "guide.h3": "Comment combattre",
+      "guide.h4": "5 victoires d’affilée",
+      "guide.h5": "Jouer avec un ami (1 ou 2 appareils)",
+      "guide.h6": "Sauvegarde tes combattants",
+      "guide.h7": "Tes données restent sur cet appareil",
+      "guide.h8": "Son, langue et ce guide",
+      "guide.b1": "Transforme une photo ou une image en combattant pixel de 16×16 et bats-toi avec des techniques.\nLes images sont traitées uniquement sur cet appareil et ne sont envoyées nulle part.\nChoisis la langue en haut avec « Langue / Language ». Tu pourras aussi la changer plus tard avec 🌐 en bas.",
+      "guide.b2": "Sur l’écran titre, touche « 🗡 Solo (5 combats) » puis choisis « FACILE ».\nPrends une photo avec « 📷 Caméra » ou choisis-en une avec « 🖼 Photo » : ton combattant pixel apparaît.\nLa quantité de rouge, de vert et de bleu de l’image décide « ATTAQUE », « DÉFENSE » et « VITESSE ». Les 4 techniques et les 2 pouvoirs sont tirés au hasard.\nS’il ne te plaît pas, touche « ↺ Reprendre ». S’il te plaît, touche « Au combat ! ▶ ».",
+      "guide.b3": "À ton tour, touche une de tes 4 techniques. Chaque bouton indique aussi ce que fait la technique.\nFais tomber les HP de l’adversaire à 0 pour gagner.\nPour arrêter, touche « 🏳 Abandon » (cela compte comme une défaite).\nEn combat solo, règle le rythme en haut avec « Vitesse de combat ».",
+      "guide.b4": "En solo, tu affrontes 5 ennemis au hasard à la suite. Tes HP reviennent au maximum avant chaque combat.\nGagne les 5 pour réussir : tu obtiens un badge ★ et la difficulté suivante s’ouvre (7 en tout).\nSi tu réussis les 7, « ♾ Combat Chaos Infini » apparaît : il continue jusqu’à ta défaite.",
+      "guide.b5": "« 🤝 À deux (1 appareil) » : 1P puis 2P créent leur combattant (« Valider 1P ▶ » puis « Lancer le combat ▶ ») et jouent à tour de rôle sur un seul appareil.\n« 📱 2 appareils (QR) » : chacun crée un combattant et touche « Suivant ▶ ». Montre ton QR à ton ami, puis scanne le sien avec « 📷 Scanner le QR de l'ami ».\nQuand vous avez scanné tous les deux, touche « ▶ Lancer le combat ». Tu affrontes le combattant de ton ami sur ton propre appareil (les appareils ne se connectent pas entre eux).",
+      "guide.b6": "Touche « 💾 Sauver ce perso » pendant la création pour en garder jusqu’à 20. Rappelle-les avec « 📁 Depuis les sauvés » puis touche « ▶ Utiliser ».\nSur l’écran titre, « 🎴 Tes persos » propose « ⚔ Choisir et combattre » et « 🔥 Série de 5 (sauvés) », ainsi que, à regarder seulement, « 🏆 Tournoi des personnages » et « 📊 Championnat des personnages » (à partir de 2 sauvés).",
+      "guide.b7": "Combattants, badges et réglages restent uniquement sur cet appareil et ne sont envoyés nulle part.\nPour changer d’appareil, touche « Sauvegarde » dans ⚙, puis « Copier » pour copier le code. Sur le nouvel appareil, colle-le dans « Restaurer » de ⚙ et touche « Restaurer ».\nPour offrir un combattant à un ami, touche 🎁 dans la liste des sauvés. Ton ami colle le code dans « 🎁 Recevoir un combattant (par code) » et touche « Ajouter ».",
+      "guide.b8": "Dans « Réglages » (⚙ en bas), règle le volume du « Son » (tout à gauche : « Muet ») et mets « Effets » et « Vibrations » sur « OUI » ou « NON ».\nChoisis la langue avec 🌐 en bas.\nTu peux revoir ce guide à tout moment : « Réglages », puis « Comment jouer », puis « Revoir »."
     },
     hi: {
       "backup.a_fighter": "एक योद्धा",
@@ -3294,7 +3454,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "हर टर्न 30 HP + 20% सोखता",
       "inftitle.80.name": "बैटल लीजेंड",
       "inftitle.50.name": "बैटल मास्टर",
-      "inftitle.30.name": "एलीट योद्धा"
+      "inftitle.30.name": "एलीट योद्धा",
+      "guide.title": "कैसे खेलें",
+      "guide.prev": "◀ पिछला",
+      "guide.start": "▶ चलो खेलें!",
+      "guide.again": "फिर से देखो",
+      "guide.h1": "DOT BATTLE VS में स्वागत है",
+      "guide.h2": "पहले योद्धा बनाओ",
+      "guide.h3": "कैसे लड़ें",
+      "guide.h4": "लगातार 5 जीत",
+      "guide.h5": "दोस्त के साथ खेलो (1 या 2 फ़ोन)",
+      "guide.h6": "योद्धा सेव करो",
+      "guide.h7": "तुम्हारा डेटा इसी फ़ोन में रहता है",
+      "guide.h8": "आवाज़, भाषा और यह गाइड",
+      "guide.b1": "फोटो या तस्वीर को 16×16 पिक्सेल योद्धा बनाकर दांवों से लड़ने वाला खेल।\nतस्वीरें सिर्फ़ इसी फ़ोन में प्रोसेस होती हैं, कहीं भेजी नहीं जातीं।\nऊपर “भाषा / Language” से भाषा चुनो। बाद में नीचे 🌐 से भी बदल सकते हो।",
+      "guide.b2": "शुरुआती स्क्रीन पर “🗡 अकेले (5 मुक़ाबले)” दबाओ और “आसान” चुनो।\n“📷 कैमरा” से फोटो लो या “🖼 फोटो” से चुनो, तुम्हारा पिक्सेल योद्धा बन जाएगा।\nतस्वीर में लाल, हरा और नीला कितना है, उससे “हमला”, “बचाव” और “रफ़्तार” तय होते हैं। 4 दांव और 2 शक्तियाँ बेतरतीब मिलती हैं।\nपसंद न आए तो “↺ फिर से लो”। पसंद आए तो “इसी से लड़ो ▶”।",
+      "guide.b3": "अपनी बारी पर अपने 4 दांवों में से एक दबाओ। हर बटन में उस दांव की जानकारी भी लिखी होती है।\nविरोधी का HP 0 कर दो तो तुम जीते।\nरुकना हो तो “🏳 हार मानो” दबाओ (इसे हार गिना जाएगा)।\nअकेले की लड़ाई में ऊपर “युद्ध की गति” से रफ़्तार बदल सकते हो।",
+      "guide.b4": "अकेले खेलने पर 5 बेतरतीब दुश्मनों से एक के बाद एक लड़ना होता है। हर लड़ाई से पहले HP फिर पूरा हो जाता है।\nपाँचों जीतो तो पार: ★ बैज मिलेगा और अगली कठिनाई खुलेगी (कुल 7)।\nसातों पार करो तो “♾ अनंत धमाल बैटल” आती है, जो हारने तक चलती रहती है।",
+      "guide.b5": "“🤝 दो खिलाड़ी (1 फ़ोन)”: 1P और 2P बारी से योद्धा बनाते हैं (“1P पक्का ▶” फिर “बैटल शुरू ▶”) और एक ही फ़ोन पर बारी से लड़ते हैं।\n“📱 2 फ़ोन (QR मुक़ाबला)”: दोनों योद्धा बनाकर “आगे ▶” दबाओ। अपना QR दोस्त को दिखाओ, फिर “📷 दोस्त का QR पढ़ो” से उसका QR पढ़ो।\nदोनों के पढ़ लेने पर “▶ लड़ाई शुरू” दबाओ। तुम अपने ही फ़ोन पर दोस्त के योद्धा से लड़ोगे (फ़ोन आपस में जुड़ते नहीं)।",
+      "guide.b6": "बनाते समय “💾 यह कैरेक्टर सेव करो” से 20 तक योद्धा रख सकते हो। “📁 सेव किए में से” से बुलाकर “▶ इस्तेमाल” दबाओ।\nशुरुआती स्क्रीन के “🎴 अपने कैरेक्टर से” में “⚔ चुनो और लड़ो” और “🔥 सेव योद्धा 5 मुक़ाबले” हैं, और सिर्फ़ देखने के लिए “🏆 सेव किरदारों का टूर्नामेंट” और “📊 सेव किरदारों की लीग” (2 या ज़्यादा सेव हों तो)।",
+      "guide.b7": "योद्धा, बैज और सेटिंग सिर्फ़ इसी फ़ोन में रहते हैं, कहीं भेजे नहीं जाते।\nदूसरे फ़ोन पर ले जाने के लिए ⚙ में “बैकअप” दबाकर कोड “कॉपी” करो। नए फ़ोन में ⚙ के “वापस लाओ” में कोड चिपकाकर फिर “वापस लाओ” दबाओ।\nएक योद्धा दोस्त को देने के लिए सेव सूची में 🎁 दबाओ। दोस्त कोड को “🎁 योद्धा पाओ (कोड से)” में चिपकाकर “जोड़ो” दबाए।",
+      "guide.b8": "“सेटिंग” (नीचे ⚙) में “आवाज़” का स्तर बदलो (एकदम बाईं ओर “म्यूट”), और “इफ़ेक्ट” व “कंपन” को “चालू” या “बंद” करो।\nभाषा नीचे 🌐 से चुनो।\nयह गाइड कभी भी फिर देख सकते हो: “सेटिंग”, फिर “कैसे खेलें”, फिर “फिर से देखो”।"
     },
     id: {
       "backup.a_fighter": "Seorang petarung",
@@ -3660,7 +3840,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "Pulih 30 HP tiap giliran & serap 20%",
       "inftitle.80.name": "LEGENDA BATTLE",
       "inftitle.50.name": "MASTER BATTLE",
-      "inftitle.30.name": "PETARUNG ELIT"
+      "inftitle.30.name": "PETARUNG ELIT",
+      "guide.title": "Cara bermain",
+      "guide.prev": "◀ Sebelumnya",
+      "guide.start": "▶ Ayo main!",
+      "guide.again": "Lihat lagi",
+      "guide.h1": "Selamat datang di DOT BATTLE VS",
+      "guide.h2": "Pertama, buat petarung",
+      "guide.h3": "Cara bertarung",
+      "guide.h4": "Menang 5 kali beruntun",
+      "guide.h5": "Main dengan teman (1 atau 2 perangkat)",
+      "guide.h6": "Simpan petarungmu",
+      "guide.h7": "Datamu tetap di perangkat ini",
+      "guide.h8": "Suara, bahasa, dan panduan ini",
+      "guide.b1": "Ubah foto atau gambar jadi petarung piksel 16×16, lalu bertarung dengan jurus.\nGambar hanya diproses di perangkat ini dan tidak dikirim ke mana pun.\nPilih bahasa di atas lewat “Bahasa / Language”. Nanti juga bisa diganti dengan 🌐 di bawah.",
+      "guide.b2": "Di layar judul, ketuk “🗡 Sendiri (5 beruntun)” lalu pilih “MUDAH”.\nAmbil foto dengan “📷 Kamera” atau pilih dengan “🖼 Foto”, dan petarung pikselmu jadi.\nBanyaknya merah, hijau, dan biru di gambar menentukan “SERANGAN”, “PERTAHANAN”, dan “KECEPATAN”. 4 jurus dan 2 kekuatan didapat secara acak.\nKalau kurang suka, ketuk “↺ Ulangi foto”. Kalau sudah suka, ketuk “Bertarung! ▶”.",
+      "guide.b3": "Saat giliranmu, ketuk salah satu dari 4 jurus. Setiap tombol juga menampilkan penjelasan jurusnya.\nBuat HP lawan jadi 0 untuk menang.\nUntuk berhenti, ketuk “🏳 Menyerah” (dihitung kalah).\nDi pertarungan sendiri, atur kecepatannya di atas lewat “Kecepatan pertarungan”.",
+      "guide.b4": "Main sendiri berarti melawan 5 musuh acak berturut-turut. HP-mu pulih penuh sebelum tiap pertarungan.\nMenang 5 kali berarti lulus: kamu dapat lencana ★ dan tingkat berikutnya terbuka (total 7).\nKalau ketujuhnya lulus, muncul “♾ Battle Kacau Tanpa Akhir” yang terus berlanjut sampai kamu kalah.",
+      "guide.b5": "“🤝 Berdua (1 perangkat)”: 1P lalu 2P membuat petarung (“Konfirmasi 1P ▶” lalu “Mulai Bertarung ▶”) dan bergantian di satu perangkat.\n“📱 2 perangkat (QR)”: kalian berdua membuat petarung dan mengetuk “Lanjut ▶”. Tunjukkan QR-mu ke teman, lalu pindai QR-nya dengan “📷 Pindai QR teman”.\nSetelah keduanya selesai memindai, ketuk “▶ Mulai bertarung”. Kamu melawan petarung temanmu di perangkatmu sendiri (perangkat tidak saling terhubung).",
+      "guide.b6": "Ketuk “💾 Simpan karakter ini” saat membuat petarung untuk menyimpan sampai 20. Panggil lagi dengan “📁 Dari tersimpan” lalu ketuk “▶ Pakai”.\nDi layar judul, “🎴 Pakai karaktermu” berisi “⚔ Pilih & bertarung” dan “🔥 5 beruntun (tersimpan)”, juga mode tonton saja “🏆 Turnamen karakter tersimpan” dan “📊 Liga karakter tersimpan” (minimal 2 tersimpan).",
+      "guide.b7": "Petarung, lencana, dan pengaturan hanya ada di perangkat ini dan tidak dikirim ke mana pun.\nUntuk pindah perangkat, ketuk “Cadangkan” di ⚙ lalu “Salin” untuk menyalin kodenya. Di perangkat baru, tempel di “Pulihkan” pada ⚙ lalu ketuk “Pulihkan”.\nUntuk memberi satu petarung ke teman, ketuk 🎁 di daftar tersimpan. Temanmu menempel kodenya di “🎁 Terima petarung (dari kode)” lalu mengetuk “Tambahkan”.",
+      "guide.b8": "Di “Pengaturan” (⚙ di bawah), atur volume “Suara” (paling kiri “Bisu”) dan ubah “Efek” serta “Getaran” ke “NYALA” atau “MATI”.\nPilih bahasa dengan 🌐 di bawah.\nPanduan ini bisa dilihat lagi kapan saja: “Pengaturan”, lalu “Cara bermain”, lalu “Lihat lagi”."
     },
     it: {
       "backup.a_fighter": "Un combattente",
@@ -4026,7 +4226,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "Rigenera 30 HP e assorbe il 20%",
       "inftitle.80.name": "LEGGENDA DELLA BATTAGLIA",
       "inftitle.50.name": "MAESTRO DI BATTAGLIA",
-      "inftitle.30.name": "COMBATTENTE D'ÉLITE"
+      "inftitle.30.name": "COMBATTENTE D'ÉLITE",
+      "guide.title": "Come si gioca",
+      "guide.prev": "◀ Indietro",
+      "guide.start": "▶ Si gioca!",
+      "guide.again": "Rivedi",
+      "guide.h1": "Ti diamo il benvenuto in DOT BATTLE VS",
+      "guide.h2": "Prima crea il tuo guerriero",
+      "guide.h3": "Come combattere",
+      "guide.h4": "5 vittorie di fila",
+      "guide.h5": "Giocare con un amico (1 o 2 dispositivi)",
+      "guide.h6": "Salva i tuoi guerrieri",
+      "guide.h7": "I tuoi dati restano su questo dispositivo",
+      "guide.h8": "Audio, lingua e questa guida",
+      "guide.b1": "Trasforma una foto o un’immagine in un guerriero pixel 16×16 e combatti con le tecniche.\nLe immagini vengono elaborate solo su questo dispositivo e non vengono inviate da nessuna parte.\nScegli la lingua qui sopra con «Lingua / Language». Più tardi puoi cambiarla anche con 🌐 in basso.",
+      "guide.b2": "Nella schermata del titolo tocca «🗡 Da solo (5 di fila)» e scegli «FACILE».\nScatta una foto con «📷 Fotocamera» o scegline una con «🖼 Foto»: ecco il tuo guerriero pixel.\nQuanto rosso, verde e blu c’è nell’immagine decide «ATTACCO», «DIFESA» e «VELOCITÀ». Le 4 tecniche e i 2 poteri sono casuali.\nSe non ti piace, tocca «↺ Rifai la foto». Se ti piace, tocca «Combatti! ▶».",
+      "guide.b3": "Al tuo turno tocca una delle tue 4 tecniche. Ogni pulsante mostra anche cosa fa la tecnica.\nPorta a 0 gli HP dell’avversario per vincere.\nPer smettere tocca «🏳 Resa» (conta come sconfitta).\nNelle battaglie da solo puoi cambiare il ritmo in alto con «Velocità di battaglia».",
+      "guide.b4": "Da solo affronti 5 nemici casuali uno dopo l’altro. I tuoi HP tornano pieni prima di ogni battaglia.\nVinci tutte e 5 per superare il livello: ottieni una medaglia ★ e si apre la difficoltà successiva (7 in tutto).\nSe le superi tutte e 7, appare «♾ Battaglia Caos Infinita», che continua finché non perdi.",
+      "guide.b5": "«🤝 In due (1 dispositivo)»: 1P e poi 2P creano il proprio guerriero («Conferma 1P ▶» e poi «Inizia battaglia ▶») e fanno a turno sullo stesso dispositivo.\n«📱 2 dispositivi (QR)»: entrambi create un guerriero e toccate «Avanti ▶». Mostra il tuo QR all’amico, poi scansiona il suo con «📷 Scansiona il QR dell'amico».\nQuando avete scansionato entrambi, tocca «▶ Inizia la battaglia». Combatti contro il guerriero del tuo amico sul tuo dispositivo (i dispositivi non si collegano tra loro).",
+      "guide.b6": "Tocca «💾 Salva questo personaggio» durante la creazione per tenerne fino a 20. Richiamali con «📁 Dai salvati» e tocca «▶ Usa».\nNella schermata del titolo, «🎴 I tuoi personaggi» offre «⚔ Scegli e combatti» e «🔥 5 di fila (salvati)», più, solo da guardare, «🏆 Torneo dei personaggi» e «📊 Girone dei personaggi» (con almeno 2 salvati).",
+      "guide.b7": "Guerrieri, medaglie e impostazioni restano solo su questo dispositivo e non vengono inviati da nessuna parte.\nPer passare a un altro dispositivo, tocca «Backup» in ⚙ e poi «Copia» per copiare il codice. Sul nuovo dispositivo incollalo in «Ripristina» di ⚙ e tocca «Ripristina».\nPer regalare un guerriero a un amico, tocca 🎁 nell’elenco dei salvati. L’amico incolla il codice in «🎁 Ricevi un combattente (da codice)» e tocca «Aggiungi».",
+      "guide.b8": "In «Impostazioni» (⚙ in basso) regola il volume di «Audio» (tutto a sinistra è «Muto») e metti «Effetti» e «Vibrazione» su «SÌ» o «NO».\nScegli la lingua con 🌐 in basso.\nPuoi rivedere questa guida quando vuoi: «Impostazioni», poi «Come si gioca», poi «Rivedi»."
     },
     ko: {
       "backup.a_fighter": "전사",
@@ -4392,7 +4612,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "매턴 HP30 회복 + 20% 흡수",
       "inftitle.80.name": "배틀 레전드",
       "inftitle.50.name": "배틀 마스터",
-      "inftitle.30.name": "엘리트 배틀러"
+      "inftitle.30.name": "엘리트 배틀러",
+      "guide.title": "노는 법",
+      "guide.prev": "◀ 이전",
+      "guide.start": "▶ 놀자!",
+      "guide.again": "다시 보기",
+      "guide.h1": "DOT BATTLE VS에 온 걸 환영해",
+      "guide.h2": "먼저 캐릭터를 만들자",
+      "guide.h3": "싸우는 법",
+      "guide.h4": "5연승하면 클리어",
+      "guide.h5": "친구와 놀기 (한 대 또는 두 대)",
+      "guide.h6": "캐릭터 저장하기",
+      "guide.h7": "데이터는 이 기기 안에만",
+      "guide.h8": "소리·언어·이 안내",
+      "guide.b1": "사진이나 이미지를 16×16 도트 전사로 바꿔서 기술로 싸우는 게임이야.\n이미지는 이 기기 안에서만 계산하고 어디에도 보내지 않아.\n언어는 위의 “언어 / Language”에서 고를 수 있어. 나중에 아래 🌐로도 바꿀 수 있어.",
+      "guide.b2": "타이틀에서 “🗡 혼자서(5연전)”을 누르고 “쉬움”을 골라.\n“📷 카메라”로 사진을 찍거나 “🖼 사진”으로 고르면 도트 전사가 완성돼.\n이미지에 빨강·초록·파랑이 얼마나 있는지로 “공격” “방어” “속도”가 정해져. 기술 4개와 능력 2개는 랜덤이야.\n마음에 안 들면 “↺ 다시 찍기”. 마음에 들면 “이걸로 싸운다 ▶”.",
+      "guide.b3": "내 차례가 되면 기술 4개 중 하나를 눌러. 버튼 안에 기술 설명도 나와.\n상대의 HP를 0으로 만들면 이겨.\n그만두고 싶으면 “🏳 항복”을 눌러(지는 걸로 처리돼).\n혼자서 하는 배틀에서는 위의 “배틀 속도”로 빠르기를 바꿀 수 있어.",
+      "guide.b4": "혼자서 하면 랜덤한 적 5명과 연달아 싸워. HP는 배틀마다 다시 가득 차.\n5번 다 이기면 클리어! ★ 배지를 받고 다음 난이도가 열려(모두 7개).\n7개를 다 클리어하면 “♾ 무한 엉망진창 배틀”이 나타나. 질 때까지 계속되는 도전 모드야.",
+      "guide.b5": "“🤝 둘이서(한 대로)”는 1P와 2P가 차례로 캐릭터를 만들고(“1P 확정 ▶” 다음 “대전 스타트 ▶”) 한 대를 번갈아 쓰며 싸워.\n“📱 두 대로(QR 대전)”는 둘 다 캐릭터를 만들고 “다음 ▶”을 눌러. 내 QR을 친구에게 보여 주고, “📷 상대의 QR 읽기”로 친구의 QR을 찍어.\n둘 다 읽었으면 “▶ 배틀 스타트”. 내 기기에서 친구의 캐릭터와 싸워(기기끼리 통신은 안 해).",
+      "guide.b6": "만들 때 “💾 이 캐릭터 저장”으로 20명까지 남길 수 있어. “📁 저장한 캐릭터에서”로 불러와서 “▶ 사용”.\n타이틀의 “🎴 내 캐릭터로”에서는 “⚔ 골라서 대전”, “🔥 저장 캐릭터 5연전”, 그리고 보기만 하는 “🏆 저장 캐릭터 토너먼트”와 “📊 저장 캐릭터 리그전”(2명 이상)을 할 수 있어.",
+      "guide.b7": "캐릭터·배지·설정은 이 기기 안에만 남고 어디에도 보내지 않아.\n기기를 바꿀 때는 ⚙의 “백업”에서 나온 코드를 “복사”해. 새 기기에서 ⚙의 “복원”에 붙여 넣고 “복원하기”.\n캐릭터 하나만 친구에게 줄 때는 저장 목록의 🎁. 받는 쪽은 “🎁 전사 받기(코드로)”에 붙여 넣고 “추가하기”.",
+      "guide.b8": "“설정”(아래 ⚙)에서 “소리” 크기(맨 왼쪽은 “음소거”)와 “이펙트” “진동”의 “켬” “끔”을 바꿀 수 있어.\n언어는 아래 🌐에서 골라.\n이 안내는 언제든 다시 볼 수 있어: “설정”, 다음 “노는 법”, 다음 “다시 보기”."
     },
     pt: {
       "backup.a_fighter": "Um lutador",
@@ -4758,7 +4998,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "Regenera 30 HP e absorve 20%",
       "inftitle.80.name": "LENDA DA BATALHA",
       "inftitle.50.name": "MESTRE DA BATALHA",
-      "inftitle.30.name": "LUTADOR DE ELITE"
+      "inftitle.30.name": "LUTADOR DE ELITE",
+      "guide.title": "Como jogar",
+      "guide.prev": "◀ Anterior",
+      "guide.start": "▶ Vamos jogar!",
+      "guide.again": "Ver de novo",
+      "guide.h1": "Boas-vindas ao DOT BATTLE VS",
+      "guide.h2": "Primeiro, crie seu lutador",
+      "guide.h3": "Como lutar",
+      "guide.h4": "5 vitórias seguidas",
+      "guide.h5": "Jogar com um amigo (1 ou 2 aparelhos)",
+      "guide.h6": "Salve seus lutadores",
+      "guide.h7": "Seus dados ficam neste aparelho",
+      "guide.h8": "Som, idioma e este guia",
+      "guide.b1": "Transforme uma foto ou imagem em um lutador de pixel 16×16 e batalhe com golpes.\nAs imagens são processadas só neste aparelho e não são enviadas para lugar nenhum.\nEscolha o idioma acima em “Idioma / Language”. Depois também dá para trocar com 🌐 embaixo.",
+      "guide.b2": "Na tela de título, toque em “🗡 Sozinho (5 seguidas)” e escolha “FÁCIL”.\nTire uma foto com “📷 Câmera” ou escolha uma com “🖼 Foto”, e seu lutador de pixel aparece.\nA quantidade de vermelho, verde e azul da imagem decide “ATAQUE”, “DEFESA” e “VELOCIDADE”. Os 4 golpes e os 2 poderes são sorteados.\nSe não gostar, toque em “↺ Tirar de novo”. Se gostar, toque em “Lutar! ▶”.",
+      "guide.b3": "Na sua vez, toque em um dos seus 4 golpes. Cada botão também mostra o que o golpe faz.\nDeixe o HP do rival em 0 para vencer.\nPara parar, toque em “🏳 Desistir” (conta como derrota).\nNas batalhas sozinho, mude o ritmo lá em cima com “Velocidade de batalha”.",
+      "guide.b4": "Sozinho, você enfrenta 5 inimigos sorteados, um após o outro. Seu HP volta ao máximo antes de cada batalha.\nVença as 5 para passar: você ganha um emblema ★ e a próxima dificuldade é liberada (7 no total).\nSe passar as 7, aparece “♾ Batalha Caótica Infinita”, que continua até você perder.",
+      "guide.b5": "“🤝 2 jogadores (1 aparelho)”: 1P e depois 2P criam seus lutadores (“Confirmar 1P ▶” e depois “Começar batalha ▶”) e revezam no mesmo aparelho.\n“📱 2 aparelhos (QR)”: os dois criam um lutador e tocam em “Avançar ▶”. Mostre seu QR ao amigo e escaneie o dele com “📷 Escanear QR do amigo”.\nQuando os dois tiverem escaneado, toque em “▶ Começar batalha”. Você luta contra o lutador do amigo no seu próprio aparelho (os aparelhos não se conectam entre si).",
+      "guide.b6": "Toque em “💾 Salvar este personagem” ao criar para guardar até 20. Chame-os com “📁 Dos salvos” e toque em “▶ Usar”.\nNa tela de título, “🎴 Seus personagens” oferece “⚔ Escolher e lutar” e “🔥 5 seguidas (salvos)”, além de, só para assistir, “🏆 Torneio dos personagens” e “📊 Liga dos personagens” (com 2 ou mais salvos).",
+      "guide.b7": "Lutadores, emblemas e ajustes ficam só neste aparelho e não são enviados para lugar nenhum.\nPara trocar de aparelho, toque em “Backup” em ⚙ e depois em “Copiar” para copiar o código. No aparelho novo, cole em “Restaurar” de ⚙ e toque em “Restaurar”.\nPara dar um lutador a um amigo, toque em 🎁 na lista de salvos. O amigo cola o código em “🎁 Receber um lutador (por código)” e toca em “Adicionar”.",
+      "guide.b8": "Em “Ajustes” (⚙ embaixo), ajuste o volume do “Som” (bem à esquerda fica “Mudo”) e deixe “Efeitos” e “Vibração” em “SIM” ou “NÃO”.\nEscolha o idioma com 🌐 embaixo.\nVocê pode ver este guia de novo quando quiser: “Ajustes”, depois “Como jogar”, depois “Ver de novo”."
     },
     ru: {
       "backup.a_fighter": "Боец",
@@ -5124,7 +5384,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "+30 HP каждый ход и поглощает 20%",
       "inftitle.80.name": "ЛЕГЕНДА БИТВ",
       "inftitle.50.name": "МАСТЕР БИТВ",
-      "inftitle.30.name": "ЭЛИТНЫЙ БОЕЦ"
+      "inftitle.30.name": "ЭЛИТНЫЙ БОЕЦ",
+      "guide.title": "Как играть",
+      "guide.prev": "◀ Назад",
+      "guide.start": "▶ Играем!",
+      "guide.again": "Показать снова",
+      "guide.h1": "Добро пожаловать в DOT BATTLE VS",
+      "guide.h2": "Сначала создай бойца",
+      "guide.h3": "Как сражаться",
+      "guide.h4": "5 побед подряд",
+      "guide.h5": "Играть с другом (1 или 2 устройства)",
+      "guide.h6": "Сохраняй бойцов",
+      "guide.h7": "Данные остаются на этом устройстве",
+      "guide.h8": "Звук, язык и эта подсказка",
+      "guide.b1": "Преврати фото или картинку в пиксельного бойца 16×16 и сражайся приёмами.\nКартинки обрабатываются только на этом устройстве и никуда не отправляются.\nЯзык можно выбрать выше в «Язык / Language». Позже его можно сменить кнопкой 🌐 внизу.",
+      "guide.b2": "На титульном экране нажми «🗡 Одному (5 подряд)» и выбери «ЛЕГКО».\nСними фото кнопкой «📷 Камера» или выбери картинку кнопкой «🖼 Фото», и появится твой пиксельный боец.\nСколько на картинке красного, зелёного и синего, решает «АТАКА», «ЗАЩИТА» и «СКОРОСТЬ». 4 приёма и 2 способности выпадают случайно.\nЕсли не нравится, нажми «↺ Переснять». Если нравится, нажми «В бой! ▶».",
+      "guide.b3": "В свой ход нажми один из 4 приёмов. На каждой кнопке также написано, что делает приём.\nДоведи HP соперника до 0, чтобы победить.\nЧтобы прекратить, нажми «🏳 Сдаться» (это засчитывается как поражение).\nВ одиночных боях темп меняется вверху, в строке «Скорость боя».",
+      "guide.b4": "В одиночной игре ты сражаешься с 5 случайными врагами подряд. Перед каждым боем HP восстанавливается полностью.\nПобеди всех 5, чтобы пройти: получишь значок ★, и откроется следующая сложность (всего 7).\nЕсли пройдёшь все 7, появится «♾ Бесконечный хаос-батл»: он идёт, пока ты не проиграешь.",
+      "guide.b5": "«🤝 Вдвоём (1 устройство)»: 1P, потом 2P создают бойцов («Готово 1P ▶», затем «Начать бой ▶») и ходят по очереди на одном устройстве.\n«📱 2 устройства (QR)»: оба создают бойца и нажимают «Дальше ▶». Покажи свой QR другу и отсканируй его QR кнопкой «📷 Сканировать QR друга».\nКогда оба отсканировали, нажми «▶ Начать бой». Ты сражаешься с бойцом друга на своём устройстве (устройства не связываются между собой).",
+      "guide.b6": "Кнопкой «💾 Сохранить этого бойца» можно хранить до 20 бойцов. Вызови их через «📁 Из сохранённых» и нажми «▶ Взять».\nНа титульном экране в «🎴 Свои бойцы» есть «⚔ Выбрать и в бой» и «🔥 5 подряд (сохранённые)», а также только для просмотра «🏆 Турнир персонажей» и «📊 Круговой турнир персонажей» (от 2 сохранённых).",
+      "guide.b7": "Бойцы, значки и настройки хранятся только на этом устройстве и никуда не отправляются.\nЧтобы перейти на другое устройство, нажми «Копия» в ⚙ и скопируй код кнопкой «Копировать». На новом устройстве вставь его в «Восстановить» в ⚙ и нажми «Восстановить».\nЧтобы подарить одного бойца другу, нажми 🎁 в списке сохранённых. Друг вставляет код в «🎁 Получить бойца (по коду)» и нажимает «Добавить».",
+      "guide.b8": "В разделе «Настройки» (⚙ внизу) настрой громкость «Звук» (крайнее левое положение: «Без звука») и переключай «Эффекты» и «Вибрация» на «ВКЛ» или «ВЫКЛ».\nЯзык выбирается кнопкой 🌐 внизу.\nЭту подсказку можно открыть снова в любой момент: «Настройки», затем «Как играть», затем «Показать снова»."
     },
     zh: {
       "backup.a_fighter": "战士",
@@ -5490,7 +5770,27 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.29.name": "每回合恢复30HP并吸收20%",
       "inftitle.80.name": "战斗传奇",
       "inftitle.50.name": "战斗大师",
-      "inftitle.30.name": "精英战士"
+      "inftitle.30.name": "精英战士",
+      "guide.title": "玩法",
+      "guide.prev": "◀ 上一页",
+      "guide.start": "▶ 开始玩！",
+      "guide.again": "再看一次",
+      "guide.h1": "欢迎来到 DOT BATTLE VS",
+      "guide.h2": "先做一个战士",
+      "guide.h3": "怎么战斗",
+      "guide.h4": "5连胜就过关",
+      "guide.h5": "和朋友一起玩（1台或2台设备）",
+      "guide.h6": "保存战士",
+      "guide.h7": "数据只留在这台设备",
+      "guide.h8": "声音、语言和本说明",
+      "guide.b1": "把照片或图片变成16×16的像素战士，用招式来战斗。\n图片只在这台设备里处理，不会发送到任何地方。\n在上方的“语言 / Language”选择语言。之后也可以用下方的 🌐 更改。",
+      "guide.b2": "在标题画面点“🗡 单人（5连战）”，再选“简单”。\n用“📷 相机”拍照，或用“🖼 图片”选一张，就会变成像素战士。\n图片里红、绿、蓝的多少决定“攻击”“防御”“速度”。4个招式和2个能力是随机的。\n不满意就点“↺ 重拍”。满意了就点“就用这个战斗 ▶”。",
+      "guide.b3": "轮到你时，从4个招式里点一个。每个按钮上也会显示招式的说明。\n把对手的HP打到0就赢了。\n想停下来就点“🏳 认输”（算作输）。\n单人战斗时，可以在上方的“战斗速度”调整快慢。",
+      "guide.b4": "单人模式要连续和5个随机敌人战斗。每场战斗前HP都会回满。\n5场全胜就过关：获得★徽章，并解锁下一个难度（共7个）。\n7个难度全部过关后会出现“♾ 无限混乱大乱斗”，一直打到输为止。",
+      "guide.b5": "“🤝 双人（1台设备）”：1P和2P依次做战士（“确定1P ▶”然后“开始对战 ▶”），在同一台设备上轮流战斗。\n“📱 2台设备（QR对战）”：两人各做一个战士并点“下一步 ▶”。把自己的QR给朋友看，再用“📷 读取对方的QR”读取朋友的QR。\n两人都读取后点“▶ 开始战斗”。你在自己的设备上和朋友的战士战斗（两台设备之间不通信）。",
+      "guide.b6": "做战士时点“💾 保存这个角色”，最多能保存20个。用“📁 从保存的角色”叫出来，再点“▶ 使用”。\n标题画面的“🎴 用自己的角色”里有“⚔ 挑选对战”和“🔥 保存角色5连战”，还有只能观看的“🏆 存档角色锦标赛”和“📊 存档角色循环赛”（需要保存2个以上）。",
+      "guide.b7": "战士、徽章和设置只保存在这台设备里，不会发送到任何地方。\n换设备时，在 ⚙ 点“备份”，再点“复制”复制代码。在新设备的 ⚙ 里把代码粘贴到“恢复”，再点“恢复”。\n只想把1个战士送给朋友时，点保存列表里的 🎁。朋友把代码粘贴到“🎁 接收战士（用代码）”，再点“添加”。",
+      "guide.b8": "在“设置”（下方的 ⚙）里可以调整“声音”的大小（最左边是“静音”），以及“特效”“震动”的“开”“关”。\n语言用下方的 🌐 选择。\n本说明随时可以重新查看：“设置”→“玩法”→“再看一次”。"
     }
   };
   if (!I18N[LANG]) LANG = "ja";   // 保存済み言語コードがテーブルに無ければ日本語へ（後方互換）
@@ -8152,6 +8452,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("surrenderbtn").textContent = "🏳 " + t("battle.surrender");
     $("confirm-no").textContent = t("confirm.cancel");
     $("confirm-yes").textContent = t("confirm.yes");
+    $("set-guide-label").textContent = t("guide.title");   // せっていの「あそびかた」の行（2026-09-30）
+    $("guide-again").textContent = t("guide.again");
+    if (guideOv && guideOv._draw) guideOv._draw();         // 開いている あそびかた も訳し直す
     if (currentScreen === "setup") setSetupTexts();
     else if (currentScreen === "saved") openSaved();
     else if (currentScreen === "difficulty") openDifficulty();
@@ -8239,6 +8542,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
      @capacitor/app が無いと、戻るを押すとアプリごと後ろに下がっていた（Android 11 以前は閉じる）。
      押したときの順: ①いちばん上の窓を、その窓の「いいえ / やめる / とじる」と同じ動きで閉じる
                       （確かめの窓＝いいえ・降参かくにん＝やめる・バックアップ/ことば/せってい＝とじる・リザルト＝タイトルへ）
+                      あそびかた（2026-09-30）＝2ページ目から まえのページ／1ページ目は 初回なら④と同じ（閉じない）・せっていから開いたときは閉じる
                     ②じぶんのキャラで の「えらぶ」段は1つ前の段へ
                     ③タイトル以外の画面は、その画面の「‹ もどる」と同じ行き先
                     ④タイトルでは、アプリを後ろに下げる（minimizeApp。中身はそのまま）
@@ -8250,6 +8554,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     for (var i = ls.length - 1; i >= 0; i--) { if (shown(ls[i])) { ov = ls[i]; break; } }   // あとに並ぶほど上
     if (ov) {
       if (ov.classList.contains("ask-ov")) { var no = ov.querySelector(".ask-no"); if (no) no.click(); return; }
+      if (ov.classList.contains("guide-ov")) { if (ov._back) ov._back(); return; }   // あそびかた: まえのページ／1ページ目は下げる（初回）か閉じる
       if (ov.id === "confirmoverlay") { $("confirm-no").click(); return; }
       if (ov.id === "backupoverlay") { leaveWriting("backup", function () { $("bk-close").click(); }); return; }
       if (ov.id === "langoverlay") { $("lang-close").click(); return; }
@@ -8285,6 +8590,86 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }, true);
   }
 
+  /* ---------------- はじめての あそびかた（初回の案内・2026-09-30） ----------------
+     ヒロさん「ひとつずつ・そよぎ みたいなタイプのアプリは、必ず最初に使い方の丁寧な説明を出してほしい。10代の情報室のように」。
+     ・初回起動で必ず出す（最後まで読むまで、開くたびに出る）。文言は I18N の guide.*（h1〜h8 見出し / b1〜b8 本文・14言語）
+     ・1ページずつ「◀ まえへ」「つぎへ ▶」で進む。閉じるのは最後のページの「▶ あそぶ」だけ（✕ は置かない）
+     ・ことば（1ページ目だけ）: 案内は下の 🌐 も覆うので、ここで同じ14言語から選べる（選ぶと案内も その言語に）
+     ・戻るボタン（Play版・onBack）: 2ページ目から＝まえのページ／1ページ目＝初回なら後ろに下げる（閉じない）、せっていから開いたときは閉じる
+     ・読み終えたら localStorage "dbvs_guide_v1"（バックアップのコードには入れない＝ふっかつ しても また出ない）
+     ・せっていの「あそびかた」の「もういちど みる」で いつでも もう一度（隠れた入口は無いアプリ）
+     ・初回は 案内が出ているあいだ BGM を止めておき、「▶ あそぶ」で閉じてから いまの画面の曲にする（勝手に鳴り出さない）
+     ・ar もアプリの向きは左から右のまま（i18n_keys.md の決まり）。案内の見出しと本文だけ右から左で読めるようにする */
+  var GUIDE_KEY = "dbvs_guide_v1";
+  var guideOv = null;   // 開いている あそびかた（二重に開かない）
+  function guideDone() { try { var v = localStorage.getItem(GUIDE_KEY); return v === "1" || v === "true"; } catch (e) { return false; } }
+  function guidePages() { var n = 0; while (I18N.ja["guide.b" + (n + 1)] != null) n++; return n; }
+  function openGuide(first) {
+    if (guideOv) return;
+    var n = guidePages();
+    if (!n) return;
+    var i = 0;
+    var ov = document.createElement("div"); ov.className = "overlay guide-ov"; ov.id = "guideoverlay";
+    ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true");
+    var body = document.createElement("div"); body.className = "guide-body";
+    var top = document.createElement("div"); top.className = "guide-top";
+    var ttl = document.createElement("p"); ttl.className = "guide-title";
+    var step = document.createElement("p"); step.className = "guide-step"; step.setAttribute("dir", "ltr");
+    top.appendChild(ttl); top.appendChild(step);
+    var langRow = document.createElement("div"); langRow.className = "guide-lang";
+    var langLbl = document.createElement("span"); langLbl.className = "guide-lang-lbl";
+    var sel = document.createElement("select"); sel.setAttribute("aria-label", "Language / ことば");
+    var langs = availableLangs();
+    for (var k = 0; k < langs.length; k++) { var op = document.createElement("option"); op.value = langs[k].code; op.textContent = langs[k].name; sel.appendChild(op); }
+    sel.onchange = function () { sfx.select(); setLang(sel.value); };   // setLang → renderI18n → draw（案内も訳し直す）
+    langRow.appendChild(langLbl); langRow.appendChild(sel);
+    var h = document.createElement("h2"); h.className = "guide-h";
+    var p = document.createElement("p"); p.className = "guide-p";
+    var dots = document.createElement("div"); dots.className = "guide-dots"; dots.setAttribute("aria-hidden", "true");
+    body.appendChild(top); body.appendChild(langRow); body.appendChild(h); body.appendChild(p); body.appendChild(dots);
+    var row = document.createElement("div"); row.className = "guide-row";
+    var prevB = document.createElement("button"); prevB.type = "button"; prevB.className = "guide-prev";
+    var nextB = document.createElement("button"); nextB.type = "button"; nextB.className = "primary guide-next";
+    row.appendChild(prevB); row.appendChild(nextB);
+    ov.appendChild(body); ov.appendChild(row);
+    function draw() {
+      var rtl = (LANG === "ar") ? "rtl" : "ltr";
+      ov.setAttribute("aria-label", t("guide.title"));
+      ttl.textContent = t("guide.title");
+      step.textContent = (i + 1) + " / " + n;
+      langRow.style.display = (i === 0) ? "" : "none";
+      langLbl.textContent = t("settings.lang_label");
+      sel.value = LANG;
+      var hk = "guide.h" + (i + 1), bk = "guide.b" + (i + 1);   // 見出し・本文のキー（_i18n_check の B は t( のあとに引用符で書いたキーだけを数える）
+      h.textContent = t(hk); h.setAttribute("dir", rtl);
+      p.textContent = t(bk); p.setAttribute("dir", rtl);
+      dots.innerHTML = "";
+      for (var d = 0; d < n; d++) { var dot = document.createElement("span"); dot.className = "guide-dot" + (d === i ? " on" : ""); dots.appendChild(dot); }
+      prevB.textContent = t("guide.prev");
+      prevB.style.visibility = (i === 0) ? "hidden" : "visible";   // 「つぎへ」の位置を変えない
+      nextB.textContent = (i === n - 1) ? t("guide.start") : t("common.next");
+      body.scrollTop = 0;
+    }
+    function close() {
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+      guideOv = null;
+      try { localStorage.setItem(GUIDE_KEY, "1"); } catch (e) {}
+      if (first) resumeBGM();   // 初回は ここで いまの画面の曲（音量0なら鳴らない）
+    }
+    ov._draw = draw;
+    ov._back = function () {
+      if (i > 0) { i--; draw(); return; }
+      if (first) minimizeApp(); else close();
+    };
+    prevB.onclick = function () { if (i > 0) { sfx.select(); i--; draw(); } };
+    nextB.onclick = function () { sfx.select(); if (i < n - 1) { i++; draw(); } else close(); };
+    guideOv = ov;
+    draw();
+    ($("frame") || document.body).appendChild(ov);
+    if (first) stopBGM();       // 案内のあいだは タイトルの曲を止めておく
+    try { nextB.focus(); } catch (e) {}
+  }
+
   /* ---------------- 初期化 ---------------- */
   function init() {
     bcv = $("battlecanvas"); bctx = bcv.getContext("2d"); bctx.imageSmoothingEnabled = false;
@@ -8308,6 +8693,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       settings.vibrate = !settings.vibrate; saveSettings(); renderI18n();
       if (settings.vibrate) { try { if (navigator.vibrate) navigator.vibrate(55); } catch (e) {} }   // ONにした瞬間に試し振動
     };
+    // あそびかたを もういちど みる（せっていは開いたまま・案内が上に重なる）
+    $("guide-again").onclick = function () { sfx.select(); openGuide(false); };
     // データのバックアップ/復元
     $("bk-export-btn").onclick = function () { sfx.select(); openBackup("export"); };
     $("bk-import-btn").onclick = function () { sfx.select(); openBackup("import"); };
@@ -8413,6 +8800,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
 
     renderI18n();
     showScreen("title");
+    if (!guideDone()) openGuide(true);   // はじめての あそびかた（読み終えるまで毎回・2026-09-30）
     watchBack();   // Android の戻るボタン（Play版だけ）
   }
 
