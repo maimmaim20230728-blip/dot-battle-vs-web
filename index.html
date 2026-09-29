@@ -182,6 +182,12 @@
   #confirmbox{background:#0d1424;border:2px solid #6e2c3e;border-radius:12px;padding:20px;max-width:340px;width:90%;text-align:center;}
   #confirm-msg{font-size:16px;line-height:1.6;color:#ffe0e6;margin-bottom:18px;}
   #confirmbox button{margin-top:8px;} #confirmbox .danger{background:#5a2230;border-color:#ff5a6a;}
+  /* Play版だけの確かめの窓（app.js askBox・2026-09-30）。Android の WebView の confirm はボタンが英語(OK/Cancel)なので
+     アプリの中に出す。見た目は 降参かくにん とそろえる。ほかの窓(バックアップなど)より上 */
+  .overlay.ask-ov{z-index:120;}
+  .ask-box{background:#0d1424;border:2px solid #6e2c3e;border-radius:12px;padding:20px;max-width:340px;width:90%;text-align:center;}
+  .ask-msg{font-size:16px;line-height:1.6;color:#ffe0e6;margin-bottom:18px;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;}   /* 分かち書きの空白で折る */
+  .ask-box button{margin-top:8px;} .ask-box .ask-yes{background:#5a2230;border-color:#ff5a6a;}
 
   /* オーバーレイ */
   .overlay{display:none;position:absolute;inset:0;background:rgba(3,5,10,.93);z-index:100;align-items:center;justify-content:center;}
@@ -705,6 +711,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.backup_btn": "バックアップ",
       "settings.restore_btn": "ふっかつ",
       "common.close": "とじる",
+      "common.yes": "はい",
+      "common.no": "いいえ",
+      "common.back_confirm": "いれた もじは まだ ほぞんして いません。すてて もどりますか？",
       "backup.iphone_hint": "💡 iPhoneは ホームがめんに ついかすると きえにくいよ",
       "settings.mute": "ミュート",
       "settings.on": "オン",
@@ -995,6 +1004,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "settings.backup_btn": "Backup",
       "settings.restore_btn": "Restore",
       "common.close": "Close",
+      "common.yes": "Yes",
+      "common.no": "No",
+      "common.back_confirm": "What you typed is not saved yet. Discard it and go back?",
       "backup.iphone_hint": "💡 On iPhone, Add to Home Screen so data won't be cleared.",
       "settings.mute": "Mute",
       "settings.on": "ON",
@@ -1153,6 +1165,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "سرعة",
       "common.back": "رجوع",
       "common.close": "إغلاق",
+      "common.yes": "نعم",
+      "common.no": "لا",
+      "common.back_confirm": "ما كتبته لم يُحفظ بعد. هل تريد تركه والرجوع؟",
       "common.copied": "تم النسخ!",
       "common.copy": "نسخ",
       "common.next": "التالي ▶",
@@ -1516,6 +1531,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "গতি",
       "common.back": "পেছনে",
       "common.close": "বন্ধ করো",
+      "common.yes": "হ্যাঁ",
+      "common.no": "না",
+      "common.back_confirm": "তুমি যা লিখেছ তা এখনো সেভ হয়নি। ফেলে দিয়ে ফিরে যাবে?",
       "common.copied": "কপি হয়েছে!",
       "common.copy": "কপি",
       "common.next": "পরবর্তী ▶",
@@ -1879,6 +1897,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "Tempo",
       "common.back": "Zurück",
       "common.close": "Schließen",
+      "common.yes": "Ja",
+      "common.no": "Nein",
+      "common.back_confirm": "Deine Eingabe ist noch nicht gespeichert. Verwerfen und zurückgehen?",
       "common.copied": "Kopiert!",
       "common.copy": "Kopieren",
       "common.next": "Weiter ▶",
@@ -2242,6 +2263,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "Velocidad",
       "common.back": "Atrás",
       "common.close": "Cerrar",
+      "common.yes": "Sí",
+      "common.no": "No",
+      "common.back_confirm": "Lo que escribiste aún no se ha guardado. ¿Descartarlo y volver?",
       "common.copied": "¡Copiado!",
       "common.copy": "Copiar",
       "common.next": "Siguiente ▶",
@@ -2605,6 +2629,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "Vitesse",
       "common.back": "Retour",
       "common.close": "Fermer",
+      "common.yes": "Oui",
+      "common.no": "Non",
+      "common.back_confirm": "Ce que tu as saisi n'est pas encore enregistré. L'abandonner et revenir ?",
       "common.copied": "Copié !",
       "common.copy": "Copier",
       "common.next": "Suivant ▶",
@@ -2968,6 +2995,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "रफ़्तार",
       "common.back": "वापस",
       "common.close": "बंद करो",
+      "common.yes": "हाँ",
+      "common.no": "नहीं",
+      "common.back_confirm": "तुमने जो लिखा वह अभी सेव नहीं हुआ है। छोड़कर वापस जाएँ?",
       "common.copied": "कॉपी हो गया!",
       "common.copy": "कॉपी",
       "common.next": "आगे ▶",
@@ -3331,6 +3361,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "Kecepatan",
       "common.back": "Kembali",
       "common.close": "Tutup",
+      "common.yes": "Ya",
+      "common.no": "Tidak",
+      "common.back_confirm": "Yang kamu ketik belum disimpan. Buang dan kembali?",
       "common.copied": "Tersalin!",
       "common.copy": "Salin",
       "common.next": "Lanjut ▶",
@@ -3694,6 +3727,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "Velocità",
       "common.back": "Indietro",
       "common.close": "Chiudi",
+      "common.yes": "Sì",
+      "common.no": "No",
+      "common.back_confirm": "Quello che hai scritto non è ancora salvato. Scartarlo e tornare indietro?",
       "common.copied": "Copiato!",
       "common.copy": "Copia",
       "common.next": "Avanti ▶",
@@ -4057,6 +4093,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "스피드",
       "common.back": "돌아가기",
       "common.close": "닫기",
+      "common.yes": "네",
+      "common.no": "아니요",
+      "common.back_confirm": "입력한 글은 아직 저장되지 않았어. 버리고 돌아갈까?",
       "common.copied": "복사했어!",
       "common.copy": "복사",
       "common.next": "다음 ▶",
@@ -4420,6 +4459,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "Velocidade",
       "common.back": "Voltar",
       "common.close": "Fechar",
+      "common.yes": "Sim",
+      "common.no": "Não",
+      "common.back_confirm": "O que você digitou ainda não foi salvo. Descartar e voltar?",
       "common.copied": "Copiado!",
       "common.copy": "Copiar",
       "common.next": "Avançar ▶",
@@ -4783,6 +4825,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "Скорость",
       "common.back": "Назад",
       "common.close": "Закрыть",
+      "common.yes": "Да",
+      "common.no": "Нет",
+      "common.back_confirm": "Введённый текст ещё не сохранён. Сбросить его и вернуться?",
       "common.copied": "Скопировано!",
       "common.copy": "Копировать",
       "common.next": "Дальше ▶",
@@ -5146,6 +5191,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "buff.speed": "加速",
       "common.back": "返回",
       "common.close": "关闭",
+      "common.yes": "是",
+      "common.no": "否",
+      "common.back_confirm": "输入的文字还没有保存。要放弃并返回吗？",
       "common.copied": "已复制！",
       "common.copy": "复制",
       "common.next": "下一步 ▶",
@@ -6037,6 +6085,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function startSetupFor(target) {
     setupTarget = target;
     setupBuf = { pixels: null, base: null, skills: null, passives: null, name: "" };
+    clearWriting("setup");   // 作りなおし＝前の なまえの書きかけは無い（Android の戻るボタン用）
     setSetupTexts();
     $("setupresult").style.display = "none";
     $("previewwrap").classList.add("empty");
@@ -6167,6 +6216,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function openBackup(mode, arg) {
     $("settingsoverlay").style.display = "none";
     bkMode = mode;
+    clearWriting("backup");   // 窓を開きなおした＝コード欄の書きかけは無い（Android の戻るボタン用）
     var isExport = (mode === "export" || mode === "gift");   // コピーして渡す系（読取専用）
     var ta = $("bk-text");
     if (mode === "export") {
@@ -6204,11 +6254,13 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
     arr.push(raw);
     persistSaved(arr); sfx.select();
+    clearWriting("setup");   // なまえも いっしょに ほぞんした＝書きかけは無い
     $("savebtn").textContent = "✓ " + t("setup.saved_done");
     setTimeout(function () { setSetupTexts(); }, 1200);
   }
   function useSaved(data) {
     setupBuf = { pixels: data.pixels, base: data.base, skills: data.skills, passives: data.passives, name: data.name || "" };
+    clearWriting("setup");   // ほぞん済みの なまえ＝書きかけは無い
     renderSetupResult();
     showScreen("setup");
   }
@@ -6240,22 +6292,26 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         var btns = document.createElement("div"); btns.className = "savedbtns";
         var del = document.createElement("button"); del.className = "saveddel"; del.textContent = "🗑";
         del.onclick = function () {
-          if (!confirm(t("saved.delete_confirm", {name: data.name || t("saved.thischar")}))) return;
-          var a2 = loadSaved(); a2.splice(idx, 1);
-          if (makeRoom) {   // 空きができた→保留中の新キャラをその場で保存（削除と保存を1操作で完結）
-            a2.push(makeRoom.raw);
-            var fr = makeRoom.from, nd = decodeFighter(makeRoom.raw);
-            makeRoom = null;
-            persistSaved(a2); sfx.select();
-            if (fr === "receive") {
-              alert(t("backup.fighter_joined", {name: (nd && nd.name) || t("backup.a_fighter")}));
-              openSaved();
-            } else {   // setup からの保存：通常保存と同じ「✓ほぞんしました」の流れで戻す
-              showScreen("setup");
-              $("savebtn").textContent = "✓ " + t("setup.saved_done");
-              setTimeout(function () { setSetupTexts(); }, 1200);
-            }
-          } else { persistSaved(a2); openSaved(); }
+          // 確かめは askBox（Play版はアプリの中の いいえ/はい・Web版は今までどおり confirm）。答えのあとに続きをする
+          askBox(t("saved.delete_confirm", {name: data.name || t("saved.thischar")}), function (ok) {
+            if (!ok) return;
+            var a2 = loadSaved(); a2.splice(idx, 1);
+            if (makeRoom) {   // 空きができた→保留中の新キャラをその場で保存（削除と保存を1操作で完結）
+              a2.push(makeRoom.raw);
+              var fr = makeRoom.from, nd = decodeFighter(makeRoom.raw);
+              makeRoom = null;
+              persistSaved(a2); sfx.select();
+              if (fr === "receive") {
+                alert(t("backup.fighter_joined", {name: (nd && nd.name) || t("backup.a_fighter")}));
+                openSaved();
+              } else {   // setup からの保存：通常保存と同じ「✓ほぞんしました」の流れで戻す
+                clearWriting("setup");   // なまえも いっしょに ほぞんした＝書きかけは無い
+                showScreen("setup");
+                $("savebtn").textContent = "✓ " + t("setup.saved_done");
+                setTimeout(function () { setSetupTexts(); }, 1200);
+              }
+            } else { persistSaved(a2); openSaved(); }
+          });
         };
         if (!makeRoom) {
           var use = document.createElement("button"); use.className = "saveduse"; use.textContent = "▶ " + t("saved.use"); use.onclick = function () { sfx.select(); useSaved(data); };
@@ -6412,8 +6468,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     }
   }
   /* ---------------- じぶんのキャラで（保存キャラ対戦 / 保存キャラ ランダム5連戦） ---------------- */
+  var mycharBack = null;   // 「えらぶ」段で Android の戻るボタンを押したときの行き先（メニューなら null＝‹もどる と同じ）
   function openMyChar() {
     mode = "mychar";
+    mycharBack = null;
     $("mychar-title").textContent = t("mychar.title");
     $("mychar-back").textContent = "‹ " + t("common.back");
     $("mychar-back").onclick = function () { showScreen("title"); };
@@ -6436,7 +6494,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     btn.appendChild(t); btn.appendChild(d); btn.onclick = function () { sfx.select(); onclick(); };
     return btn;
   }
-  function openPick(title, cb) {
+  function openPick(title, cb, back) {
+    mycharBack = back || null;   // 戻るボタン＝1つ前の段へ
     $("mychar-title").textContent = title;
     var list = $("mychar-list"); list.innerHTML = "";
     var saved = loadSaved();
@@ -6460,8 +6519,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     openPick(t("mychar.pick_1p"), function (d1) {
       openPick(t("mychar.pick_2p"), function (d2) {
         pending.self1 = d1; pending.self2 = d2; startBattleSelf();
-      });
-    });
+      }, pickForSelfBattle);
+    }, openMyChar);
   }
   function startBattleSelf() {
     var f0 = buildFighter(pending.self1, { label: pending.self1.name || "1P", index: 0 });
@@ -6471,7 +6530,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function pickForSavedRun() {
     openPick(t("mychar.pick_self"), function (d) {
       pending.player = d; soloMode = "saved"; startSoloRun();
-    });
+    }, openMyChar);
   }
   function nextSolo() {
     var f0 = buildFighter(pending.player, { label: t("who.you"), index: 0 });
@@ -8126,6 +8185,106 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("langoverlay").style.display = "flex";
   }
 
+  /* ---------------- Play版（Capacitor）だけの手当て（2026-09-30） ----------------
+     Web版（ブラウザ・Farcaster）は何も変えない。isNativeApp() が false なら今までどおり */
+  function isNativeApp() {
+    try { var c = window.Capacitor; return !!(c && typeof c.isNativePlatform === "function" && c.isNativePlatform()); } catch (e) { return false; }
+  }
+  // 🔴 プラグインはネイティブが入れる Capacitor.Plugins.X から取る（registerPlugin は WebView に無い）
+  function nativePlugin(name, fn) {
+    try {
+      var c = window.Capacitor;
+      if (typeof c.isPluginAvailable === "function" && !c.isPluginAvailable(name)) return null;
+      var p = c.Plugins && c.Plugins[name];
+      return (p && typeof p[fn] === "function") ? p : null;
+    } catch (e) { return null; }
+  }
+  function minimizeApp() {
+    var ap = nativePlugin("App", "minimizeApp");
+    try { if (ap) { var p = ap.minimizeApp(); if (p && p.catch) p.catch(function () {}); } } catch (e) {}
+  }
+  /* 確かめの窓: Play版の window.confirm はボタンが英語の OK / Cancel に決め打ち（Capacitor の BridgeWebChromeClient）。
+     Play版だけアプリの中に「いいえ / はい」の窓を出す（見た目は 降参かくにん とそろえる・14言語 common.no / common.yes）。
+     Web版は今までどおり window.confirm（ブラウザの言葉で出る）。done(true=はい / false=いいえ)。Android の戻るボタン＝いいえ */
+  function askBox(msg, done) {
+    if (!isNativeApp()) {
+      var r = false;
+      try { r = !!window.confirm(msg); } catch (e) { r = false; }
+      done(r); return;
+    }
+    var ov = document.createElement("div"); ov.className = "overlay ask-ov"; ov.style.display = "flex";
+    ov.setAttribute("role", "alertdialog"); ov.setAttribute("aria-modal", "true");
+    var box = document.createElement("div"); box.className = "ask-box";
+    var p = document.createElement("div"); p.className = "ask-msg"; p.textContent = msg;
+    var no = document.createElement("button"); no.type = "button"; no.className = "primary ask-no"; no.textContent = t("common.no");
+    var yes = document.createElement("button"); yes.type = "button"; yes.className = "ask-yes"; yes.textContent = t("common.yes");
+    var closed = false;
+    function close(v) { if (closed) return; closed = true; if (ov.parentNode) ov.parentNode.removeChild(ov); done(v); }
+    no.onclick = function () { sfx.select(); close(false); };
+    yes.onclick = function () { close(true); };
+    box.appendChild(p); box.appendChild(no); box.appendChild(yes); ov.appendChild(box);
+    ($("frame") || document.body).appendChild(ov);
+    try { no.focus(); } catch (e) {}
+  }
+  /* 書きかけ: なまえ（キャラづくり）・コード（ふっかつ / もらう）に文字を入れた（input）まま、戻るボタンで離れるときだけ確かめる。
+     ほぞんした・作りなおした・窓を開きなおしたら無い扱い（clearWriting） */
+  var dirtyIn = null;   // "setup" | "backup" | null
+  function clearWriting(where) { if (dirtyIn === where) dirtyIn = null; }
+  function leaveWriting(where, go) {
+    if (dirtyIn !== where) { go(); return; }
+    askBox(t("common.back_confirm"), function (ok) { if (!ok) return; dirtyIn = null; go(); });
+  }
+  function shown(el) { return !!el && getComputedStyle(el).display !== "none"; }
+  /* ---- Android の戻るボタン（Play版だけ） ----
+     @capacitor/app が無いと、戻るを押すとアプリごと後ろに下がっていた（Android 11 以前は閉じる）。
+     押したときの順: ①いちばん上の窓を、その窓の「いいえ / やめる / とじる」と同じ動きで閉じる
+                      （確かめの窓＝いいえ・降参かくにん＝やめる・バックアップ/ことば/せってい＝とじる・リザルト＝タイトルへ）
+                    ②じぶんのキャラで の「えらぶ」段は1つ前の段へ
+                    ③タイトル以外の画面は、その画面の「‹ もどる」と同じ行き先
+                    ④タイトルでは、アプリを後ろに下げる（minimizeApp。中身はそのまま）
+     ゲーム中: じぶんの番なら 降参かくにん（こうさん と同じ）・あいての番や演出中は何もしない。
+               観戦は「かんせんを やめて もどる？」（✕ やめる と同じ）。
+               連戦の あいま（つぎへ だけの窓）は、とじずに④と同じ（連勝は消えない）。 */
+  function onBack() {
+    var ls = document.querySelectorAll("#frame .overlay"), ov = null;
+    for (var i = ls.length - 1; i >= 0; i--) { if (shown(ls[i])) { ov = ls[i]; break; } }   // あとに並ぶほど上
+    if (ov) {
+      if (ov.classList.contains("ask-ov")) { var no = ov.querySelector(".ask-no"); if (no) no.click(); return; }
+      if (ov.id === "confirmoverlay") { $("confirm-no").click(); return; }
+      if (ov.id === "backupoverlay") { leaveWriting("backup", function () { $("bk-close").click(); }); return; }
+      if (ov.id === "langoverlay") { $("lang-close").click(); return; }
+      if (ov.id === "settingsoverlay") { $("set-close").click(); return; }
+      if (ov.id === "resultoverlay") { if (shown($("totitlebtn"))) $("totitlebtn").click(); else minimizeApp(); return; }
+      return;
+    }
+    var s = currentScreen;
+    if (s === "title") { minimizeApp(); return; }
+    if (s === "battle" || s === "watch") {
+      if (watch) { $("watch-quit").click(); return; }
+      var sb = $("surrenderbtn");
+      if (battle && !battle.over && sb && sb.style.display === "block") sb.click();
+      return;
+    }
+    if (s === "setup") { leaveWriting("setup", function () { $("setup-back").click(); }); return; }
+    if (s === "mychar" && mycharBack) { mycharBack(); return; }
+    var btn = { difficulty: "diff-back", saved: "saved-back", qrhub: "qr-back", qrshow: "qrshow-back", qrscan: "qrscan-back", mychar: "mychar-back" }[s];
+    if (btn && $(btn)) $(btn).click(); else showScreen("title");
+  }
+  function watchBack() {
+    if (!isNativeApp()) return;
+    var ap = nativePlugin("App", "addListener");
+    if (!ap) return;
+    try {
+      var r = ap.addListener("backButton", function () { try { onBack(); } catch (e) { console.error("back error:", e); } });
+      if (r && r.catch) r.catch(function () {});
+    } catch (e) { return; }
+    document.addEventListener("input", function (e) {
+      var el = e.target, id = el && el.id;
+      if (id === "nameinput") dirtyIn = "setup";
+      else if (id === "bk-text" && !el.readOnly) dirtyIn = "backup";
+    }, true);
+  }
+
   /* ---------------- 初期化 ---------------- */
   function init() {
     bcv = $("battlecanvas"); bctx = bcv.getContext("2d"); bctx.imageSmoothingEnabled = false;
@@ -8180,15 +8339,17 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         openSaved();
         return;
       }
-      // import = データ全体を復元（上書き＋リロード）
-      if (!confirm(t("backup.overwrite_confirm"))) return;
-      try {
-        applyBackup(clean);
-        alert(t("backup.restored"));
-        location.reload();
-      } catch (e) {
-        alert(t("backup.invalid_code"));
-      }
+      // import = データ全体を復元（上書き＋リロード）。確かめは askBox（Play版はアプリの中の いいえ/はい）
+      askBox(t("backup.overwrite_confirm"), function (ok) {
+        if (!ok) return;
+        try {
+          applyBackup(clean);
+          alert(t("backup.restored"));
+          location.reload();
+        } catch (e) {
+          alert(t("backup.invalid_code"));
+        }
+      });
     };
     // 保存データが消えにくいよう「永続化」を要求（対応ブラウザのみ・best-effort）
     if (navigator.storage && navigator.storage.persist) {
@@ -8232,7 +8393,15 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("qrscan-back").onclick = function () { openQRHub(); };
 
     // 観戦モード：やめる（✕→確認）
-    $("watch-quit").onclick = function () { sfx.select(); if (confirm(t("watch.quit_confirm"))) { watchCleanup(); openMyChar(); } };
+    $("watch-quit").onclick = function () {
+      sfx.select();
+      askBox(t("watch.quit_confirm"), function (ok) {
+        if (!ok) return;
+        // Play版の窓は観戦を止めない＝開いている間に おわりの窓(リザルト)が出ていたら いっしょに閉じる（Web版の confirm では起きない）
+        $("resultoverlay").style.display = "none";
+        watchCleanup(); openMyChar();
+      });
+    };
 
     // リザルト
     $("totitlebtn").onclick = function () { $("resultoverlay").style.display = "none"; stopBGM(); showScreen("title"); };
@@ -8244,6 +8413,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
 
     renderI18n();
     showScreen("title");
+    watchBack();   // Android の戻るボタン（Play版だけ）
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
