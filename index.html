@@ -271,10 +271,13 @@
   .spdbtn{pointer-events:auto;width:auto;padding:4px 7px;font-size:12px;line-height:1;
     background:rgba(20,32,58,.92);border:2px solid #3a567f;border-radius:8px;box-shadow:none;color:#cfe0f5;}
   .spdbtn.on{background:#1f6feb;border-color:#5aa0ff;color:#fff;}
+  /* 読み上げソフトへの知らせ（画面には出さない） */
+  .srlive{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 </style>
 </head>
 <body>
 <div id="frame">
+<div id="srlive" class="srlive" aria-live="polite"></div>
 
 <!-- 上部バー（フレーム内・固定。全画面に常時表示） -->
 <div id="topbar">
@@ -620,6 +623,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stat.spd": "速",
       "saved.use": "つかう",
       "saved.broken": "よめない データ",
+      "saved.save_failed": "ほぞん できませんでした（たんまつの ようりょうが いっぱいかも）",
       "saved.gift": "ゆずる",
       "qr.hub_title": "2だいで たいせん！",
       "qr.hub_hint": "ともだちと 2だいで あそぼう！<br>① 2人とも キャラを つくる<br>② <b>おたがいの QRを よみこむ</b>（じぶんの たんまつで あいてを よみとる）<br>③ じぶんの たんまつで <b>あいての キャラ</b>と たたかう！<br>④ けっかを みせあおう。2人とも かったら <b>ひきわけ→もう1かい！</b>",
@@ -934,6 +938,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stat.spd": "S",
       "saved.use": "Use",
       "saved.broken": "Can't read this one",
+      "saved.save_failed": "Couldn't save (your device storage may be full)",
       "saved.gift": "Gift",
       "qr.hub_title": "2-Device Battle!",
       "qr.hub_hint": "Play with a friend on 2 devices!<br>① Both make a fighter<br>② <b>Scan each other's QR</b> (read your rival on your own device)<br>③ Battle <b>your rival's fighter</b> on your own device<br>④ Compare results — if you both win it's a <b>draw → play again!</b>",
@@ -1350,6 +1355,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "المقاتلون المحفوظون",
       "saved.use": "استخدام",
       "saved.broken": "تعذّرت القراءة",
+      "saved.save_failed": "تعذّر الحفظ (قد تكون مساحة التخزين ممتلئة)",
       "settings.backup_btn": "نسخ احتياطي",
       "settings.data_label": "البيانات (المقاتلون والشارات)",
       "settings.effects_label": "المؤثرات",
@@ -1737,6 +1743,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "সেভ করা যোদ্ধা",
       "saved.use": "ব্যবহার",
       "saved.broken": "পড়া যাচ্ছে না",
+      "saved.save_failed": "সেভ করা যায়নি (ডিভাইসের জায়গা হয়তো ভরে গেছে)",
       "settings.backup_btn": "ব্যাকআপ",
       "settings.data_label": "ডেটা (যোদ্ধা/ব্যাজ)",
       "settings.effects_label": "এফেক্ট",
@@ -2124,6 +2131,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "Gespeicherte Kämpfer",
       "saved.use": "Nehmen",
       "saved.broken": "Nicht lesbar",
+      "saved.save_failed": "Speichern ging nicht (der Gerätespeicher ist vielleicht voll)",
       "settings.backup_btn": "Backup",
       "settings.data_label": "Daten (Kämpfer/Abzeichen)",
       "settings.effects_label": "Effekte",
@@ -2511,6 +2519,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "Personajes guardados",
       "saved.use": "Usar",
       "saved.broken": "No se puede leer",
+      "saved.save_failed": "No se pudo guardar (puede que el almacenamiento esté lleno)",
       "settings.backup_btn": "Copia",
       "settings.data_label": "Datos (luchadores/insignias)",
       "settings.effects_label": "Efectos",
@@ -2898,6 +2907,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "Persos sauvegardés",
       "saved.use": "Utiliser",
       "saved.broken": "Illisible",
+      "saved.save_failed": "Impossible d'enregistrer (le stockage est peut-être plein)",
       "settings.backup_btn": "Sauvegarde",
       "settings.data_label": "Données (persos/badges)",
       "settings.effects_label": "Effets",
@@ -3285,6 +3295,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "सेव किए योद्धा",
       "saved.use": "इस्तेमाल",
       "saved.broken": "पढ़ा नहीं जा सका",
+      "saved.save_failed": "सेव नहीं हो सका (डिवाइस की जगह शायद भर गई है)",
       "settings.backup_btn": "बैकअप",
       "settings.data_label": "डेटा (योद्धा/बैज)",
       "settings.effects_label": "इफ़ेक्ट",
@@ -3672,6 +3683,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "Karakter tersimpan",
       "saved.use": "Pakai",
       "saved.broken": "Tidak bisa dibaca",
+      "saved.save_failed": "Gagal menyimpan (mungkin penyimpanan perangkat penuh)",
       "settings.backup_btn": "Cadangkan",
       "settings.data_label": "Data (petarung/lencana)",
       "settings.effects_label": "Efek",
@@ -4059,6 +4071,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "Personaggi salvati",
       "saved.use": "Usa",
       "saved.broken": "Non leggibile",
+      "saved.save_failed": "Impossibile salvare (forse la memoria è piena)",
       "settings.backup_btn": "Backup",
       "settings.data_label": "Dati (personaggi/medaglie)",
       "settings.effects_label": "Effetti",
@@ -4446,6 +4459,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "저장한 캐릭터",
       "saved.use": "사용",
       "saved.broken": "읽을 수 없어",
+      "saved.save_failed": "저장하지 못했어 (기기 저장 공간이 가득 찼을지도 몰라)",
       "settings.backup_btn": "백업",
       "settings.data_label": "데이터(전사·배지)",
       "settings.effects_label": "이펙트",
@@ -4833,6 +4847,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "Personagens salvos",
       "saved.use": "Usar",
       "saved.broken": "Não dá para ler",
+      "saved.save_failed": "Não foi possível salvar (talvez o armazenamento esteja cheio)",
       "settings.backup_btn": "Backup",
       "settings.data_label": "Dados (lutadores/emblemas)",
       "settings.effects_label": "Efeitos",
@@ -5220,6 +5235,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "Сохранённые бойцы",
       "saved.use": "Взять",
       "saved.broken": "Не удалось прочитать",
+      "saved.save_failed": "Не удалось сохранить (возможно, память устройства заполнена)",
       "settings.backup_btn": "Копия",
       "settings.data_label": "Данные (бойцы/значки)",
       "settings.effects_label": "Эффекты",
@@ -5607,6 +5623,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "saved.title": "保存的角色",
       "saved.use": "使用",
       "saved.broken": "无法读取",
+      "saved.save_failed": "无法保存（设备存储空间可能已满）",
       "settings.backup_btn": "备份",
       "settings.data_label": "数据（战士・徽章）",
       "settings.effects_label": "特效",
@@ -6499,7 +6516,14 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   var MAX_SAVED = 20;   // 保存枠。9→20に増量(2026-07-18)。文言側の数字は saved.* に直書き＝変更時は全言語も更新。
   var makeRoom = null;  // 満杯時の「1体けして ほぞん」フロー。{raw:エンコード済み新キャラ, from:"setup"|"receive"}。あきらめる選択肢つき。
   function loadSaved() { try { var a = JSON.parse(localStorage.getItem("dbvs_saved") || "[]"); return Array.isArray(a) ? a.slice(0, MAX_SAVED) : []; } catch (e) { return []; } }
-  function persistSaved(arr) { try { localStorage.setItem("dbvs_saved", JSON.stringify(arr.slice(0, MAX_SAVED))); } catch (e) {} }
+  // 保存できたら true。容量いっぱい・保存が使えない環境では false（呼ぶ側で「ほぞんした」を出さずに知らせる）
+  function persistSaved(arr) { try { localStorage.setItem("dbvs_saved", JSON.stringify(arr.slice(0, MAX_SAVED))); return true; } catch (e) { return false; } }
+  // 読み上げソフトへの知らせ（画面には出ない aria-live 領域。ボタンの文字が「✓ ほぞんした！」に変わるだけだと伝わらないため）
+  function srSay(msg) {
+    var r = $("srlive"); if (!r) return;
+    r.textContent = "";
+    setTimeout(function () { r.textContent = msg; }, 60);
+  }
   function getInfinityBest() { try { var v = parseInt(localStorage.getItem("dbvs_infinity_best"), 10); return (v > 0) ? v : 0; } catch (e) { return 0; } }   // 無限バトルの最高連勝
   function setInfinityBest(v) { try { localStorage.setItem("dbvs_infinity_best", String(v)); } catch (e) {} }
   /* 無限バトルの称号：連勝数で3段階。30=エリートバトラー / 50=バトルマスター / 80=バトルレジェンド(最高位)。
@@ -6577,9 +6601,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       sfx.select(); openSaved(); return;
     }
     arr.push(raw);
-    persistSaved(arr); sfx.select();
+    if (!persistSaved(arr)) { alert(t("saved.save_failed")); return; }   // 保存できなかった＝「ほぞんした」は出さない（書きかけも残す）
+    sfx.select();
     clearWriting("setup");   // なまえも いっしょに ほぞんした＝書きかけは無い
     $("savebtn").textContent = "✓ " + t("setup.saved_done");
+    srSay(t("setup.saved_done"));
     setTimeout(function () { setSetupTexts(); }, 1200);
   }
   function useSaved(data) {
@@ -6615,7 +6641,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
             a2.push(makeRoom.raw);
             var fr = makeRoom.from, nd = decodeFighter(makeRoom.raw);
             makeRoom = null;
-            persistSaved(a2); sfx.select();
+            if (!persistSaved(a2)) { alert(t("saved.save_failed")); openSaved(); return; }   // 保存できなかった＝消してもいないし、ほぞんもしていない
+            sfx.select();
             if (fr === "receive") {
               alert(t("backup.fighter_joined", {name: (nd && nd.name) || t("backup.a_fighter")}));
               openSaved();
@@ -6623,9 +6650,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
               clearWriting("setup");   // なまえも いっしょに ほぞんした＝書きかけは無い
               showScreen("setup");
               $("savebtn").textContent = "✓ " + t("setup.saved_done");
+              srSay(t("setup.saved_done"));
               setTimeout(function () { setSetupTexts(); }, 1200);
             }
-          } else { persistSaved(a2); openSaved(); }
+          } else { if (!persistSaved(a2)) alert(t("saved.save_failed")); openSaved(); }
         });
       };
       return del;
@@ -8460,6 +8488,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
 
   /* ---------------- i18n（静的テキスト） ---------------- */
   function renderI18n() {
+    try { document.documentElement.lang = LANG; } catch (e) {}   // 読み上げソフトが その言語の声で読むように（<html lang="ja"> のままだと日本語の声になる）
     $("langbtn").textContent = "🌐 " + langName(LANG);
     $("subtitle").innerHTML = t("title.subtitle");
     $("b1").textContent = t("title.badge1");
@@ -8751,6 +8780,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       else { try { ok = document.execCommand("copy"); } catch (e) {} }
       ta.readOnly = true; sfx.select();
       $("bk-copy").textContent = ok ? t("common.copied") : t("common.copy");
+      if (ok) srSay(t("common.copied"));
       setTimeout(function () { $("bk-copy").textContent = t("common.copy"); }, 1500);
     };
     $("bk-restore").onclick = function () {
@@ -8765,7 +8795,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
           $("backupoverlay").style.display = "none";
           sfx.select(); openSaved(); return;
         }
-        arr.push(clean); persistSaved(arr); sfx.select();
+        arr.push(clean);
+        if (!persistSaved(arr)) { alert(t("saved.save_failed")); return; }   // 保存できなかった＝「なかまに なった」は出さない（コードは欄に残す）
+        sfx.select();
         $("backupoverlay").style.display = "none";
         alert(t("backup.fighter_joined", {name: d.name || t("backup.a_fighter")}));
         openSaved();
