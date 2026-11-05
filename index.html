@@ -6393,9 +6393,9 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var wood = monRamp(F(22, 34), 0.5, 0.4), leaf = monRamp(F(95, 135), 0.55, 0.45), gold = monRamp(46, 0.85, 0.56);
 
     if (kind === "slime") {
-      var sw = F(10, 13.5), sh = F(8.5, 10.5), top = 30.5 - sh * 2;
-      add(and(or(ell(0, 30.5 - sh, sw, sh), cap(0, top + 3, 0, top - F(1, 4), F(2, 3.5), 0.6)), above(30.6)), main, 2);
-      if (rng() < 0.4) add(poly([[0, top - 6], [2.2, top - 1], [4.5, top - 4], [5.5, top + 1], [0, top + 2]]), monRamp(48, 0.85, 0.55), 3);   // 王冠
+      // 🔴まん丸にする。頭のとがり・王冠は付けない(よく知られたゲームの敵に似るため・11/6 ヒロさん)
+      var sw = F(10, 13), sh = sw * F(0.86, 0.95), top = 30.5 - sh * 2;
+      add(and(ell(0, 30.5 - sh, sw, sh), above(30.6)), main, 2);
       var sey = Math.round(30.5 - sh * 0.95);
       eyes(R(2, 4), sey, pick(["round", "big", "angry"])); mouth(sey + 4, R(2, 3), pick(["smile", "open", "fangs"]));
       for (var hl = 0; hl < 3; hl++) dotA(R(8, 10) + hl, Math.round(top + 4 + hl * 0.5), [255, 255, 255]);
