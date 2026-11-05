@@ -6285,6 +6285,465 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     return px;
   }
 
+  /* ---------------- 敵モンスターの自動生成（32×32・SFC風） ----------------
+     10種類の体のつくり（スライム/けもの/とり/ゴーレム/おばけ/むし/ドラゴン/きのこ/目玉/よろい）を
+     部品（だ円・カプセル・多角形）の組み合わせで作り、部品ごとに丸みの陰影（左上から光）・輪郭線・
+     部品どうしの境目の線・目と口を入れる。左右対称。背景は透明（null）。
+     戻り値 = { w:32, h:32, px:[ [r,g,b] か null ×1024 ], float:浮いているか, kind } */
+  var MON_N = 32;
+  var MON_KINDS = ["slime", "beast", "bird", "golem", "ghost", "bug", "dragon", "shroom", "orb", "knight", "bat", "snake", "frog", "crab", "skeleton", "imp", "treant", "cat", "octo", "mage", "mimic", "flame", "jelly", "crystal", "flower", "robot", "bee"];
+  function monHsl(h, s, l) {
+    h = (((h % 360) + 360) % 360) / 360; s = Math.max(0, Math.min(1, s)); l = Math.max(0, Math.min(1, l));
+    if (s === 0) { var g = Math.round(l * 255); return [g, g, g]; }
+    var q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    function f(t) { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1 / 6) return p + (q - p) * 6 * t; if (t < 0.5) return q; if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6; return p; }
+    return [Math.round(f(h + 1 / 3) * 255), Math.round(f(h) * 255), Math.round(f(h - 1 / 3) * 255)];
+  }
+  function monToward(h, target, amt) { var d = ((target - h + 540) % 360) - 180; return h + (d < 0 ? -1 : 1) * Math.min(Math.abs(d), amt); }
+  // 6段の色：0=輪郭 1=濃い影 2=影 3=地 4=明るい 5=ハイライト（影は青紫へ・光は黄へ色相をずらす＝ドット絵の定番）
+  function monRamp(h, s, l) {
+    return [
+      monHsl(monToward(h, 250, 30), Math.min(1, s * 0.8 + 0.1), 0.09),
+      monHsl(monToward(h, 250, 22), s, l * 0.48),
+      monHsl(monToward(h, 250, 10), s, l * 0.72),
+      monHsl(h, s, l),
+      monHsl(monToward(h, 55, 12), s * 0.95, l + (1 - l) * 0.34),
+      monHsl(monToward(h, 55, 24), s * 0.7, l + (1 - l) * 0.68)
+    ];
+  }
+  function genMonster(rng) {
+    rng = rng || Math.random;
+    var R = function (a, b) { return a + Math.floor(rng() * (b - a + 1)); };
+    var F = function (a, b) { return a + rng() * (b - a); };
+    var pick = function (arr) { return arr[Math.floor(rng() * arr.length)]; };
+    var N = MON_N, parts = [], decals = [];
+    // ---- 色 ----
+    var hue = F(0, 360), sat = F(0.45, 0.8), lit = F(0.42, 0.58);
+    var main = monRamp(hue, sat, lit);
+    var accHue = rng() < 0.5 ? hue + F(140, 220) : hue + pick([-40, 40]);
+    var acc = monRamp(accHue, F(0.5, 0.85), F(0.48, 0.62));
+    var belly = monRamp(monToward(hue, 50, 30), sat * 0.45, Math.min(0.82, lit + 0.24));
+    var bone = monRamp(42, 0.3, 0.78), metal = monRamp(F(200, 230), 0.14, 0.6), dark = monRamp(hue, sat * 0.6, 0.26);
+    var eyeCol = pick([[255, 226, 74], [255, 90, 70], [120, 240, 255], [180, 255, 120], [255, 140, 230]]);
+    var OUT = [24, 14, 34], WHITE = [250, 250, 245], RED = [214, 52, 64];
+    // ---- 形（ax=中心からの距離・py=縦。全部左右対称） ----
+    function ell(c, cy, rx, ry) { return function (ax, py) { var dx = (ax - c) / rx, dy = (py - cy) / ry; return dx * dx + dy * dy <= 1; }; }
+    function cap(x1, y1, x2, y2, r1, r2) {
+      if (r2 == null) r2 = r1;
+      return function (ax, py) {
+        var vx = x2 - x1, vy = y2 - y1, L = vx * vx + vy * vy, t = L ? ((ax - x1) * vx + (py - y1) * vy) / L : 0;
+        t = Math.max(0, Math.min(1, t)); var qx = x1 + vx * t - ax, qy = y1 + vy * t - py, r = r1 + (r2 - r1) * t;
+        return qx * qx + qy * qy <= r * r;
+      };
+    }
+    function rect(c, cy, hw, hh, rad) {
+      rad = rad || 0;
+      return function (ax, py) {
+        var dx = Math.abs(ax - c) - (hw - rad), dy = Math.abs(py - cy) - (hh - rad);
+        if (dx <= 0 && dy <= 0) return true;
+        var ox = Math.max(dx, 0), oy = Math.max(dy, 0); return ox * ox + oy * oy <= rad * rad;
+      };
+    }
+    function poly(pts) {
+      return function (ax, py) {
+        var inside = false;
+        for (var i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+          var xi = pts[i][0], yi = pts[i][1], xj = pts[j][0], yj = pts[j][1];
+          if (((yi > py) !== (yj > py)) && (ax < (xj - xi) * (py - yi) / (yj - yi) + xi)) inside = !inside;
+        }
+        return inside;
+      };
+    }
+    function and(a, b) { return function (ax, py) { return a(ax, py) && b(ax, py); }; }
+    function or(a, b) { return function (ax, py) { return a(ax, py) || b(ax, py); }; }
+    function above(y) { return function (ax, py) { return py <= y; }; }
+    function add(shape, ramp, z) { parts.push({ f: shape, ramp: ramp, z: z }); }
+    // ---- 飾り（dx=中心からの列 0=真ん中の2列。sym=左右両方に置く） ----
+    function dot(dx, y, col) { decals.push([15 - dx, y, col]); decals.push([16 + dx, y, col]); }
+    function dotA(x, y, col) { decals.push([x, y, col]); }
+    function eyes(dx, y, style) {
+      if (style === "round") {        // 白目2×2・内側に黒目（縦2）・上にまぶたの線
+        dot(dx, y - 1, OUT); dot(dx + 1, y - 1, OUT);
+        dot(dx, y, OUT); dot(dx, y + 1, OUT); dot(dx + 1, y, WHITE); dot(dx + 1, y + 1, WHITE);
+      } else if (style === "big") {   // 3×3・色つきの瞳とハイライト
+        for (var i = 0; i < 3; i++) { dot(dx + i, y - 1, OUT); dot(dx + i, y, WHITE); dot(dx + i, y + 1, WHITE); dot(dx + i, y + 2, WHITE); }
+        dot(dx, y + 1, eyeCol); dot(dx + 1, y + 1, eyeCol); dot(dx, y + 2, OUT); dot(dx + 1, y + 2, eyeCol); dot(dx + 1, y + 1, WHITE);
+        dot(dx + 2, y + 2, WHITE);
+      } else if (style === "glow") {  // 光る目（くぼみの中で2×1が光る）
+        for (var g = -1; g <= 2; g++) { dot(dx + g, y - 1, OUT); dot(dx + g, y + 1, OUT); }
+        dot(dx - 1, y, OUT); dot(dx + 2, y, OUT);
+        dot(dx, y, eyeCol); dot(dx + 1, y, [255, 255, 220]);
+      } else {                        // angry：白目＋黒目＋つり上がった眉
+        dot(dx, y, OUT); dot(dx + 1, y, WHITE); dot(dx, y + 1, OUT); dot(dx + 1, y + 1, WHITE);
+        dot(dx, y - 1, OUT); dot(dx + 1, y - 2, OUT); dot(dx + 2, y - 2, OUT);
+      }
+    }
+    function mouth(y, w, style) {
+      if (style === "none") return;
+      for (var i = 0; i < w; i++) dot(i, y, OUT);
+      if (style === "smile") { dot(w, y - 1, OUT); }
+      else if (style === "fangs") { dot(w - 1, y + 1, WHITE); if (w > 2) dot(w - 1, y + 1, WHITE); }
+      else if (style === "open") { for (var j = 0; j < w; j++) dot(j, y + 1, j < w - 1 ? RED : OUT); dot(Math.max(0, w - 2), y + 1, WHITE); for (var k = 0; k < w - 1; k++) dot(k, y + 2, OUT); }
+    }
+    var floats = false;
+    var kind = MON_KINDS[Math.floor(rng() * MON_KINDS.length)];
+    var wood = monRamp(F(22, 34), 0.5, 0.4), leaf = monRamp(F(95, 135), 0.55, 0.45), gold = monRamp(46, 0.85, 0.56);
+
+    if (kind === "slime") {
+      var sw = F(10, 13.5), sh = F(8.5, 10.5), top = 30.5 - sh * 2;
+      add(and(or(ell(0, 30.5 - sh, sw, sh), cap(0, top + 3, 0, top - F(1, 4), F(2, 3.5), 0.6)), above(30.6)), main, 2);
+      if (rng() < 0.4) add(poly([[0, top - 6], [2.2, top - 1], [4.5, top - 4], [5.5, top + 1], [0, top + 2]]), monRamp(48, 0.85, 0.55), 3);   // 王冠
+      var sey = Math.round(30.5 - sh * 0.95);
+      eyes(R(2, 4), sey, pick(["round", "big", "angry"])); mouth(sey + 4, R(2, 3), pick(["smile", "open", "fangs"]));
+      for (var hl = 0; hl < 3; hl++) dotA(R(8, 10) + hl, Math.round(top + 4 + hl * 0.5), [255, 255, 255]);
+    } else if (kind === "beast") {
+      add(ell(5.5, 27.5, 3.3, 4.2), dark, 1);                                   // 足
+      add(ell(0, 21, F(8, 9.5), F(7, 8)), main, 2);                               // 胴
+      add(ell(0, 22.5, F(4.5, 5.5), F(4.5, 5.5)), belly, 3);                      // おなか
+      add(cap(7.5, 16.5, F(10, 11.5), 24.5, 2.4, 2.1), main, 4);                  // 腕
+      var hy = F(10, 11.5);
+      if (rng() < 0.6) add(poly([[3.5, hy - 4], [6.8, hy - 10.5], [8.8, hy - 3]]), main, 3.5);   // とがった耳
+      else add(ell(6.2, hy - 5.5, 2.6, 2.6), main, 3.5);                         // まるい耳
+      add(ell(0, hy, F(7, 8), F(6, 6.8)), main, 5);                               // 頭
+      add(ell(0, hy + 3.5, 3.2, 2.3), belly, 6);                                  // 鼻先
+      if (rng() < 0.4) add(cap(4.5, hy - 4.5, 6.5, hy - 10, 1.3, 0.5), bone, 5.5);   // つの
+      eyes(R(2, 3), Math.round(hy - 1), pick(["round", "angry", "big"]));
+      dot(0, Math.round(hy + 2), OUT); mouth(Math.round(hy + 5), 2, pick(["fangs", "smile", "open"]));
+      dot(Math.round(F(10, 11.5)) - 1, 27, WHITE);                               // つめ
+    } else if (kind === "bird") {
+      floats = rng() < 0.5;
+      add(poly([[4, 13], [14.8, F(5, 9)], [15.5, 18], [12, 23], [6, 22]]), acc, 1);   // つばさ
+      add(ell(0, 20, F(6.5, 7.5), F(7.5, 8.5)), main, 2);
+      add(ell(0, 22, 4.3, 5.3), belly, 3);
+      var by = F(9.5, 10.5);
+      add(ell(0, by, F(5.5, 6.2), 5.2), main, 4);
+      add(poly([[0, by - 9], [1.6, by - 4], [0, by - 3.5]]), acc, 3.5);           // とさか
+      add(poly([[0, by + 0.5], [2.6, by + 1.4], [0, by + 5.2]]), monRamp(36, 0.9, 0.55), 5);   // くちばし
+      if (!floats) add(cap(2.5, 27, 3, 31, 0.9), monRamp(36, 0.9, 0.5), 0);
+      eyes(R(2, 3), Math.round(by - 2), pick(["round", "angry", "big"]));
+      for (var fl = 0; fl < 3; fl++) { dot(9 + fl * 2, 15 + fl * 2, acc[1]); dot(9 + fl * 2, 16 + fl * 2, acc[1]); }   // 羽の線
+    } else if (kind === "golem") {
+      var stone = rng() < 0.5 ? monRamp(F(20, 50), 0.18, 0.5) : monRamp(hue, 0.3, 0.5);
+      add(rect(4.5, 27.5, 3.2, 3.5, 1.2), stone, 1);
+      add(rect(0, 18.5, F(8, 9), 7, 2), stone, 2);
+      add(rect(11.5, 18, 3.4, 6.5, 1.6), stone, 3);
+      add(ell(11.8, 25.5, 3.9, 3.4), stone, 3.5);
+      add(rect(0, 8.5, F(4.5, 5.5), 4.6, 1.6), stone, 4);
+      eyes(2, 8, "glow");
+      dot(0, 16, eyeCol); dot(0, 17, eyeCol); dot(1, 17, acc[3]); dot(0, 18, acc[3]); dot(0, 15, [255, 255, 255]);   // 胸の宝石
+      for (var ck = 0; ck < 4; ck++) { var cx = R(3, 8), cy = R(13, 23); dot(cx, cy, stone[1]); dot(cx + 1, cy + 1, stone[1]); }   // ひび
+      if (rng() < 0.5) add(and(rect(0, 5, 5.5, 1.6, 1), above(5.5)), monRamp(110, 0.5, 0.45), 4.5);   // こけ
+    } else if (kind === "ghost") {
+      floats = true;
+      var pale = rng() < 0.5 ? monRamp(F(180, 280), 0.35, 0.74) : main;
+      add(and(or(ell(0, 13, 9, 9.2), rect(0, 20, 9, 6)), function (ax, py) { return py < 26.5 + 2.2 * Math.sin(ax * 1.35 + 0.6); }), pale, 2);
+      add(ell(F(9.5, 10.5), 17, 3.2, 2.4), pale, 3);
+      for (var ge = 0; ge < 4; ge++) { dot(2, 10 + ge, OUT); dot(3, 10 + ge, OUT); dot(4, 10 + ge, ge === 0 ? pale[2] : OUT); }   // くぼんだ目
+      dot(3, 12, eyeCol); dot(3, 11, [255, 255, 230]);
+      for (var gm = 0; gm < 3; gm++) { dot(gm, 17, OUT); dot(gm, 18, OUT); } dot(0, 19, OUT); dot(1, 19, OUT); dot(0, 18, RED);
+    } else if (kind === "bug") {
+      for (var lg = 0; lg < 3; lg++) {                                             // 足6本
+        var ly = 15 + lg * 3.5;
+        add(cap(4, ly, 10.5, ly - 3 + lg * 1.5, 0.85), dark, 1);
+        add(cap(10.5, ly - 3 + lg * 1.5, 13, ly + 3 + lg, 0.8), dark, 1);
+      }
+      add(ell(0, 24, F(6.5, 7.5), 6.2), main, 2);
+      add(ell(0, 16, 5, 3.8), acc, 3);
+      add(ell(0, 9.5, 5.5, 4.6), main, 4);
+      add(cap(2.2, 6, 5.5, 0.8, 0.6), dark, 3.5); add(ell(5.8, 0.9, 1, 1), acc, 3.6);   // 触角
+      add(poly([[0.6, 13], [3.5, 12], [1.6, 15.2]]), bone, 5);                      // あご
+      dot(2, 8, eyeCol); dot(3, 8, eyeCol); dot(2, 9, eyeCol); dot(3, 9, OUT); dot(2, 8, [255, 255, 255]);
+      for (var st = 0; st < 3; st++) for (var sx = 0; sx < 6; sx++) dot(sx, 20 + st * 3, main[2]);   // しま
+    } else if (kind === "dragon") {
+      var wy = F(3, 6);
+      add(poly([[5, 15], [9, wy + 2], [15.5, wy], [15, 13], [13, 17.5], [10, 19]]), acc, 0);   // つばさ
+      add(ell(5.5, 27.5, 3.3, 4), main, 1);
+      add(ell(0, 21, 8, 7.5), main, 2);
+      add(ell(0, 22.5, 4.4, 6), belly, 3);
+      add(cap(7, 17, 10, 23, 2.1, 1.7), main, 4);
+      add(cap(0, 16, 0, 11, 3.6), main, 4.5);
+      add(ell(0, 9, 6, 4.8), main, 5);
+      add(ell(0, 12, 3.6, 2.6), main, 6);
+      add(cap(4, 6.5, F(7, 9), F(0.5, 2.5), 1.3, 0.45), bone, 4.8);              // つの
+      eyes(R(2, 3), 8, pick(["angry", "glow"]));
+      dot(1, 12, OUT); mouth(14, 3, pick(["fangs", "open"]));
+      for (var bs = 0; bs < 4; bs++) for (var bx = 0; bx < 3; bx++) dot(bx, 19 + bs * 2, belly[2]);   // おなかのすじ
+      for (var wl = 0; wl < 3; wl++) dot(10 + wl, Math.round(wy + 4 + wl * 3), acc[1]);
+    } else if (kind === "shroom") {
+      var capR = monRamp(pick([0, 20, 280, 200, 120]), 0.7, 0.5);
+      add(ell(3.8, 30, 2.6, 1.7), dark, 1);
+      add(rect(0, 23.5, F(5, 6), 6, 2), belly, 2);
+      add(ell(F(7.5, 8.5), 23, 3, 1.6), monRamp(110, 0.55, 0.45), 3);              // 葉っぱの手
+      var cr = F(12, 14);
+      add(and(ell(0, 15, cr, F(9, 10.5)), above(16.5)), capR, 4);
+      for (var sp = 0; sp < 5; sp++) { var spx = R(0, 9), spy = R(8, 14); dot(spx, spy, capR[5]); dot(spx + 1, spy, capR[5]); dot(spx, spy + 1, capR[4]); dot(spx + 1, spy + 1, capR[4]); }
+      eyes(2, 20, pick(["round", "big"])); mouth(24, 2, pick(["smile", "open"]));
+    } else if (kind === "orb") {
+      floats = true;
+      for (var tn = 0; tn < 3; tn++) { var tx = 1.5 + tn * 3.4; add(function (tx) { return function (ax, py) { return py > 18 && py < 31 && Math.abs(ax - tx - 1.2 * Math.sin(py * 0.6 + tx)) < 1.7 - (py - 18) * 0.05; }; }(tx), dark, 1); }
+      add(ell(0, 14, F(9, 10), F(9, 10)), main, 2);
+      for (var spk = 0; spk < 2; spk++) add(poly([[3 + spk * 4.5, 7 - spk * 0.5], [5 + spk * 5, -0.5 + spk * 3], [6.6 + spk * 4, 8 + spk * 1.5]]), acc, 1.5);
+      add(ell(0, 14.5, 5.6, 4.6), [OUT, WHITE, WHITE, WHITE, WHITE, WHITE], 3);   // 大きな目（白）
+      for (var iy = -2; iy <= 2; iy++) for (var ix = 0; ix <= 2; ix++) if (ix * ix + iy * iy <= 5) dot(ix, 15 + iy, ix === 0 && Math.abs(iy) <= 1 ? OUT : eyeCol);
+      dotA(14, 13, [255, 255, 255]);
+    } else if (kind === "bat") {
+      floats = true;
+      add(poly([[3, 13], [8, 7], [15.6, 5], [15.2, 11], [13.5, 16], [11.5, 14], [9.5, 18], [6.5, 16]]), dark, 0);   // つばさの膜
+      add(poly([[1.5, 12], [4.5, F(3, 5.5)], [6.5, 12.5]]), main, 1.5);            // 耳
+      add(ell(0, 16.5, F(5.5, 6.5), 6.2), main, 2);
+      add(ell(0, 18.5, 3.2, 3.6), belly, 3);
+      add(ell(2.6, 23.5, 1.6, 1.6), dark, 1.8);
+      for (var wb = 0; wb < 3; wb++) { dot(8 + wb * 2, 8 + wb, dark[4]); dot(11 + wb, 10 + wb * 2, dark[4]); }
+      eyes(1, 14, pick(["angry", "glow", "round"])); mouth(19, 2, "fangs");
+    } else if (kind === "snake") {
+      add(ell(0, 28, F(10, 11.5), 3.4), main, 1);
+      add(ell(0, 24.3, 8.6, 3.1), main, 2);
+      add(ell(0, 20.8, 7, 2.9), main, 3);
+      add(cap(0, 19, 0, 11, 3.2), main, 3.5);
+      var cobra = rng() < 0.6;
+      if (cobra) add(ell(0, 11.5, F(7, 8), 6.5), main, 3.8);
+      add(ell(0, 8.5, 4.6, 3.8), main, 5);
+      if (cobra) { dot(3, 11, acc[3]); dot(4, 12, acc[3]); dot(3, 13, acc[3]); dot(5, 13, acc[2]); }   // フードのもよう
+      for (var ss = 0; ss < 3; ss++) for (var sx2 = 0; sx2 < 4; sx2++) if ((sx2 + ss) % 2) dot(sx2 * 2, 21 + ss * 3.5 | 0, main[2]);
+      eyes(2, 7, pick(["glow", "angry"]));
+      dot(0, 11, OUT); dot(0, 12, RED); dot(0, 13, RED); dot(1, 14, RED);         // した
+    } else if (kind === "frog") {
+      add(ell(9, 27.5, 4.6, 3.2), main, 1);
+      add(and(ell(0, 22.5, F(10.5, 12), 8), above(30.6)), main, 2);
+      add(ell(0, 25.5, 6.5, 5), belly, 3);
+      add(ell(5.5, 14, 3.6, 3.4), main, 4);
+      add(cap(5.5, 24, 7, 30, 1.7), main, 3.5);
+      eyes(4, 13, "big");
+      for (var fm = 0; fm < 6; fm++) dot(fm, 19, OUT); dot(6, 18, OUT);
+      if (rng() < 0.5) for (var fs = 0; fs < 4; fs++) { dot(R(2, 9), R(16, 22), main[2]); }
+    } else if (kind === "crab") {
+      for (var cl = 0; cl < 3; cl++) add(cap(6 + cl, 23, 11 + cl * 1.2, 26 + cl * 1.5, 1), main, 1);
+      add(cap(3.2, 16, 3.6, 10, 0.9), main, 1.5);
+      add(ell(3.6, 9.5, 1.9, 1.9), [OUT, WHITE, WHITE, WHITE, WHITE, WHITE], 1.6);
+      add(ell(0, 21, F(9.5, 10.5), 6.5), main, 2);
+      add(cap(7, 19, 11, 15, 1.7), main, 2.5);
+      add(and(ell(12, 12.5, 3.9, 4.2), function (ax, py) { return !(ax > 11.5 && py < 12 && ax - 11.5 > (12 - py) * 0.2 - 0.5 && py > 7.5 + (ax - 11.5) * 0.4); }), main, 3);   // はさみ
+      dot(3, 9, OUT); dot(3, 10, OUT);
+      for (var cs = 0; cs < 3; cs++) dot(cs * 2 + 1, 17, main[4]);
+      mouth(24, 2, "smile");
+    } else if (kind === "skeleton") {
+      add(cap(3.6, 22, 4, 30, 1.25), bone, 1);
+      add(ell(4.6, 30.6, 2.2, 1.1), bone, 1.2);
+      add(ell(0, 21.5, 4.6, 2), bone, 2);
+      add(cap(0, 20, 0, 12, 1.1), bone, 2.2);
+      for (var rb = 0; rb < 3; rb++) add(cap(0.6, 13 + rb * 2.3, 6 - rb * 0.6, 14 + rb * 2.3, 0.85), bone, 3);
+      add(cap(6.8, 12, 9, 18.5, 1.05), bone, 3.2); add(cap(9, 18.5, 10.2, 24, 0.95), bone, 3.2);
+      add(ell(0, 7, F(5.2, 6), 5), bone, 4);
+      add(rect(0, 12, 3, 1.4, 0.5), bone, 4.1);
+      for (var so = 0; so < 2; so++) { dot(1, 6 + so, OUT); dot(2, 6 + so, OUT); dot(3, 6 + so, OUT); }
+      dot(2, 7, eyeCol); dot(0, 9, OUT);
+      for (var tt2 = 0; tt2 < 3; tt2++) dot(tt2, 11, tt2 % 2 ? OUT : WHITE);
+    } else if (kind === "imp") {
+      add(poly([[3, 14], [9, 8], [13.5, 6], [12.5, 13], [9, 17]]), dark, 0);
+      add(cap(3, 23, 3.6, 30, 1.7), dark, 1);
+      add(ell(0, 20, 5.2, 5.6), main, 2);
+      add(cap(5, 16.5, 8.5, 22, 1.5), main, 3);
+      add(poly([[4.5, 10], [10.5, F(5, 8)], [6, 13]]), main, 3.5);
+      add(cap(3, 6.5, F(4.5, 6), F(0.5, 2.5), 1.3, 0.4), bone, 3.8);
+      add(ell(0, 11, 6, 5.3), main, 4);
+      eyes(1, 10, pick(["angry", "glow"])); mouth(14, 3, pick(["fangs", "open"]));
+      dot(0, 19, belly[3]); dot(0, 20, belly[3]); dot(1, 20, belly[3]);
+    } else if (kind === "treant") {
+      add(poly([[5, 25], [11.5, 31], [3.5, 31]]), wood, 1);
+      add(cap(5, 15, 11.5, 10, 1.8, 1.2), wood, 1.5);
+      add(rect(0, 21, F(6, 7), 10, 2), wood, 2);
+      add(ell(0, 6.5, F(9.5, 11), 6), leaf, 3);
+      add(ell(10.5, 10, 4.5, 3.8), leaf, 3.2);
+      for (var lv2 = 0; lv2 < 8; lv2++) dot(R(0, 13), R(2, 12), leaf[5]);
+      for (var bk = 0; bk < 3; bk++) { var bkx = R(2, 5), bky = R(23, 28); dot(bkx, bky, wood[1]); dot(bkx, bky + 1, wood[1]); }
+      eyes(2, 16, "glow"); mouth(21, 3, "open");
+      if (rng() < 0.5) { dot(R(3, 9), R(4, 9), RED); dot(R(10, 13), R(8, 11), RED); }   // 木の実
+    } else if (kind === "cat") {
+      var twin = rng() < 0.4;
+      var tly = F(15, 19);                                                           // しっぽ（両側＝ねこまた風・先が上に巻く）
+      add(cap(6, 28.5, 11, 27.5, 1.5), main, 0.5); add(cap(11, 27.5, 12.6, tly, 1.4, 1.6), main, 0.5);
+      add(ell(12.2, tly - 0.5, 1.9, 1.9), pick([main, belly]), 0.6);
+      add(ell(4.8, 28, 2.8, 3.2), main, 1);
+      add(ell(0, 22, F(6.5, 7.5), 6.8), main, 2);
+      add(ell(0, 23.5, 3.8, 4.5), belly, 3);
+      add(poly([[3, 7], [5.6, F(0.5, 2.5)], [8.2, 7.5]]), main, 3.5);
+      add(ell(0, 11, F(7.5, 8.2), 6.2), main, 4);
+      if (twin) add(ell(0, 11, 1, 1), main, 4);
+      var pat = rng() < 0.5;
+      if (pat) for (var pt = 0; pt < 3; pt++) { dot(pt + 1, 5 + pt, main[2]); dot(6, 18 + pt * 3, main[2]); dot(5, 19 + pt * 3, main[2]); }
+      eyes(2, 9, pick(["big", "round"]));
+      dot(0, 13, [240, 130, 160]); mouth(14, 2, "smile");
+      for (var wk = 0; wk < 3; wk++) { dot(5 + wk, 13, OUT); dot(5 + wk, 15 - (wk === 2 ? 0 : 0), wk ? OUT : main[3]); }   // ひげ
+    } else if (kind === "octo") {
+      for (var oc = 0; oc < 3; oc++) {
+        var ox = 1.8 + oc * 3.4;
+        add(cap(ox, 19, ox + 1 + oc * 1.2, 26, 1.9, 1.5), main, 1 + oc * 0.1);
+        add(cap(ox + 1 + oc * 1.2, 26, ox - 0.5 + oc * 2.2, 30.5, 1.5, 0.9), main, 1 + oc * 0.1);
+        dot(Math.round(ox + 1 + oc * 1.2), 27, belly[4]);
+      }
+      add(ell(0, 12.5, F(8, 9.5), F(9, 10)), main, 2);
+      eyes(2, 14, pick(["big", "angry", "round"]));
+      dot(0, 19, OUT); dot(1, 19, OUT); dot(0, 20, OUT);
+      for (var osp = 0; osp < 4; osp++) { var ox2 = R(1, 7), oy2 = R(5, 11); dot(ox2, oy2, main[4]); }
+    } else if (kind === "mage") {
+      add(poly([[0, 12], [4.5, 12], [10, 31], [0, 31]]), acc, 2);
+      add(ell(7.8, 18.5, 3.2, 4.3), acc, 3);
+      add(ell(8.6, 23, 1.7, 1.7), dark, 2.8);
+      add(ell(0, 11.5, 4.6, 4), [OUT, OUT, OUT, OUT, monRamp(hue, 0.3, 0.14)[3], OUT], 3.5);
+      add(ell(0, 8, F(9, 10.5), 1.9), main, 5);
+      add(poly([[0, -0.5], [1.8, 0.5], [5.5, 8], [0, 8]]), main, 4.8);
+      eyes(1, 11, "glow");
+      dot(1, 4, gold[4]); dot(0, 5, gold[4]); dot(1, 5, gold[5]); dot(1, 6, gold[4]);
+      for (var mb = 0; mb < 4; mb++) dot(mb, 20, gold[3]);
+    } else if (kind === "mimic") {
+      add(rect(0, 10.5, 10.5, 3.6, 1.2), wood, 1);
+      add(rect(0, 16, 9.5, 3, 0.5), [OUT, OUT, dark[1], dark[1], dark[2], dark[2]], 1.5);
+      add(rect(0, 24.5, 10.5, 6.5, 1.2), wood, 2);
+      add(ell(0, 19.5, 3.4, 1.8), monRamp(350, 0.7, 0.55), 2.5);
+      add(rect(7, 24.5, 1.3, 6.5), gold, 2.6); add(rect(7, 10.5, 1.3, 3.6), gold, 1.1);
+      add(rect(0, 22.5, 1.6, 2.2, 0.5), gold, 2.7);
+      for (var tx2 = 0; tx2 < 9; tx2 += 2) { dot(tx2, 14, WHITE); dot(tx2 + 1, 18, WHITE); }
+      dot(3, 16, eyeCol); dot(4, 16, eyeCol); dot(0, 23, OUT);
+    } else if (kind === "flame") {
+      floats = true;
+      var fh = pick([18, 24, 200, 120, 280]), fire = monRamp(fh, 0.95, 0.52), core = monRamp(fh + (fh < 60 ? 28 : 20), 0.95, 0.72);
+      add(or(ell(0, 21, 9.5, 9), or(poly([[0, 0.5], [3.6, 10], [0, 13]]), or(poly([[5, 5], [9, 14], [3.2, 13]]), poly([[10, 10.5], [11.5, 19], [7, 17]])))), fire, 2);
+      add(or(ell(0, 22.5, 6, 6.2), poly([[0, 8], [2.6, 17], [0, 18]])), core, 3);
+      eyes(2, 20, pick(["round", "angry"])); mouth(24, 2, pick(["smile", "open"]));
+      for (var sk = 0; sk < 4; sk++) dotA(R(2, 29), R(2, 10), core[5]);
+    } else if (kind === "jelly") {
+      floats = true;
+      var jel = monRamp(hue, 0.55, 0.66);
+      for (var jt = 0; jt < 3; jt++) { var jx = 1.5 + jt * 3.8; add(function (jx) { return function (ax, py) { return py > 14 && py < 31 - jx && Math.abs(ax - jx - Math.sin(py * 0.55 + jx) * 1.1) < 1; }; }(jx), acc, 1); }
+      add(and(ell(0, 12, F(9.5, 11), 8.5), above(15)), jel, 2);
+      for (var jk = 0; jk < 3; jk++) add(ell(1.5 + jk * 3.8, 15, 2.1, 1.6), jel, 2.1);
+      add(ell(0, 10, 3.6, 2.6), acc, 3);
+      eyes(2, 11, "round"); mouth(14, 1, "smile");
+    } else if (kind === "crystal") {
+      floats = rng() < 0.4;
+      var cry = monRamp(pick([190, 280, 330, 150, 50]), 0.7, 0.6);
+      var cry2 =monRamp(pick([190, 280, 330, 150, 50]), 0.65, 0.5);
+      add(poly([[7, 14], [12, F(3, 6)], [15, 9], [12.5, 25], [7.5, 25]]), cry2, 1);   // 外側へ開く結晶
+      add(poly([[4, 9], [7, F(1, 4)], [9.5, 8], [9, 25], [4, 25]]), cry, 2);
+      add(poly([[0, 0.5], [5.5, 7], [6, 23], [0, 29.5]]), cry, 3);                       // まん中の大きな結晶
+      if (!floats) add(and(ell(0, 29, 12, 3.4), above(31)), monRamp(30, 0.15, 0.42), 4);
+      for (var cy2 = 3; cy2 < 27; cy2++) dot(0, cy2, cry[cy2 < 12 ? 5 : 4]);
+      for (var cf = 0; cf < 5; cf++) { dot(1 + cf, 7 + cf, cry[2]); dot(1 + cf, 24 - cf, cry[2]); }   // 面の境目
+      eyes(1, 14, "glow"); mouth(19, 2, pick(["fangs", "open", "smile"]));
+      if (floats) { dotA(3, 4, cry[5]); dotA(28, 6, cry[4]); dotA(27, 7, cry[3]); }
+    } else if (kind === "flower") {
+      add(ell(0, 29.5, 6.5, 2.4), wood, 1);
+      add(cap(0, 28, 0, 18, 1.6), leaf, 2);
+      add(ell(7, 22.5, 4.2, 1.8), leaf, 3);
+      var pr = F(3.2, 4);
+      add(or(ell(0, 3.8, pr, pr), or(ell(6.5, 7.5, pr, pr), or(ell(6.5, 14.5, pr, pr), ell(0, 18.2, pr * 0.8, pr * 0.8)))), acc, 3);
+      add(ell(0, 11, 5.6, 5.6), gold, 4);
+      eyes(2, 10, pick(["round", "big"])); mouth(14, 2, pick(["smile", "open", "fangs"]));
+    } else if (kind === "robot") {
+      add(rect(4, 27.5, 2.2, 3.6, 0.6), metal, 1);
+      add(rect(4.6, 30.6, 3, 1, 0.4), dark, 1.1);
+      add(cap(9, 15, 11, 22.5, 1.8), metal, 1.5);
+      add(ell(11.2, 24, 2.3, 2.1), dark, 1.6);
+      add(rect(0, 19.5, F(7, 8), 6, 1.3), main, 2);
+      add(rect(0, 20, 3.6, 2.5, 0.5), [OUT, OUT, dark[1], dark[2], dark[2], dark[3]], 3);
+      add(rect(0, 13, 1.6, 1.2), metal, 2.5);
+      add(rect(0, 8.5, F(5.5, 6.5), 4.8, 1.3), metal, 4);
+      add(rect(0, 8.8, 4.3, 2.6, 0.6), [OUT, OUT, OUT, [20, 30, 40], [30, 44, 58], [40, 60, 80]], 5);
+      add(cap(0, 4, 0, 1.6, 0.6), metal, 3.9); add(ell(0, 1.3, 1.5, 1.4), monRamp(0, 0.85, 0.55), 3.95);
+      dot(1, 8, eyeCol); dot(2, 8, eyeCol); dot(1, 9, eyeCol); dot(2, 9, eyeCol);
+      dot(1, 19, [255, 80, 80]); dot(2, 19, [90, 255, 120]); dot(0, 21, [255, 220, 80]);
+      dot(6, 5, metal[1]); dot(7, 16, main[1]);
+    } else if (kind === "bee") {
+      floats = true;
+      var yel = monRamp(F(40, 52), 0.9, 0.56);
+      add(ell(8.5, 9.5, 4.8, 3), monRamp(195, 0.4, 0.82), 0);
+      add(ell(9, 14, 3.5, 2.2), monRamp(195, 0.4, 0.78), 0.1);
+      add(poly([[0, 27], [1.4, 27], [0, 31.5]]), dark, 1.5);
+      add(ell(0, 22, 6.2, 6.8), yel, 2);
+      add(ell(0, 14.5, 4.3, 3.2), dark, 3);
+      add(ell(0, 9, 4.6, 3.9), dark, 4);
+      add(cap(1.5, 6, 4.2, 1.2, 0.55), dark, 3.5);
+      for (var bs2 = 0; bs2 < 3; bs2++) for (var bx2 = 0; bx2 < 7; bx2++) dot(bx2, 19 + bs2 * 3, OUT);
+      eyes(2, 8, pick(["big", "glow"]));
+    } else {   // knight
+      var cape = acc, plate = metal;
+      add(poly([[6, 12], [12, 30.5], [0, 30.5], [0, 12]]), cape, 0);
+      add(rect(4, 27.5, 2.7, 3.5, 1), dark, 1);
+      add(rect(0, 19.5, 7.5, 6.5, 2), plate, 2);
+      add(ell(8.8, 13.5, 4.2, 3.2), cape, 3);
+      add(rect(10.5, 20.5, 2.4, 5.5, 1.2), plate, 2.5);
+      add(rect(0, 8.5, 5.2, 5.4, 2.2), plate, 4);
+      add(poly([[0, 3.5], [1.5, -0.5], [3.5, 0.5], [2, 4]]), acc, 3.8);           // かざり
+      for (var vx = 0; vx < 5; vx++) dot(vx, 9, OUT);
+      dot(2, 9, eyeCol); dot(3, 9, eyeCol);
+      for (var bt = 0; bt < 7; bt++) dot(bt, 23, dark[1]); dot(0, 23, monRamp(48, 0.85, 0.6)[3]);
+      dot(0, 17, plate[4]); dot(0, 18, plate[4]); dot(1, 17, plate[4]);
+    }
+
+    // ---- ラスタ化：部品ごとのマスク → いちばん手前の部品が持ち主 ----
+    var owner = new Int16Array(N * N).fill(-1), masks = [];
+    for (var p = 0; p < parts.length; p++) {
+      var m = new Uint8Array(N * N);
+      for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) { if (parts[p].f(Math.abs(x + 0.5 - 16), y + 0.5)) m[y * N + x] = 1; }
+      masks.push(m);
+    }
+    var order = parts.map(function (pp, i) { return i; }).sort(function (a, b) { return parts[a].z - parts[b].z; });
+    for (var oi = 0; oi < order.length; oi++) { var pi = order[oi], mm = masks[pi]; for (var k = 0; k < N * N; k++) if (mm[k]) owner[k] = pi; }
+    // ---- 陰影：部品ごとに「縁からの距離」で丸い高さを作り、その傾きで光を当てる ----
+    var LX = -0.44, LY = -0.66, LZ = 0.61;
+    var tone = new Int8Array(N * N).fill(-1);
+    for (var q = 0; q < parts.length; q++) {
+      var mk = masks[q], d = new Float32Array(N * N), maxD = 0;
+      for (var i1 = 0; i1 < N * N; i1++) d[i1] = mk[i1] ? 1e9 : 0;
+      for (var y1 = 0; y1 < N; y1++) for (var x1 = 0; x1 < N; x1++) {        // 2回走査の距離変換
+        var i2 = y1 * N + x1; if (!d[i2]) continue;
+        var v = d[i2];
+        v = Math.min(v, (x1 > 0 ? d[i2 - 1] : 0) + 1, (y1 > 0 ? d[i2 - N] : 0) + 1, (x1 > 0 && y1 > 0 ? d[i2 - N - 1] : 0) + 1.414, (x1 < N - 1 && y1 > 0 ? d[i2 - N + 1] : 0) + 1.414);
+        d[i2] = v;
+      }
+      for (var y3 = N - 1; y3 >= 0; y3--) for (var x3 = N - 1; x3 >= 0; x3--) {
+        var i3 = y3 * N + x3; if (!d[i3]) continue;
+        var w = d[i3];
+        w = Math.min(w, (x3 < N - 1 ? d[i3 + 1] : 0) + 1, (y3 < N - 1 ? d[i3 + N] : 0) + 1, (x3 < N - 1 && y3 < N - 1 ? d[i3 + N + 1] : 0) + 1.414, (x3 > 0 && y3 < N - 1 ? d[i3 + N - 1] : 0) + 1.414);
+        d[i3] = w; if (w > maxD) maxD = w;
+      }
+      var D = Math.max(1.5, Math.min(maxD, 8)), H = new Float32Array(N * N);
+      for (var i4 = 0; i4 < N * N; i4++) if (d[i4]) { var tt = Math.min(d[i4] / D, 1), u = 1 - tt; H[i4] = D * Math.sqrt(1 - u * u); }
+      for (var y5 = 0; y5 < N; y5++) for (var x5 = 0; x5 < N; x5++) {
+        var i5 = y5 * N + x5; if (owner[i5] !== q) continue;
+        var hl2 = x5 > 0 ? H[i5 - 1] : 0, hr = x5 < N - 1 ? H[i5 + 1] : 0, hu = y5 > 0 ? H[i5 - N] : 0, hd = y5 < N - 1 ? H[i5 + N] : 0;
+        var nx = -(hr - hl2) / 2, ny = -(hd - hu) / 2, nz = 1, nl = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        var I = (nx * LX + ny * LY + nz * LZ) / nl;
+        tone[i5] = I >= 0.86 ? 5 : I >= 0.7 ? 4 : I >= 0.4 ? 3 : I >= 0.02 ? 2 : 1;
+      }
+    }
+    // ---- 色を置く：外側の縁=輪郭（光の当たる左上は少し明るい輪郭）・手前の部品に接する所=影の線 ----
+    var px = new Array(N * N);
+    for (var y6 = 0; y6 < N; y6++) for (var x6 = 0; x6 < N; x6++) {
+      var i6 = y6 * N + x6, o = owner[i6];
+      if (o < 0) { px[i6] = null; continue; }
+      var rp = parts[o].ramp;
+      var nb = [[x6 - 1, y6, 1], [x6 + 1, y6, 0], [x6, y6 - 1, 1], [x6, y6 + 1, 0]], col = rp[tone[i6]];
+      for (var n = 0; n < 4; n++) {
+        var xx = nb[n][0], yy = nb[n][1], on = (xx < 0 || yy < 0 || xx >= N || yy >= N) ? -1 : owner[yy * N + xx];
+        if (on < 0) { col = nb[n][2] ? rp[1] : rp[0]; if (!nb[n][2]) break; }
+        else if (on !== o && parts[on].z > parts[o].z && col !== rp[0]) col = rp[1];
+      }
+      px[i6] = col;
+    }
+    // 外側の輪郭は1段濃く（左上だけ rp[1] になっている所も、上下左右どこかが外に面していれば外枠の色に寄せる）
+    for (var y7 = 0; y7 < N; y7++) for (var x7 = 0; x7 < N; x7++) {
+      var i7 = y7 * N + x7; if (!px[i7]) continue;
+      var outN = 0; if (x7 === 0 || !px[i7 - 1]) outN++; if (x7 === N - 1 || !px[i7 + 1]) outN++; if (y7 === 0 || !px[i7 - N]) outN++; if (y7 === N - 1 || !px[i7 + N]) outN++;
+      if (outN >= 2) px[i7] = parts[owner[i7]].ramp[0];
+    }
+    for (var dc = 0; dc < decals.length; dc++) {
+      var dd = decals[dc], di = dd[1] * N + dd[0];
+      if (dd[0] >= 0 && dd[0] < N && dd[1] >= 0 && dd[1] < N && px[di]) px[di] = dd[2];
+    }
+    return { w: N, h: N, px: px, float: floats, kind: kind };
+  }
+
   function drawPixels(canvas, pixels) {
     var ctx = canvas.getContext("2d"), s = canvas.width / 16;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -6768,7 +7227,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function buildFighter(data, opts) {
     var f = {
       label: (data.name || opts.label), index: opts.index,
-      pixels: data.pixels, base: data.base, skills: data.skills, passives: data.passives || [],
+      pixels: data.pixels, sprite: data.sprite || null, base: data.base, skills: data.skills, passives: data.passives || [],
       final: finalize(data.base),
       maxHp: opts.maxHp || 999, regen: opts.regen || 0, isAI: !!opts.isAI, doubleAct: opts.doubleAct || 0, extraUsed: false, dblUsed: false,
       hp: opts.maxHp || 999, alpha: 1,
@@ -6910,7 +7369,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var f1;
     if (soloMode === "saved") {   // 保存キャラから完全ランダム（自分含む・重複可・ミラーもあり得る）
       var saved = loadSaved(), enemy = saved.length ? decodeFighter(saved[randInt(0, saved.length - 1)]) : null;
-      if (!enemy) enemy = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: pickSkills(), passives: pickPassives() };   // 保険
+      if (!enemy) enemy = { pixels: genRandomEnemyPixels(), sprite: genMonster(), base: genRandomStats(), skills: pickSkills(), passives: pickPassives() };   // 保険
       f1 = buildFighter(enemy, { label: (enemy.name || t("who.enemy")), index: 1, isAI: true });   // 既定HP999・難易度スケールなし
     } else if (soloMode === "infinity") {
       /* 無限ハチャメチャの出現テーブル。50連勝を境に前半・後半で変わる（soloStage=連勝数なので 戦目=soloStage+1）。
@@ -6932,7 +7391,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
         if (rd === "insane") { rsk = pick6skills(); rpa = pickPassivesN(6); }
         else if (rd === "extreme") { rsk = pick3phys3magic(); rpa = pickPassivesN(4); }
         else { rsk = pickSkills(); rpa = pickPassives(); }
-        var ren = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: rsk, passives: rpa };
+        var ren = { pixels: genRandomEnemyPixels(), sprite: genMonster(), base: genRandomStats(), skills: rsk, passives: rpa };
         f1 = buildFighter(ren, { label: t("who.enemy"), index: 1, isAI: true, maxHp: diffMaxHp(rd), regen: diffRegen(rd), doubleAct: diffDouble(rd) });
       }
     } else {   // 難易度ソロ：ランダム敵＋難易度スケール（⑥物理3魔法3/⑦ランダム6・パッシブ増）
@@ -6940,7 +7399,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       if (soloDiff === "insane") { eskills = pick6skills(); epass = pickPassivesN(6); }
       else if (soloDiff === "extreme") { eskills = pick3phys3magic(); epass = pickPassivesN(4); }
       else { eskills = pickSkills(); epass = pickPassives(); }
-      var en = { pixels: genRandomEnemyPixels(), base: genRandomStats(), skills: eskills, passives: epass };
+      var en = { pixels: genRandomEnemyPixels(), sprite: genMonster(), base: genRandomStats(), skills: eskills, passives: epass };
       f1 = buildFighter(en, { label: t("who.enemy"), index: 1, isAI: true, maxHp: diffMaxHp(soloDiff), regen: diffRegen(soloDiff), doubleAct: diffDouble(soloDiff) });
     }
     beginBattle(f0, f1, { kind: "solo" });
@@ -8055,7 +8514,32 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     bctx.restore();
     if (battle && battle.flash > 0) { bctx.fillStyle = "rgba(255,255,255," + battle.flash + ")"; bctx.fillRect(0, 0, BW, BH); }
   }
+  // 生成モンスターを一度だけ小さなキャンバスに描いておく（毎コマ1024回塗らない）。白いシルエットは被弾の光用
+  function monsterCanvases(sp) {
+    if (sp._cv) return sp._cv;
+    var cv = document.createElement("canvas"), wv = document.createElement("canvas");
+    cv.width = wv.width = sp.w; cv.height = wv.height = sp.h;
+    var c = cv.getContext("2d"), w = wv.getContext("2d");
+    for (var i = 0; i < sp.px.length; i++) {
+      var p = sp.px[i]; if (!p) continue;
+      var x = i % sp.w, y = (i / sp.w) | 0;
+      c.fillStyle = "rgb(" + p[0] + "," + p[1] + "," + p[2] + ")"; c.fillRect(x, y, 1, 1);
+      w.fillStyle = "#fff"; w.fillRect(x, y, 1, 1);
+    }
+    sp._cv = { img: cv, white: wv };
+    return sp._cv;
+  }
   function drawSprite(f) {
+    if (f.sprite) {
+      var mc = monsterCanvases(f.sprite), size = 16 * SCALE, mh = size / 2;
+      var mx = POS[f.index].x + (f.ox || 0), my = POS[f.index].y + (f.oy || 0) - (f.sprite.float ? 6 : 0);
+      bctx.save(); bctx.globalAlpha = f.alpha; bctx.imageSmoothingEnabled = false;
+      bctx.translate(mx, my); if (f.rot) bctx.rotate(f.rot); if (f.index === 1) bctx.scale(-1, 1);
+      bctx.drawImage(mc.img, -mh, -mh, size, size);
+      if (f.hitFlash > 0) { bctx.globalAlpha = f.alpha * f.hitFlash * 0.85; bctx.drawImage(mc.white, -mh, -mh, size, size); }
+      bctx.restore();
+      return;
+    }
     if (!f.pixels) return;
     var s = SCALE, half = 16 * s / 2;
     var cx = POS[f.index].x + (f.ox || 0), cy = POS[f.index].y + (f.oy || 0), mirror = (f.index === 1);
