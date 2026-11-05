@@ -6319,9 +6319,12 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     var N = MON_N, parts = [], decals = [];
     // ---- 色 ----
     var hue = F(0, 360), sat = F(0.45, 0.8), lit = F(0.42, 0.58);
+    // 青・紫は同じ明るさでも暗く見え、紺のバトル画面に沈む → 見た目の明るさ(輝度)が足りるまで持ち上げる
+    var bright = function (h, s, l) { for (var g = 0; g < 8; g++) { var c = monHsl(h, s, l); if (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2] >= 105) break; l = Math.min(0.72, l + 0.04); } return l; };
+    lit = bright(hue, sat, lit);
     var main = monRamp(hue, sat, lit);
     var accHue = rng() < 0.5 ? hue + F(140, 220) : hue + pick([-40, 40]);
-    var acc = monRamp(accHue, F(0.5, 0.85), F(0.48, 0.62));
+    var accS = F(0.5, 0.85), acc = monRamp(accHue, accS, bright(accHue, accS, F(0.48, 0.62)));
     var belly = monRamp(monToward(hue, 50, 30), sat * 0.45, Math.min(0.82, lit + 0.24));
     var bone = monRamp(42, 0.3, 0.78), metal = monRamp(F(200, 230), 0.14, 0.6), dark = monRamp(hue, sat * 0.6, 0.26);
     var eyeCol = pick([[255, 226, 74], [255, 90, 70], [120, 240, 255], [180, 255, 120], [255, 140, 230]]);
