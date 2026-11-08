@@ -26,7 +26,7 @@
   #frame{position:relative;width:min(100vw,56.25vh);height:100vh;overflow:hidden;
     background:#070a12;box-shadow:0 0 16px rgba(0,0,0,.55);}
   #app{position:absolute;top:0;left:0;right:0;bottom:54px;overflow-y:auto;overflow-x:hidden;
-    padding:6px 10px 10px;-webkit-overflow-scrolling:touch;}
+    padding:14px 10px 10px;-webkit-overflow-scrolling:touch;}
   h1,h2,h3{margin:0;letter-spacing:1px;}
   .pixel{image-rendering:pixelated;image-rendering:crisp-edges;}
   .screen{display:none;} .screen.active{display:block;}
@@ -149,7 +149,7 @@
   #qrshowbtn{background:#3a2a6e;border-color:#7a5cff;} #qrscanbtn{background:#5a2a4a;border-color:#ff5aa0;}
 
   /* バトル */
-  #screen-battle{padding-top:14px;}   /* HUD上に約20px(app6px+14px)の余白でバランス */
+  #screen-battle{padding-top:14px;}   /* HUD上に約28px(app14px+14px)の余白。スピードバー(top:10px)との重なりを前と同じに保つ */
   .hud{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;}
   .pcard{flex:1;background:#0d1424;border:2px solid #243a63;border-radius:8px;padding:7px 9px;}
   .pcard.p2{text-align:right;}
@@ -192,7 +192,7 @@
      #frame の中いっぱい（下の ⚙/🌐 のバーより上）・ほかの窓より上・確かめの窓（ask-ov 120）より下。
      本文だけスクロールし、下の「まえへ/つぎへ」は地の色の帯に置く（長いページでも本文が透けない・最後の行が帯に隠れない） */
   .overlay.guide-ov{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;z-index:110;background:#070a12;}
-  .guide-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 24px;}
+  .guide-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:22px 16px 24px;}
   .guide-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
   .guide-title{margin:0;font-size:15px;font-weight:bold;color:#ffd24a;letter-spacing:1px;}
   .guide-step{margin:0;font-size:15px;font-weight:bold;color:#9fc0ea;white-space:nowrap;unicode-bidi:isolate;}   /* 「1 / 8」は右から左の言葉でも左から（dir=ltr） */
@@ -264,7 +264,7 @@
   #watch-quit{margin-top:14px;background:#2a1822;border:2px solid #6e2c3e;color:#ffb0c0;}
 
   /* スピードバー（観戦中だけ表示・上部中央のピル列。通常プレイでは絶対に出さない） */
-  #speedbar{position:absolute;top:2px;left:0;right:0;z-index:70;justify-content:center;
+  #speedbar{position:absolute;top:10px;left:0;right:0;z-index:70;justify-content:center;
     align-items:center;flex-wrap:wrap;gap:4px;padding:0 6px;pointer-events:none;}
   #speedbar .spdlabel{pointer-events:none;font-size:10px;color:#9fc0ea;margin-right:2px;
     background:rgba(7,10,18,.82);border-radius:6px;padding:2px 6px;}
