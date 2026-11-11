@@ -6959,7 +6959,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       var nm = document.createElement("span"); nm.textContent = pname(pp); nm.className = "rar-" + pp.rarity;   // レア度で色
       pdiv.appendChild(ico); pdiv.appendChild(nm); pl.appendChild(pdiv);
     }
-    if (!setupBuf.name || AUTO_NICKS.indexOf(setupBuf.name) >= 0) setupBuf.name = autoNickname(b);   // 初期ニックネーム自動入力（未入力or前回の自動名なら再計算・カスタム名は保持）
+    if (!setupBuf.name || setupBuf.autoName || AUTO_NICKS.indexOf(setupBuf.name) >= 0) { setupBuf.name = autoNickname(b); setupBuf.autoName = true; }   // 初期ニックネーム自動入力（未入力or前回の自動名なら再計算・カスタム名は保持）
     $("nameinput").value = setupBuf.name;
     $("setupresult").style.display = "block";
     $("confirmbtn").disabled = false;
@@ -9328,7 +9328,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("setup-back").onclick = function () { showScreen("title"); };
     $("btnsaved").onclick = function () { sfx.select(); openSaved(); };
     $("savebtn").onclick = function () { saveCurrentChar(); };
-    $("nameinput").oninput = function () { setupBuf.name = (this.value || "").slice(0, (LANG === "en") ? 12 : 8); };
+    $("nameinput").oninput = function () { setupBuf.autoName = false; setupBuf.name = (this.value || "").slice(0, (LANG === "en") ? 12 : 8); };
     $("saved-back").onclick = function () { makeRoom = null; showScreen("setup"); };   // ‹もどる は「1体けして ほぞん」の中断も兼ねる
     $("saved-receive").onclick = function () { sfx.select(); openBackup("receive"); };
 
