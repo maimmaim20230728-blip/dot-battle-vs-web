@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- プライバシー保護：外部オリジンへの通信を全面ブロック（ローカル/端末内のみ許可）。
      'self' はブラウザでは同一オリジン、Capacitor WebViewでは https://localhost（=端末内）を指し、外部送信は不可。 -->
 <meta http-equiv="Content-Security-Policy"
@@ -125,10 +125,12 @@
   .savedinfo{flex:1;min-width:0;text-align:left;}
   .savedname{font-size:15px;font-weight:bold;color:#e2ecfb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .savedstat{font-size:12px;color:#9ab;margin-top:2px;}
-  .savedbtns{display:flex;gap:6px;flex:none;}
-  .saveduse{width:auto;background:#1f6feb;font-size:13px;padding:9px 12px;}
-  .savedgift{width:auto;background:#3a2a6e;border-color:#7a5cff;font-size:16px;padding:9px 11px;}
-  .saveddel{width:auto;background:#5a2230;border-color:#6e2c3e;font-size:16px;padding:9px 11px;}
+  .savedbtns{display:flex;gap:6px;flex:none;align-items:center;}
+  /* 押しまちがえにくいよう 3つとも高さ48pxにそろえ、🎁 と 🗑 のあいだだけ 6px 足して 12px あける(名前の欄を狭めすぎない) */
+  .saveduse{width:auto;background:#1f6feb;font-size:13px;padding:9px 12px;min-height:48px;}
+  .savedgift{width:auto;background:#3a2a6e;border-color:#7a5cff;font-size:16px;padding:9px 11px;min-height:48px;min-width:48px;}
+  .saveddel{width:auto;background:#5a2230;border-color:#6e2c3e;font-size:16px;padding:9px 11px;min-height:48px;min-width:48px;}
+  .savedgift + .saveddel{margin-left:6px;}
   #saved-receive{margin-top:12px;background:#3a2a6e;border-color:#7a5cff;}
   #saved-empty{color:#9ab;font-size:13px;line-height:1.7;margin:24px 10px;}
   /* 満杯時の「1体けして ほぞん」バナー */
@@ -231,6 +233,8 @@
   #backupbox h2{font-size:18px;margin:0 0 8px;color:#ffd24a;}
   #bk-desc{font-size:13px;color:#cfe0f5;line-height:1.6;margin:0 0 10px;}
   #bk-text{width:100%;height:120px;resize:none;font-family:"Courier New",monospace;font-size:12px;background:#04060a;color:#9fe3ff;border:2px solid #2c416e;border-radius:8px;padding:8px;box-sizing:border-box;word-break:break-all;}
+  /* 拡大を許したので、iPhone(Safari)が 16px 未満の入力欄に触れたとき画面ごと勝手に拡大しないよう、iPhone だけ 16px に */
+  @supports (-webkit-touch-callout: none){ #bk-text{font-size:16px;} }
   #bk-hint{font-size:11px;color:#ffd24a;line-height:1.5;margin:8px 0 4px;}
   #backupbox button{margin-top:8px;}
   .seg{display:flex;border:2px solid #2c416e;border-radius:8px;overflow:hidden;}
@@ -764,6 +768,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.leech": "{name}は ダメージの20%を きゅうしゅう(+{n})",
       "passive.endure": "{name}は HP1で ふんばった！",
       "stage.streak": "{n} れんしょうちゅう",
+      "backup.storage_failed": "この たんまつには ほぞん できません。ほぞんの ばしょが いっぱいか、プライベートモードかも。",
+      "backup.undo_title": "もとに もどす コード",
+      "backup.undo_desc": "ふっかつ しました。まちがえたときは、この コードを 『ふっかつ』に はりつけると、まえの じょうたいに もどせるよ。コピーして とっておいてね。とじると がめんを ひらきなおすよ。",
+      "infinity.stage_next": "あと {n}しょうで {title}",
+      "solo.speed_hint": "はやさは うえの バーで かえられるよ（½ ゆっくり・1× ふつう・2× はやい）",
       "battle.first_strike": "{name}の せんせい こうげき！",
       "battle.regen": "{name}は {n} かいふく",
       "battle.poison_dmg": "{name}は どくで {n} ダメージ",
@@ -1080,6 +1089,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "passive.leech": "{name} drains 20% (+{n})",
       "passive.endure": "{name} hangs on at HP1!",
       "stage.streak": "{n} win streak",
+      "backup.storage_failed": "Can't save on this device. Storage may be full, or private mode is on.",
+      "backup.undo_title": "Code to undo",
+      "backup.undo_desc": "Restored. If this was a mistake, paste this code into Restore to go back. Copy it and keep it safe. Closing reloads the screen.",
+      "infinity.stage_next": "{n} to go for {title}",
+      "solo.speed_hint": "Change the speed with the bar at the top (½ slow, 1× normal, 2× fast).",
       "battle.first_strike": "{name} strikes first!",
       "battle.regen": "{name} regenerates {n}",
       "battle.poison_dmg": "{name} takes {n} poison damage",
@@ -1427,6 +1441,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "5 معارك محفوظة",
       "stage.saved_run_lc": "5 معارك محفوظة",
       "stage.streak": "سلسلة {n} فوز",
+      "backup.storage_failed": "تعذّر الحفظ على هذا الجهاز. قد تكون المساحة ممتلئة أو التصفح الخاص مفعّلًا.",
+      "backup.undo_title": "رمز التراجع",
+      "backup.undo_desc": "تمت الاستعادة. إذا كان ذلك خطأً، ألصق هذا الرمز في «استعادة» لتعود إلى الحالة السابقة. انسخه واحتفظ به. عند الإغلاق يُعاد فتح الشاشة.",
+      "infinity.stage_next": "المتبقي للقب {title}: {n}",
+      "solo.speed_hint": "غيّر السرعة من الشريط في الأعلى (½ بطيء، 1× عادي، 2× سريع).",
       "stat.atk": "هج",
       "stat.atk_full": "هجوم",
       "stat.def": "دف",
@@ -1816,6 +1835,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "সেভ 5 লড়াই",
       "stage.saved_run_lc": "সেভ 5 লড়াই",
       "stage.streak": "টানা {n} জয় চলছে",
+      "backup.storage_failed": "এই ডিভাইসে সেভ করা যাচ্ছে না। জায়গা ভরে গেছে, বা প্রাইভেট মোড চালু আছে।",
+      "backup.undo_title": "আগের অবস্থায় ফেরার কোড",
+      "backup.undo_desc": "ফিরিয়ে আনা হয়েছে। ভুল হয়ে থাকলে এই কোডটা 'ফিরিয়ে আনো'-তে পেস্ট করলে আগের অবস্থায় ফিরে যাবে। কপি করে রেখে দাও। বন্ধ করলে স্ক্রিন আবার খুলবে।",
+      "infinity.stage_next": "{title} পেতে আরও {n} জয়",
+      "solo.speed_hint": "ওপরের বারে গতি বদলাতে পারো (½ ধীর, 1× সাধারণ, 2× দ্রুত)।",
       "stat.atk": "আ",
       "stat.atk_full": "আক্রমণ",
       "stat.def": "র",
@@ -2205,6 +2229,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "Speicher-Serie",
       "stage.saved_run_lc": "Speicher-Serie",
       "stage.streak": "{n} Siege in Folge",
+      "backup.storage_failed": "Auf diesem Gerät kann nicht gespeichert werden. Vielleicht ist der Speicher voll oder der private Modus an.",
+      "backup.undo_title": "Code zum Rückgängigmachen",
+      "backup.undo_desc": "Wiederhergestellt. War das ein Fehler, füge diesen Code bei »Wiederherstellen« ein, dann ist wieder alles wie vorher. Kopiere ihn und bewahre ihn auf. Beim Schließen wird neu geladen.",
+      "infinity.stage_next": "Noch {n} bis {title}",
+      "solo.speed_hint": "Das Tempo änderst du in der Leiste oben (½ langsam, 1× normal, 2× schnell).",
       "stat.atk": "A",
       "stat.atk_full": "ANGRIFF",
       "stat.def": "V",
@@ -2594,6 +2623,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "Serie guardada",
       "stage.saved_run_lc": "serie guardada",
       "stage.streak": "{n} victorias seguidas",
+      "backup.storage_failed": "No se puede guardar en este dispositivo. Puede estar lleno o en modo privado.",
+      "backup.undo_title": "Código para deshacer",
+      "backup.undo_desc": "Restaurado. Si fue un error, pega este código en Restaurar para volver a como estaba. Cópialo y guárdalo. Al cerrar se recarga la pantalla.",
+      "infinity.stage_next": "{n} más para {title}",
+      "solo.speed_hint": "Cambia la velocidad con la barra de arriba (½ lenta, 1× normal, 2× rápida).",
       "stat.atk": "A",
       "stat.atk_full": "ATAQUE",
       "stat.def": "D",
@@ -2983,6 +3017,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "Série sauvée",
       "stage.saved_run_lc": "série sauvée",
       "stage.streak": "{n} victoires d'affilée",
+      "backup.storage_failed": "Impossible d'enregistrer sur cet appareil. Il est peut-être plein, ou en navigation privée.",
+      "backup.undo_title": "Code pour annuler",
+      "backup.undo_desc": "Restauré. Si c'était une erreur, colle ce code dans « Restaurer » pour revenir à l'état d'avant. Copie-le et garde-le. À la fermeture, l'écran se recharge.",
+      "infinity.stage_next": "Encore {n} pour {title}",
+      "solo.speed_hint": "Change la vitesse avec la barre du haut (½ lent, 1× normal, 2× rapide).",
       "stat.atk": "A",
       "stat.atk_full": "ATTAQUE",
       "stat.def": "D",
@@ -3372,6 +3411,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "सेव 5 मुक़ाबले",
       "stage.saved_run_lc": "सेव 5 मुक़ाबले",
       "stage.streak": "लगातार {n} जीत",
+      "backup.storage_failed": "इस डिवाइस पर सेव नहीं हो सकता। जगह भरी हो सकती है, या प्राइवेट मोड चालू है।",
+      "backup.undo_title": "पहले जैसा करने का कोड",
+      "backup.undo_desc": "वापस आ गया। अगर गलती हुई हो, तो यह कोड 'वापस लाओ' में चिपकाओ, सब पहले जैसा हो जाएगा। इसे कॉपी करके रख लो। बंद करने पर स्क्रीन फिर से खुलेगी।",
+      "infinity.stage_next": "{title} के लिए {n} जीत और",
+      "solo.speed_hint": "ऊपर की पट्टी से गति बदल सकते हो (½ धीमी, 1× सामान्य, 2× तेज़)।",
       "stat.atk": "ह",
       "stat.atk_full": "हमला",
       "stat.def": "ब",
@@ -3761,6 +3805,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "Seri tersimpan",
       "stage.saved_run_lc": "seri tersimpan",
       "stage.streak": "{n} menang beruntun",
+      "backup.storage_failed": "Tidak bisa menyimpan di perangkat ini. Penyimpanan mungkin penuh, atau mode pribadi aktif.",
+      "backup.undo_title": "Kode untuk membatalkan",
+      "backup.undo_desc": "Berhasil dipulihkan. Kalau keliru, tempel kode ini di Pulihkan untuk kembali seperti semula. Salin dan simpan. Saat ditutup, layar dimuat ulang.",
+      "infinity.stage_next": "{n} kemenangan lagi untuk {title}",
+      "solo.speed_hint": "Ubah kecepatan lewat bilah di atas (½ lambat, 1× normal, 2× cepat).",
       "stat.atk": "S",
       "stat.atk_full": "SERANGAN",
       "stat.def": "P",
@@ -4150,6 +4199,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "Serie salvata",
       "stage.saved_run_lc": "serie salvata",
       "stage.streak": "{n} vittorie di fila",
+      "backup.storage_failed": "Impossibile salvare su questo dispositivo. La memoria potrebbe essere piena o la modalità privata attiva.",
+      "backup.undo_title": "Codice per annullare",
+      "backup.undo_desc": "Ripristinato. Se è stato un errore, incolla questo codice in Ripristina per tornare a com'era. Copialo e conservalo. Alla chiusura la schermata si ricarica.",
+      "infinity.stage_next": "Ancora {n} per {title}",
+      "solo.speed_hint": "Cambia la velocità con la barra in alto (½ lenta, 1× normale, 2× veloce).",
       "stat.atk": "A",
       "stat.atk_full": "ATTACCO",
       "stat.def": "D",
@@ -4539,6 +4593,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "저장 5연전",
       "stage.saved_run_lc": "저장 5연전",
       "stage.streak": "{n}연승 중",
+      "backup.storage_failed": "이 기기에는 저장할 수 없어. 저장 공간이 가득 찼거나 비공개 모드일 수 있어.",
+      "backup.undo_title": "되돌리기 코드",
+      "backup.undo_desc": "복원했어. 실수였다면 이 코드를 '복원하기'에 붙여넣으면 이전 상태로 돌아가. 복사해서 보관해 둬. 닫으면 화면을 다시 열어.",
+      "infinity.stage_next": "{title}까지 {n}승 남았어",
+      "solo.speed_hint": "위쪽 막대에서 속도를 바꿀 수 있어 (½ 느리게, 1× 보통, 2× 빠르게).",
       "stat.atk": "공",
       "stat.atk_full": "공격",
       "stat.def": "방",
@@ -4928,6 +4987,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "Série salva",
       "stage.saved_run_lc": "série salva",
       "stage.streak": "{n} vitórias seguidas",
+      "backup.storage_failed": "Não é possível salvar neste aparelho. O espaço pode estar cheio ou o modo privado ligado.",
+      "backup.undo_title": "Código para desfazer",
+      "backup.undo_desc": "Restaurado. Se foi um engano, cole este código em Restaurar para voltar ao que era antes. Copie e guarde. Ao fechar, a tela recarrega.",
+      "infinity.stage_next": "Mais {n} para {title}",
+      "solo.speed_hint": "Mude a velocidade na barra de cima (½ lenta, 1× normal, 2× rápida).",
       "stat.atk": "A",
       "stat.atk_full": "ATAQUE",
       "stat.def": "D",
@@ -5317,6 +5381,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "Серия сохранённых",
       "stage.saved_run_lc": "серия сохранённых",
       "stage.streak": "Серия: {n} побед",
+      "backup.storage_failed": "На этом устройстве сохранить не получается. Возможно, память заполнена или включён приватный режим.",
+      "backup.undo_title": "Код для отмены",
+      "backup.undo_desc": "Восстановлено. Если это была ошибка, вставь этот код в «Восстановить», и всё вернётся как было. Скопируй и сохрани его. При закрытии экран перезагрузится.",
+      "infinity.stage_next": "До звания {title}: ещё {n}",
+      "solo.speed_hint": "Скорость меняется на панели сверху (½ медленно, 1× обычно, 2× быстро).",
       "stat.atk": "А",
       "stat.atk_full": "АТАКА",
       "stat.def": "З",
@@ -5706,6 +5775,11 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "stage.saved_run": "保存5连战",
       "stage.saved_run_lc": "保存5连战",
       "stage.streak": "{n}连胜中",
+      "backup.storage_failed": "这台设备无法保存。可能是空间已满，或开启了隐私模式。",
+      "backup.undo_title": "撤销用的代码",
+      "backup.undo_desc": "已恢复。如果弄错了，把这个代码贴到“恢复”里，就能回到之前的状态。请复制并保存。关闭后会重新打开画面。",
+      "infinity.stage_next": "再赢{n}场获得{title}",
+      "solo.speed_hint": "可以在上方的栏里改变速度（½ 慢，1× 普通，2× 快）。",
       "stat.atk": "攻",
       "stat.atk_full": "攻击",
       "stat.def": "防",
@@ -6190,6 +6264,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     stopBGM(); if (settings.vol <= 0 || !song) return; bgmStep = 0; bgmSong = song;
     bgmTimer = setInterval(function () {
       if (settings.vol <= 0) { stopBGM(); return; }
+      if (document.hidden) return;   // 画面を離れているあいだに始まった曲(バトルの決着・観戦の次の試合など)も鳴らさない
       var c = ac(); if (!c || c.state !== "running") return;   // ジェスチャ前(自動再生ブロック中)は鳴らさずスキップ＝バックログ防止
       var s = bgmSong, len = s.mel.length, i = bgmStep % len, n = s.mel[i], v = s.vol, md = s.dur || 0.16;
       if (n !== null) {
@@ -7028,21 +7103,32 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     code = (code || "").replace(/\s+/g, "");                               // 改行/空白は除去
     if (code.indexOf("DBVSB1.") !== 0) throw new Error("format");
     var obj = JSON.parse(b64dec(code.slice(7)));
-    if (typeof obj.p === "number") localStorage.setItem("dbvs_progress", String(Math.max(0, Math.min(7, obj.p))));
-    if (Array.isArray(obj.s)) {   // 保存戦士は1体ずつ decodeFighter で確かめ、読めないものは入れない
-      var okSaved = [];
-      for (var si = 0; si < obj.s.length && okSaved.length < MAX_SAVED; si++) { if (typeof obj.s[si] === "string" && decodeFighter(obj.s[si])) okSaved.push(obj.s[si]); }
-      localStorage.setItem("dbvs_saved", JSON.stringify(okSaved));
+    // 書き込みに失敗したら（容量いっぱい・保存できない設定）「コードがちがう」ではなく Error("storage") にし、書きかけは元に戻す
+    var keys = ["dbvs_progress", "dbvs_saved", "dbvs_settings", "dbvs_infinity_best"], old = {};
+    try { for (var ki = 0; ki < keys.length; ki++) old[keys[ki]] = localStorage.getItem(keys[ki]); } catch (e) { throw new Error("storage"); }
+    function put(k, v) { try { localStorage.setItem(k, v); } catch (e) { throw new Error("storage"); } }
+    try {
+      if (typeof obj.p === "number") put("dbvs_progress", String(Math.max(0, Math.min(7, obj.p))));
+      if (Array.isArray(obj.s)) {   // 保存戦士は1体ずつ decodeFighter で確かめ、読めないものは入れない
+        var okSaved = [];
+        for (var si = 0; si < obj.s.length && okSaved.length < MAX_SAVED; si++) { if (typeof obj.s[si] === "string" && decodeFighter(obj.s[si])) okSaved.push(obj.s[si]); }
+        put("dbvs_saved", JSON.stringify(okSaved));
+      }
+      if (obj.c && typeof obj.c === "object") put("dbvs_settings", JSON.stringify(obj.c));
+      if (typeof obj.b === "number" && obj.b > 0) put("dbvs_infinity_best", String(obj.b));
+    } catch (e) {
+      if (e && e.message === "storage") {   // 途中まで書いた分を、わかる範囲で元に戻す
+        for (var ri = 0; ri < keys.length; ri++) { try { if (old[keys[ri]] === null || old[keys[ri]] === undefined) localStorage.removeItem(keys[ri]); else localStorage.setItem(keys[ri], old[keys[ri]]); } catch (e2) {} }
+      }
+      throw e;
     }
-    if (obj.c && typeof obj.c === "object") localStorage.setItem("dbvs_settings", JSON.stringify(obj.c));
-    if (typeof obj.b === "number" && obj.b > 0) localStorage.setItem("dbvs_infinity_best", String(obj.b));
   }
-  var bkMode = "export";   // export=全データ書出 / import=全データ復元 / gift=戦士1体を渡す / receive=戦士1体を追加
+  var bkMode = "export";   // export=全データ書出 / import=全データ復元 / gift=戦士1体を渡す / receive=戦士1体を追加 / undo=復元まえのコードを見せる
   function openBackup(mode, arg) {
     $("settingsoverlay").style.display = "none";
     bkMode = mode;
     clearWriting("backup");   // 窓を開きなおした＝コード欄の書きかけは無い（Android の戻るボタン用）
-    var isExport = (mode === "export" || mode === "gift");   // コピーして渡す系（読取専用）
+    var isExport = (mode === "export" || mode === "gift" || mode === "undo");   // コピーして渡す系（読取専用）
     var ta = $("bk-text");
     if (mode === "export") {
       $("bk-title").textContent = t("backup.export_title");
@@ -7051,6 +7137,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     } else if (mode === "gift") {
       $("bk-title").textContent = t("backup.gift_title");
       $("bk-desc").textContent = t("backup.gift_desc");
+      ta.value = arg || ""; ta.readOnly = true;
+    } else if (mode === "undo") {   // 復元の直後：復元まえの自分のコード（まちがえたら これを はれば もどせる）。とじると ひらきなおす
+      $("bk-title").textContent = t("backup.undo_title");
+      $("bk-desc").textContent = t("backup.undo_desc");
       ta.value = arg || ""; ta.readOnly = true;
     } else if (mode === "import") {
       $("bk-title").textContent = t("backup.import_title");
@@ -7498,12 +7588,26 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     $("name0").style.color = "#5ad6ff"; $("name1").style.color = "#ff9a5a";
     updateStageInfo(); pushLogClear(); updateHud(); drawScene();
     pushLog(t("battle.start"));
+    var hinted = (opts.kind === "solo") && soloSpeedHintOnce();   // ソロ初回だけ、倍速バーの一言
     startBGM();
-    bwait(function () { battle.busy = false; nextTurn(); }, 700);
+    bwait(function () { battle.busy = false; nextTurn(); }, hinted ? 2500 : 700);   // 一言を出したときは読めるよう少し長く待つ
+  }
+  // ソロの初めての戦闘のはじめに、倍速バーの一言を一度だけ出す（localStorage "dbvs_speedhint_v1"・バックアップには入れない）。出したら true
+  function soloSpeedHintOnce() {
+    var seen = false;
+    try { seen = localStorage.getItem("dbvs_speedhint_v1") === "1"; } catch (e) {}
+    if (seen) return false;
+    pushLog(t("solo.speed_hint")); srSay(t("solo.speed_hint"));
+    try { localStorage.setItem("dbvs_speedhint_v1", "1"); } catch (e) {}
+    return true;
   }
   function updateStageInfo() {
     var el = $("stageinfo");
-    if (battle && battle.kind === "solo") { el.style.display = "block"; if (soloMode === "infinity") { el.textContent = "♾ " + t("stage.streak", {n: soloStage}); } else { var tag = (soloMode === "saved") ? t("stage.saved_run") : diffName(soloDiff); el.textContent = t("stage.label") + (soloStage + 1) + " / 5  〔" + tag + "〕"; } }
+    if (battle && battle.kind === "solo") { el.style.display = "block"; if (soloMode === "infinity") {
+      el.textContent = "♾ " + t("stage.streak", {n: soloStage});
+      var nxT = infNextTitle(soloStage);   // 次の称号までの目安（同じ行に小さく。最高位に着いたら出さない）
+      if (nxT) { var sub = document.createElement("span"); sub.style.cssText = "display:inline-block;font-size:10px;color:#9ab;margin-left:8px;"; sub.textContent = t("infinity.stage_next", {n: nxT.min - soloStage, title: infName(nxT)}); el.appendChild(sub); }
+    } else { var tag = (soloMode === "saved") ? t("stage.saved_run") : diffName(soloDiff); el.textContent = t("stage.label") + (soloStage + 1) + " / 5  〔" + tag + "〕"; } }
     else el.style.display = "none";
   }
   var DIFFS = ["easy", "normal", "hard", "veryhard", "ultimate", "extreme", "insane"];
@@ -9275,7 +9379,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
     // データのバックアップ/復元
     $("bk-export-btn").onclick = function () { sfx.select(); openBackup("export"); };
     $("bk-import-btn").onclick = function () { sfx.select(); openBackup("import"); };
-    $("bk-close").onclick = function () { $("backupoverlay").style.display = "none"; };
+    $("bk-close").onclick = function () { $("backupoverlay").style.display = "none"; if (bkMode === "undo") location.reload(); };   // undo＝復元ずみ。とじたら ひらきなおして 復元した中身で始める
     $("bk-copy").onclick = function () {
       var ta = $("bk-text"); ta.readOnly = false; ta.focus(); ta.select();
       var ok = false;
@@ -9309,19 +9413,34 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       // import = データ全体を復元（上書き＋リロード）。確かめは askBox（Play版はアプリの中の いいえ/はい）
       askBox(t("backup.overwrite_confirm"), function (ok) {
         if (!ok) return;
+        var prevCode = "";
+        try { prevCode = makeBackup(); } catch (e) { prevCode = ""; }   // 復元まえの自分のコード（まちがえたときに もどす用）
         try {
           applyBackup(clean);
-          alert(t("backup.restored"));
-          location.reload();
         } catch (e) {
-          alert(t("backup.invalid_code"));
+          alert(e && e.message === "storage" ? t("backup.storage_failed") : t("backup.invalid_code"));   // 保存できない端末と、コードのまちがいを分ける
+          return;
         }
+        if (prevCode) { openBackup("undo", prevCode); return; }   // 「ふっかつ しました」＋もどす コードを見せ、とじたら ひらきなおす
+        alert(t("backup.restored"));
+        location.reload();
       });
     };
     // 保存データが消えにくいよう「永続化」を要求（対応ブラウザのみ・best-effort）
     if (navigator.storage && navigator.storage.persist) {
       try { navigator.storage.persisted().then(function (p) { if (!p) navigator.storage.persist(); }); } catch (e) {}
     }
+
+    // 画面を離れたら BGM を止め、戻ったら いまの画面の曲で再開（別のタブ・アプリへ移っても鳴り続けない）。
+    // 止める前に鳴っていたときだけ再開する（音量0・案内中などで止めていたときは勝手に鳴らさない）
+    var bgmHeld = false;
+    function onAppHide() { if (bgmTimer) { bgmHeld = true; stopBGM(); } }
+    function onAppShow() { if (bgmHeld) { bgmHeld = false; resumeBGM(); } }
+    try {
+      document.addEventListener("visibilitychange", function () { if (document.hidden) onAppHide(); else onAppShow(); });
+      window.addEventListener("pagehide", onAppHide);
+      window.addEventListener("pageshow", function () { if (!document.hidden) onAppShow(); });
+    } catch (e) {}
 
     // タイトル → モード
     $("mode-solo").onclick = function () { sfx.select(); openDifficulty(); };
