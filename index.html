@@ -524,6 +524,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
   function saveSettings() { try { localStorage.setItem("dbvs_settings", JSON.stringify(settings)); } catch (e) {} }
   // ソロの解放進捗（クリアした難易度の数 0〜5。永続。バッジ数でもある）
   var soloProgress = 0;
+  var soloBadgeNew = false;   // 直前のソロ5連戦クリアでバッジが増えたか
   try { var _sp = parseInt(localStorage.getItem("dbvs_progress"), 10); if (_sp >= 0 && _sp <= 7) soloProgress = _sp; } catch (e) {}
   function saveProgress() { try { localStorage.setItem("dbvs_progress", String(soloProgress)); } catch (e) {} }
 
@@ -802,6 +803,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.next_enemy_n": "つぎの てきが あらわれる…（{n}/5）",
       "result.wins_name": "{name} の しょうり！",
       "result.badge_get": "バッジGET ★（{n}/7） つぎの むずかしさ かいほう！",
+      "result.recleared": "クリア済み つぎの むずかしさ にちょうせん！",
       "result.score": "スコア {w} ／ さいこう {b}",
       "infinity.next_title": "\nつぎは {min}れんしょうで {title}！",
       "result.defeated_n": "{n} たい たおした（{tag}）",
@@ -1117,6 +1119,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "result.next_enemy_n": "Next enemy appears… ({n}/5)",
       "result.wins_name": "{name} WINS!",
       "result.badge_get": "Badge ★ ({n}/7) New difficulty unlocked!",
+      "result.recleared": "Already cleared! Try the next difficulty!",
       "result.score": "Score {w} / Best {b}",
       "infinity.next_title": "\nNext: {min} wins for {title}!",
       "result.defeated_n": "Defeated {n} ({tag})",
@@ -1294,10 +1297,10 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "mychar.saved_run": "5 معارك بالمحفوظين",
       "mychar.saved_run_desc": "اختر مقاتلك وواجه 5 مقاتلين محفوظين عشوائيًا",
       "mychar.title": "بشخصياتك أنت",
-      "nick.allround": "المقاتل المتوازن",
-      "nick.attacker": "المقاتل المهاجم",
-      "nick.defender": "المقاتل المدافع",
-      "nick.speedster": "المقاتل السريع",
+      "nick.allround": "المتوازن",
+      "nick.attacker": "المهاجم",
+      "nick.defender": "المدافع",
+      "nick.speedster": "السريع",
       "passive.endure": "{name} صمد بـ 1 HP!",
       "passive.leech": "{name} امتصّ 20% من الضرر (+{n})",
       "passive.mirror": "{name} حصل على التأثير نفسه!",
@@ -1319,6 +1322,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "تجهيز المعركة",
       "result.all_badges": "اكتملت الشارات السبع! 🏆 تباهَ أمام أصدقائك!",
       "result.badge_get": "شارة جديدة ★ ({n}/7) فُتح مستوى صعوبة جديد!",
+      "result.recleared": "أكملته من قبل! جرّب الصعوبة التالية!",
       "result.clear": "نجاح!",
       "result.defeated_n": "هزمت {n} ({tag})",
       "result.excl": "!",
@@ -1682,8 +1686,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "mychar.saved_run": "সেভ যোদ্ধা 5 লড়াই",
       "mychar.saved_run_desc": "নিজের 1টা বাছো · সেভ যোদ্ধাদের সঙ্গে 5টি এলোমেলো লড়াই",
       "mychar.title": "নিজের যোদ্ধা দিয়ে",
-      "nick.allround": "অলরাউন্ডার",
-      "nick.attacker": "আক্রমণকারী",
+      "nick.allround": "চৌকস",
+      "nick.attacker": "আক্রামক",
       "nick.defender": "রক্ষক",
       "nick.speedster": "গতিদানব",
       "passive.endure": "{name} 1 HP নিয়ে টিকে রইল!",
@@ -1707,6 +1711,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "লড়াইয়ের প্রস্তুতি",
       "result.all_badges": "7টা ব্যাজ কমপ্লিট! 🏆 বন্ধুদের দেখিয়ে দাও!",
       "result.badge_get": "ব্যাজ পেলে ★ ({n}/7) নতুন লেভেল খুলল!",
+      "result.recleared": "আগেই সম্পন্ন! পরের লেভেলে চেষ্টা করো!",
       "result.clear": "ক্লিয়ার!",
       "result.defeated_n": "{n}টাকে হারালে ({tag})",
       "result.excl": "!",
@@ -2095,6 +2100,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "Kampfvorbereitung",
       "result.all_badges": "Alle 7 Abzeichen! 🏆 Zeig sie deinen Freunden!",
       "result.badge_get": "Abzeichen ★ ({n}/7) Neue Stufe freigeschaltet!",
+      "result.recleared": "Schon geschafft! Versuch die nächste Stufe!",
       "result.clear": "GESCHAFFT!",
       "result.defeated_n": "{n} Gegner besiegt ({tag})",
       "result.excl": "!",
@@ -2483,6 +2489,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "Preparar batalla",
       "result.all_badges": "¡Las 7 insignias! 🏆 ¡Presume ante tus amigos!",
       "result.badge_get": "Insignia ★ ({n}/7) ¡Nueva dificultad desbloqueada!",
+      "result.recleared": "¡Ya superado! ¡Prueba la siguiente dificultad!",
       "result.clear": "¡CONSEGUIDO!",
       "result.defeated_n": "{n} enemigos vencidos ({tag})",
       "result.excl": "!",
@@ -2871,6 +2878,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "Préparation du combat",
       "result.all_badges": "Les 7 badges ! 🏆 Montre-les à tes amis !",
       "result.badge_get": "Badge ★ ({n}/7) Nouvelle difficulté débloquée !",
+      "result.recleared": "Déjà réussi ! Essaie la difficulté suivante !",
       "result.clear": "RÉUSSI !",
       "result.defeated_n": "{n} ennemis vaincus ({tag})",
       "result.excl": " !",
@@ -3259,6 +3267,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "मुक़ाबले की तैयारी",
       "result.all_badges": "सातों बैज पूरे! 🏆 दोस्तों पर रौब जमाओ!",
       "result.badge_get": "बैज मिला ★ ({n}/7) नई कठिनाई खुली!",
+      "result.recleared": "पहले ही पूरा! अगली कठिनाई आज़माओ!",
       "result.clear": "क्लियर!",
       "result.defeated_n": "{n} को हराया ({tag})",
       "result.excl": "!",
@@ -3647,6 +3656,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "Persiapan battle",
       "result.all_badges": "7 lencana lengkap! 🏆 Pamerkan ke teman-temanmu!",
       "result.badge_get": "Dapat lencana ★ ({n}/7) Tingkat baru terbuka!",
+      "result.recleared": "Sudah selesai! Coba tingkat berikutnya!",
       "result.clear": "BERES!",
       "result.defeated_n": "Mengalahkan {n} ({tag})",
       "result.excl": "!",
@@ -4035,6 +4045,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "Preparazione battaglia",
       "result.all_badges": "Tutte e 7 le medaglie! 🏆 Vantati con gli amici!",
       "result.badge_get": "Medaglia ★ ({n}/7) Nuova difficoltà sbloccata!",
+      "result.recleared": "Già superato! Prova la difficoltà successiva!",
       "result.clear": "COMPLETATO!",
       "result.defeated_n": "{n} nemici sconfitti ({tag})",
       "result.excl": "!",
@@ -4423,6 +4434,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "대전 준비",
       "result.all_badges": "배지 7개 컴플리트! 🏆 친구들에게 자랑하자!",
       "result.badge_get": "배지 GET ★（{n}/7）새 난이도 해방!",
+      "result.recleared": "이미 클리어! 다음 난이도에 도전하자!",
       "result.clear": "클리어!",
       "result.defeated_n": "{n}명 격파（{tag}）",
       "result.excl": "!",
@@ -4811,6 +4823,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "Preparar batalha",
       "result.all_badges": "Os 7 emblemas completos! 🏆 Mostre aos amigos!",
       "result.badge_get": "Emblema ★ ({n}/7) Nova dificuldade liberada!",
+      "result.recleared": "Já concluído! Tente a próxima dificuldade!",
       "result.clear": "CONSEGUIU!",
       "result.defeated_n": "{n} inimigos vencidos ({tag})",
       "result.excl": "!",
@@ -5199,6 +5212,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "Подготовка к бою",
       "result.all_badges": "Все 7 значков! 🏆 Похвастайся друзьям!",
       "result.badge_get": "Значок ★ ({n}/7) Открыта новая сложность!",
+      "result.recleared": "Уже пройдено! Попробуй следующую сложность!",
       "result.clear": "ПРОЙДЕНО!",
       "result.defeated_n": "Побеждено {n} ({tag})",
       "result.excl": "!",
@@ -5587,6 +5601,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       "qr.show_title": "对战准备",
       "result.all_badges": "7个徽章集齐！🏆 向朋友炫耀吧！",
       "result.badge_get": "获得徽章 ★（{n}/7）解锁新难度！",
+      "result.recleared": "已通关！挑战下一个难度吧！",
       "result.clear": "通关！",
       "result.defeated_n": "打倒了{n}个（{tag}）",
       "result.excl": "！",
@@ -8010,7 +8025,8 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
             if (soloMode === "saved") { showResult("savedclear"); }   // 保存5連戦クリア（バッジ解放なし）
             else {
               var di = DIFFS.indexOf(soloDiff);
-              if (di === soloProgress) { soloProgress++; saveProgress(); }   // 最前線をクリア→バッジ獲得＆次を解放
+              soloBadgeNew = (di === soloProgress);   // 今回バッジが増えたか(再クリアの表示分け用)
+              if (soloBadgeNew) { soloProgress++; saveProgress(); }   // 最前線をクリア→バッジ獲得＆次を解放
               showResult("soloclear");
             }
           } else showSoloNext();
@@ -8057,7 +8073,7 @@ window.__jsQR=(function(){var module={exports:{}},exports=module.exports;
       rw.style.color = "#ffd24a";
       rs.textContent = (soloProgress >= 7)
         ? t("result.all_badges")
-        : t("result.badge_get", {n: soloProgress});
+        : (soloBadgeNew ? t("result.badge_get", {n: soloProgress}) : t("result.recleared"));   // 再クリアは「かいほう！」を出さない
       $("restartbtn").textContent = t("result.play_again");
       $("restartbtn").onclick = function () { $("resultoverlay").style.display = "none"; startSoloRun(); };
     } else if (kind === "qr") {
